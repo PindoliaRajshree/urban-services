@@ -20,12 +20,16 @@ class SecondaryButton extends StatelessWidget {
   /// Optional custom height for the button
   final double? height;
 
+  /// Optional prefix icon path for the button
+  final String? iconPath;
+
   const SecondaryButton({
     super.key,
     required this.text,
     required this.onPressed,
     this.width,
     this.height,
+    this.iconPath,
   });
 
   @override
@@ -42,13 +46,26 @@ class SecondaryButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppDimensions.radius10r),
         ),
         alignment: Alignment.center,
-        child: Text(
-          text,
-          style: customTextStyle(
-            AppTextSizes.doubleLargeTextSize, // Font size 18
-            AppColors.text,
-            FontWeight.w600, // Medium weight
-          ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (iconPath != null) ...[
+              Image.asset(
+                iconPath!,
+                height: AppDimensions.containerHeight20h,
+                width: AppDimensions.containerWidth20w,
+              ),
+              SizedBox(width: AppDimensions.padding10w),
+            ],
+            Text(
+              text,
+              style: customTextStyle(
+                AppTextSizes.doubleLargeTextSize, // Font size 18
+                AppColors.text,
+                FontWeight.w600, // Medium weight
+              ),
+            ),
+          ],
         ),
       ),
     );

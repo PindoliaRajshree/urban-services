@@ -2,10 +2,12 @@
 // Purpose: Welcome landing page for choosing User or Provider role.
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
+import 'package:urban_services/routes/route_names.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
 import 'package:urban_services/widgets/primary_button.dart';
 import 'package:urban_services/widgets/secondary_button.dart';
@@ -118,13 +120,12 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 Image.asset(AppImages.cleaning, fit: BoxFit.fill),
                 SizedBox(height: AppDimensions.padding20h),
 
-                // --- Action Buttons Section ---
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: AppDimensions.padding30w),
                   child: PrimaryButton(
                     text: 'Continue as User',
                     onPressed: () {
-                      // TODO: Implement user login flow
+                      Get.toNamed(RouteNames.loginScreen);
                     },
                   ),
                 ),
@@ -134,7 +135,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   child: SecondaryButton(
                     text: 'Continue as Provider',
                     onPressed: () {
-                      // TODO: Implement provider login flow
+                      Get.toNamed(RouteNames.loginScreen);
                     },
                   ),
                 ),
@@ -233,13 +234,12 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               Image.asset(AppImages.cleaning, fit: BoxFit.fill),
               SizedBox(height: AppDimensions.padding20h),
 
-              // --- Action Buttons Section ---
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: AppDimensions.padding30w),
                 child: PrimaryButton(
                   text: 'Continue as User',
                   onPressed: () {
-                    // TODO: Implement user login flow
+                    Get.toNamed(RouteNames.loginScreen);
                   },
                 ),
               ),
@@ -249,7 +249,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 child: SecondaryButton(
                   text: 'Continue as Provider',
                   onPressed: () {
-                    // TODO: Implement provider login flow
+                    Get.toNamed(RouteNames.loginScreen);
                   },
                 ),
               ),

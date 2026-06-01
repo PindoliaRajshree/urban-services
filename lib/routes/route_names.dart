@@ -6,4 +6,10 @@ class RouteNames {
 
   //welcome
   static const String welcomeScreen = '/welcome';
+
+  //login
+  static const String loginScreen = '/login';
+
+  //register
+  static const String registerScreen = '/register';
 }
