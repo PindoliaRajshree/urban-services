@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:urban_services/routes/route_names.dart';
 
 class LoginController extends GetxController {
   final mobileController = TextEditingController();
@@ -62,6 +63,7 @@ class LoginController extends GetxController {
   void login() {
     if (validate()) {
       debugPrint("Login with: ${mobileController.text}");
+      Get.offAllNamed(RouteNames.homeMain);
     }
   }
 

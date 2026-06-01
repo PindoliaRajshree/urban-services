@@ -12,4 +12,7 @@ class RouteNames {
 
   //register
   static const String registerScreen = '/register';
+
+  //home
+  static const String homeMain = '/homeMain';
 }

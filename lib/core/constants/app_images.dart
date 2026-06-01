@@ -8,16 +8,19 @@ class AppImages {
 
   // Branding
   static const String appLogo = '$_basePath/app-logo.webp';
+  static const String appLogoPng = '$_basePath/app-logo.png';
   static const String splash = '$_basePath/splash.webp';
   static const String google = '$_basePath/google.webp';
 
   // Navigation & UI
-  static const String home = '$_basePath/Home.webp';
+  static const String home = '$_basePath/home.webp';
   static const String back = '$_basePath/back.webp';
   static const String forward = '$_basePath/forward.webp';
   static const String settings = '$_basePath/settings.webp';
   static const String profile = '$_basePath/profile.webp';
   static const String booking = '$_basePath/booking.webp';
+  static const String services = '$_basePath/services.webp';
+  static const String chat = '$_basePath/chat.webp';
 
   // Input & Forms
   static const String email = '$_basePath/Email.webp';
