@@ -25,7 +25,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     final isSmall = MediaQuery.of(context).size.height < 720;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.screenBackground,
       body: SafeArea(
         child: isSmall ? SingleChildScrollView(
           child: Padding(
@@ -46,7 +46,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     ],
                   ),
                 ),
-                SizedBox(height: AppDimensions.padding15h),
+                SizedBox(height: AppDimensions.padding20h),
 
                 // --- Welcome Title Section ---
                 Padding(
@@ -129,7 +129,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     },
                   ),
                 ),
-                SizedBox(height: AppDimensions.padding10h),
+                SizedBox(height: AppDimensions.padding15h),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: AppDimensions.padding30w),
                   child: SecondaryButton(
@@ -160,7 +160,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   ],
                 ),
               ),
-              SizedBox(height: AppDimensions.padding15h),
+              SizedBox(height: AppDimensions.padding20h),
 
               // --- Welcome Title Section ---
               Padding(
@@ -243,7 +243,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   },
                 ),
               ),
-              SizedBox(height: AppDimensions.padding10h),
+              SizedBox(height: AppDimensions.padding15h),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: AppDimensions.padding30w),
                 child: SecondaryButton(

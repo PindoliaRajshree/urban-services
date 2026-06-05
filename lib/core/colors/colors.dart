@@ -29,4 +29,5 @@ class AppColors {
 
   // UI Colors
   static const Color background = Color.fromRGBO(222, 241, 255, 1);
+  static const Color screenBackground = Color.fromRGBO(233, 242, 253, 1);
 }

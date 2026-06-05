@@ -17,10 +17,14 @@ class AppImages {
   static const String back = '$_basePath/back.webp';
   static const String forward = '$_basePath/forward.webp';
   static const String settings = '$_basePath/settings.webp';
+  static const String setting = '$_basePath/setting.webp';
   static const String profile = '$_basePath/profile.webp';
+  static const String person = '$_basePath/person.webp';
   static const String booking = '$_basePath/booking.webp';
+  static const String bookingUpper = '$_basePath/Booking.webp';
   static const String services = '$_basePath/services.webp';
   static const String chat = '$_basePath/chat.webp';
+  static const String logout = '$_basePath/logout.webp';
 
   // Input & Forms
   static const String email = '$_basePath/Email.webp';
@@ -30,6 +34,15 @@ class AppImages {
   static const String phoneRing = '$_basePath/phone-ring.webp';
   static const String mobile = '$_basePath/mobile.webp';
   static const String sms = '$_basePath/SMS.webp';
+
+  // Profile & Settings Features
+  static const String aboutUs = '$_basePath/about-us.webp';
+  static const String referEarn = '$_basePath/refer-earn.webp';
+  static const String helpSupport = '$_basePath/help-support.webp';
+  static const String placeMarker = '$_basePath/Place Marker.webp';
+  static const String addressImage = '$_basePath/address-image.webp';
+  static const String savedAddress = '$_basePath/saved-address.webp';
+  static const String paymentMethods = '$_basePath/payment-methods.webp';
 
   // Misc
   static const String cleaning = '$_basePath/cleaning.webp';
