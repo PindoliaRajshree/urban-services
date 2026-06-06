@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:urban_services/core/colors/colors.dart';
+import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
+import 'package:urban_services/core/constants/app_text_sizes.dart';
 import 'package:urban_services/features/home_main/main_navigation_controller.dart';
 import 'package:urban_services/widgets/concave_bottom_bar_painter.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
@@ -15,18 +17,18 @@ class CustomBottomBar extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return SizedBox(
-      height: 60, // Height of the bar container
+      height: AppDimensions.padding60h, // Height of the bar container
       child: Stack(
         children: [
           // Background Bar with Concave Notch
           CustomPaint(
-            size: Size(screenWidth, 60),
+            size: Size(screenWidth, AppDimensions.padding60h),
             painter: ConcaveBottomBarPainter(gradient: AppColors.gradient),
           ),
           
           // Navigation Items
           Positioned(
-            bottom: 5, // Positioned slightly above the bottom
+            bottom: AppDimensions.padding5h, // Positioned slightly above the bottom
             left: 0,
             right: 0,
             child: Row(
@@ -34,7 +36,7 @@ class CustomBottomBar extends StatelessWidget {
               children: [
                 _buildNavItem(context, 0, AppImages.settings, "Services", controller),
                 _buildNavItem(context, 1, AppImages.booking, "Booking", controller),
-                const SizedBox(width: 80), // Increased space for the concave notch
+                SizedBox(width: AppDimensions.padding80w), // Increased space for the concave notch
                 _buildNavItem(context, 3, AppImages.chat, "Chat", controller),
                 _buildNavItem(context, 4, AppImages.profile, "Profile", controller),
               ],
@@ -58,15 +60,15 @@ class CustomBottomBar extends StatelessWidget {
           children: [
             Image.asset(
               iconPath,
-              width: 22,
-              height: 22,
+              width: AppDimensions.containerWidth22w,
+              height: AppDimensions.containerHeight22h,
               color: color,
             ),
-            const SizedBox(height: 2),
+            SizedBox(height: AppDimensions.padding2h),
             Text(
               label,
               style: customTextStyle(
-                10,
+                AppTextSizes.stableTextSize,
                 color,
                 isSelected ? FontWeight.w600 : FontWeight.w400,
               ),

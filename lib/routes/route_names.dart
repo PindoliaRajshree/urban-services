@@ -15,4 +15,8 @@ class RouteNames {
 
   //home
   static const String homeMain = '/homeMain';
+
+  //address
+  static const String addressScreen = '/address';
+  static const String addAddressScreen = '/addAddress';
 }

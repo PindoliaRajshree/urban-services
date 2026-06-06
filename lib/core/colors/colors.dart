@@ -8,6 +8,7 @@ class AppColors {
   static const Color primary = Color.fromRGBO(37, 99, 235, 1);
   static const Color primaryLight = Color.fromRGBO(96, 165, 250, 1);
   static const Color accent = Color.fromRGBO(6, 182, 212, 1);
+  static const Color primaryDark = Color.fromRGBO(17, 54, 137, 1);
   static const LinearGradient gradient = LinearGradient(
     colors: [Color.fromRGBO(17, 54, 137, 1), Color.fromRGBO(20, 103, 206, 1)],
   );
@@ -17,6 +18,7 @@ class AppColors {
   static const Color white = Color.fromRGBO(255, 255, 255, 1);
   static const Color text = Color.fromRGBO(64, 64, 64, 1);
   static const Color darkGrey = Color.fromRGBO(109, 109, 109, 1);
+  static const Color darkGrey2 = Color.fromRGBO(75, 75, 75, 1);
   static const Color grey = Color.fromRGBO(160, 162, 166, 1);
   static const Color lightGrey = Color.fromRGBO(226, 232, 240, 1);
 

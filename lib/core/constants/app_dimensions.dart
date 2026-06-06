@@ -22,6 +22,7 @@ class AppDimensions {
   static double padding20h = 20.h;
   static double padding25h = 25.h;
   static double padding30h = 30.h;
+  static double padding35h = 35.h;
   static double padding40h = 40.h;
   static double padding45h = 45.h;
   static double padding50h = 50.h;
@@ -45,6 +46,7 @@ class AppDimensions {
   static double padding10w = 10.w;
   static double padding12w = 12.w;
   static double padding15w = 15.w;
+  static double padding16w = 16.w;
   static double padding20w = 20.w;
   static double padding25w = 25.w;
   static double padding30w = 30.w;
@@ -60,7 +62,9 @@ class AppDimensions {
   ///************** radius constants **************///
   // Used for defining corner curves of containers and buttons
   static double radius2r = 2.r;
+  static double radius3r = 3.r;
   static double radius4r = 4.r;
+  static double radius5r = 5.r;
   static double radius6r = 6.r;
   static double radius8r = 8.r;
   static double radius10r = 10.r;
@@ -92,11 +96,14 @@ class AppDimensions {
   static double containerHeight7h = 7.h;
   static double containerHeight8h = 8.h;
   static double containerHeight9h = 9.h;
+  static double containerHeight9_66h = 9.66.h;
   static double containerHeight10h = 10.h;
   static double containerHeight12h = 12.h;
   static double containerHeight15h = 15.h;
   static double containerHeight18h = 18.h;
   static double containerHeight20h = 20.h;
+  static double containerHeight22h = 22.h;
+  static double containerHeight24h = 24.h;
   static double containerHeight25h = 25.h;
   static double containerHeight30h = 30.h;
   static double containerHeight35h = 35.h;
@@ -149,7 +156,10 @@ class AppDimensions {
   static double containerWidth10w = 10.w;
   static double containerWidth12w = 12.w;
   static double containerWidth15w = 15.w;
+  static double containerWidth18w = 18.w;
   static double containerWidth20w = 20.w;
+  static double containerWidth22w = 22.w;
+  static double containerWidth24w = 24.w;
   static double containerWidth25w = 25.w;
   static double containerWidth30w = 30.w;
   static double containerWidth35w = 35.w;
@@ -159,6 +169,7 @@ class AppDimensions {
   static double containerWidth50w = 50.w;
   static double containerWidth60w = 60.w;
   static double containerWidth70w = 70.w;
+  static double containerWidth75w = 75.w;
   static double containerWidth80w = 80.w;
   static double containerWidth90w = 90.w;
   static double containerWidth100w = 100.w;

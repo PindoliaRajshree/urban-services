@@ -20,7 +20,7 @@ class AppImages {
   static const String setting = '$_basePath/setting.webp';
   static const String profile = '$_basePath/profile.webp';
   static const String person = '$_basePath/person.webp';
-  static const String booking = '$_basePath/booking.webp';
+  static const String booking = '$_basePath/booking-tab.webp';
   static const String bookingUpper = '$_basePath/Booking.webp';
   static const String services = '$_basePath/services.webp';
   static const String chat = '$_basePath/chat.webp';
@@ -31,7 +31,7 @@ class AppImages {
   static const String name = '$_basePath/Name.webp';
   static const String password = '$_basePath/Password.webp';
   static const String eye = '$_basePath/Eye.webp';
-  static const String phoneRing = '$_basePath/phone-ring.webp';
+  static const String phoneRing = '$_basePath/Ringer Volume.webp';
   static const String mobile = '$_basePath/mobile.webp';
   static const String sms = '$_basePath/SMS.webp';
 
@@ -43,6 +43,7 @@ class AppImages {
   static const String addressImage = '$_basePath/address-image.webp';
   static const String savedAddress = '$_basePath/saved-address.webp';
   static const String paymentMethods = '$_basePath/payment-methods.webp';
+  static const String ratingStar = '$_basePath/Star Filled.webp';
 
   // Misc
   static const String cleaning = '$_basePath/cleaning.webp';
@@ -50,4 +51,6 @@ class AppImages {
   static const String vector = '$_basePath/Vector.webp';
   static const String chatBubble = '$_basePath/Chat Bubble.webp';
   static const String splashVector = '$_basePath/splash-vector.webp';
+  static const String clock = '$_basePath/Clock.webp';
+  static const String locationImage = '$_basePath/location-image.webp';
 }

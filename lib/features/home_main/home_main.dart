@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_images.dart';
 import 'package:urban_services/features/home_main/main_navigation_controller.dart';
+import 'package:urban_services/features/profile/profile_screen.dart';
 import 'package:urban_services/widgets/custom_bottom_bar.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
 
@@ -21,13 +22,13 @@ class _HomeMainState extends State<HomeMain> {
     const Center(child: Text('Booking')),
     const Center(child: Text('Home')),
     const Center(child: Text('Chat')),
-    const Center(child: Text('Profile')),
+    ProfileScreen(),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.screenBackground,
       body: SafeArea(
         child: Stack(
           children: [
