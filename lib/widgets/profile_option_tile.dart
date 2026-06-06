@@ -1,3 +1,6 @@
+// File: lib/widgets/profile_option_tile.dart
+// Purpose: A reusable list tile component for profile and settings menus.
+
 import 'package:flutter/material.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
@@ -6,9 +9,16 @@ import 'package:urban_services/core/constants/app_text_sizes.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
 
 class ProfileOptionTile extends StatelessWidget {
+  /// Asset path for the leading icon
   final String icon;
+
+  /// Title text displayed in the center
   final String title;
+
+  /// Callback triggered when the tile is tapped
   final VoidCallback onTap;
+
+  /// Whether to display a divider at the bottom of the tile
   final bool showDivider;
 
   const ProfileOptionTile({
@@ -32,12 +42,14 @@ class ProfileOptionTile extends StatelessWidget {
             ),
             child: Row(
               children: [
+                // Leading Icon
                 Image.asset(
                   icon,
                   height: AppDimensions.containerHeight30h,
                   width: AppDimensions.containerWidth30w,
                 ),
                 SizedBox(width: AppDimensions.padding15w),
+                // Title
                 Expanded(
                   child: Text(
                     title,
@@ -48,6 +60,7 @@ class ProfileOptionTile extends StatelessWidget {
                     ),
                   ),
                 ),
+                // Trailing Arrow
                 Image.asset(
                   AppImages.forward,
                   height: AppDimensions.containerHeight15h,
@@ -57,9 +70,12 @@ class ProfileOptionTile extends StatelessWidget {
               ],
             ),
           ),
+          // Optional Divider
           if (showDivider)
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: AppDimensions.padding20w),
+              padding: EdgeInsets.symmetric(
+                horizontal: AppDimensions.padding20w,
+              ),
               child: Divider(
                 color: AppColors.darkGrey,
                 height: AppDimensions.containerHeight1h,

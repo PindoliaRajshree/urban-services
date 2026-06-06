@@ -25,20 +25,41 @@ class CustomBottomBar extends StatelessWidget {
             size: Size(screenWidth, AppDimensions.padding60h),
             painter: ConcaveBottomBarPainter(gradient: AppColors.gradient),
           ),
-          
+
           // Navigation Items
           Positioned(
-            bottom: AppDimensions.padding5h, // Positioned slightly above the bottom
+            bottom:
+                AppDimensions.padding5h, // Positioned slightly above the bottom
             left: 0,
             right: 0,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildNavItem(context, 0, AppImages.settings, "Services", controller),
-                _buildNavItem(context, 1, AppImages.booking, "Booking", controller),
-                SizedBox(width: AppDimensions.padding80w), // Increased space for the concave notch
+                _buildNavItem(
+                  context,
+                  0,
+                  AppImages.settings,
+                  "Services",
+                  controller,
+                ),
+                _buildNavItem(
+                  context,
+                  1,
+                  AppImages.booking,
+                  "Booking",
+                  controller,
+                ),
+                SizedBox(
+                  width: AppDimensions.padding80w,
+                ), // Increased space for the concave notch
                 _buildNavItem(context, 3, AppImages.chat, "Chat", controller),
-                _buildNavItem(context, 4, AppImages.profile, "Profile", controller),
+                _buildNavItem(
+                  context,
+                  4,
+                  AppImages.profile,
+                  "Profile",
+                  controller,
+                ),
               ],
             ),
           ),
@@ -47,13 +68,21 @@ class CustomBottomBar extends StatelessWidget {
     );
   }
 
-  Widget _buildNavItem(BuildContext context, int index, String iconPath, String label, MainNavigationController controller) {
+  Widget _buildNavItem(
+    BuildContext context,
+    int index,
+    String iconPath,
+    String label,
+    MainNavigationController controller,
+  ) {
     return GestureDetector(
       onTap: () => controller.changeIndex(index),
       behavior: HitTestBehavior.opaque,
       child: Obx(() {
         final isSelected = controller.currentIndex.value == index;
-        final color = isSelected ? AppColors.white : AppColors.white.withValues(alpha: 0.6);
+        final color = isSelected
+            ? AppColors.white
+            : AppColors.white.withValues(alpha: 0.6);
         return Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,

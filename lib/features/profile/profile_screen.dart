@@ -35,8 +35,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   // Handle more action
                 },
               ),
-              SizedBox(height: AppDimensions.padding15h,),
-              
+              SizedBox(height: AppDimensions.padding15h),
+
               // Profile Details Row
               Row(
                 children: [
@@ -54,7 +54,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                   SizedBox(width: AppDimensions.padding15w),
-                  
+
                   // Center: Details
                   Expanded(
                     child: Column(
@@ -105,7 +105,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ],
                     ),
                   ),
-                  
+
                   // Right: Action Icons
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -125,11 +125,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ],
               ),
-              SizedBox(height: AppDimensions.padding20h,),
+              SizedBox(height: AppDimensions.padding20h),
 
               // Profile Options
               Container(
-                padding: EdgeInsets.symmetric(vertical: AppDimensions.padding15h),
+                padding: EdgeInsets.symmetric(
+                  vertical: AppDimensions.padding15h,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.white,
                   borderRadius: BorderRadius.circular(AppDimensions.radius18r),
@@ -139,7 +141,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       blurRadius: 4,
                       spreadRadius: 0,
                       offset: const Offset(0, 1),
-                    )
+                    ),
                   ],
                 ),
                 child: Column(
@@ -182,7 +184,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     SizedBox(height: AppDimensions.padding10h),
                     Padding(
-                      padding: EdgeInsets.symmetric(vertical: AppDimensions.padding10h),
+                      padding: EdgeInsets.symmetric(
+                        vertical: AppDimensions.padding10h,
+                      ),
                       child: InkWell(
                         onTap: () {
                           // Handle logout

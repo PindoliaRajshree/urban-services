@@ -32,7 +32,8 @@ class RegisterController extends GetxController {
       nameError.value = null;
     }
 
-    if (emailController.text.trim().isNotEmpty && !AppValidators.isValidEmail(emailController.text)) {
+    if (emailController.text.trim().isNotEmpty &&
+        !AppValidators.isValidEmail(emailController.text)) {
       emailError.value = "Please enter a valid email";
       isValid = false;
     } else {
@@ -48,7 +49,9 @@ class RegisterController extends GetxController {
       final hasUpperCase = password.contains(RegExp(r'[A-Z]'));
       final hasLowerCase = password.contains(RegExp(r'[a-z]'));
       final hasDigit = password.contains(RegExp(r'[0-9]'));
-      final hasSpecialCharacters = password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'));
+      final hasSpecialCharacters = password.contains(
+        RegExp(r'[!@#$%^&*(),.?":{}|<>]'),
+      );
       final hasMinLength = password.length >= 8;
       final hasMaxLength = password.length <= 20;
 

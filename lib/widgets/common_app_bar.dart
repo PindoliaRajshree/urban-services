@@ -1,3 +1,6 @@
+// File: lib/widgets/common_app_bar.dart
+// Purpose: A reusable, standardized AppBar component with consistent branding and navigation.
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:urban_services/core/colors/colors.dart';
@@ -7,10 +10,19 @@ import 'package:urban_services/core/constants/app_text_sizes.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
 
 class CommonAppBar extends StatelessWidget {
+  /// The title displayed in the center of the AppBar
   final String title;
+
+  /// Optional widget to display on the far right (custom actions)
   final Widget? rightAction;
+
+  /// Custom callback for the back button; defaults to [Get.back()]
   final VoidCallback? onBackPress;
+
+  /// Whether to show the standard vertical more icon
   final bool showMoreIcon;
+
+  /// Callback for the vertical more icon tap
   final VoidCallback? onMorePressed;
 
   const CommonAppBar({
@@ -29,7 +41,7 @@ class CommonAppBar extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Left: Back button from asset
+          // Left: Standardized Back button from assets
           Align(
             alignment: Alignment.centerLeft,
             child: GestureDetector(
@@ -42,8 +54,8 @@ class CommonAppBar extends StatelessWidget {
               ),
             ),
           ),
-          
-          // Center: Title
+
+          // Center: Standardized Title text
           Text(
             title,
             style: customTextStyle(
@@ -52,20 +64,22 @@ class CommonAppBar extends StatelessWidget {
               FontWeight.w600,
             ),
           ),
-          
-          // Right: Optional Action or More Icon
+
+          // Right: Dynamic Action Section (Custom widget or standard 'More' icon)
           Align(
             alignment: Alignment.centerRight,
-            child: rightAction ?? (showMoreIcon 
-              ? GestureDetector(
-                  onTap: onMorePressed,
-                  child: Icon(
-                    Icons.more_vert,
-                    color: AppColors.text,
-                    size: AppDimensions.containerHeight24h,
-                  ),
-                ) 
-              : const SizedBox.shrink()),
+            child:
+                rightAction ??
+                (showMoreIcon
+                    ? GestureDetector(
+                        onTap: onMorePressed,
+                        child: Icon(
+                          Icons.more_vert,
+                          color: AppColors.text,
+                          size: AppDimensions.containerHeight24h,
+                        ),
+                      )
+                    : const SizedBox.shrink()),
           ),
         ],
       ),

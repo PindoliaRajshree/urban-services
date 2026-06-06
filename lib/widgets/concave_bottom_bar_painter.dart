@@ -8,7 +8,9 @@ class ConcaveBottomBarPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     Paint paint = Paint()
-      ..shader = gradient.createShader(Rect.fromLTWH(0, 0, size.width, size.height))
+      ..shader = gradient.createShader(
+        Rect.fromLTWH(0, 0, size.width, size.height),
+      )
       ..style = PaintingStyle.fill;
 
     Path path = Path();
@@ -18,16 +20,20 @@ class ConcaveBottomBarPainter extends CustomPainter {
 
     // Start bottom left
     path.moveTo(0, size.height);
-    
+
     // Line to top left before radius
     path.lineTo(0, radius);
-    
+
     // Top left radius
-    path.arcToPoint(Offset(radius, 0), radius: Radius.circular(radius), clockwise: true);
-    
+    path.arcToPoint(
+      Offset(radius, 0),
+      radius: Radius.circular(radius),
+      clockwise: true,
+    );
+
     // Line to notch start (sharp corner)
     path.lineTo(center - notchWidth / 2, 0);
-    
+
     // Semi-circular Notch (dip down)
     // We use arcToPoint with clockwise: false for a concave semi-circle
     path.arcToPoint(
@@ -35,16 +41,20 @@ class ConcaveBottomBarPainter extends CustomPainter {
       radius: Radius.circular(notchWidth / 2),
       clockwise: false,
     );
-    
+
     // Line to top right before radius
     path.lineTo(size.width - radius, 0);
-    
+
     // Top right radius
-    path.arcToPoint(Offset(size.width, radius), radius: Radius.circular(radius), clockwise: true);
-    
+    path.arcToPoint(
+      Offset(size.width, radius),
+      radius: Radius.circular(radius),
+      clockwise: true,
+    );
+
     // Line to bottom right
     path.lineTo(size.width, size.height);
-    
+
     // Close path
     path.close();
 
@@ -52,7 +62,7 @@ class ConcaveBottomBarPainter extends CustomPainter {
     Paint shadowPaint = Paint()
       ..color = Colors.black.withValues(alpha: 0.08)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 18.52 / 2);
-    
+
     canvas.save();
     canvas.translate(0, 4.94);
     canvas.drawPath(path, shadowPaint);

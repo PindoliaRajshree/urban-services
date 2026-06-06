@@ -1,3 +1,6 @@
+// File: lib/features/address/address_screen.dart
+// Purpose: Screen for displaying the user's selected address and providing options to change it or use current location.
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:urban_services/core/colors/colors.dart';
@@ -18,6 +21,7 @@ class AddressScreen extends StatefulWidget {
 }
 
 class _AddressScreenState extends State<AddressScreen> {
+  // Initialize AddressController for logic management
   final controller = Get.put(AddressController());
 
   @override
@@ -28,19 +32,20 @@ class _AddressScreenState extends State<AddressScreen> {
         child: SingleChildScrollView(
           child: Column(
             children: [
+              // Top Image Section: Vector background with Address Image overlay
               SizedBox(
                 width: double.infinity,
                 child: Stack(
                   alignment: Alignment.topCenter,
                   children: [
-                    // Bottom layer: vector image
+                    // Base vector image
                     Image.asset(
                       AppImages.vector,
                       width: double.infinity,
                       fit: BoxFit.fitWidth,
                     ),
 
-                    // Top layer: address image with 70 top padding
+                    // Overlaid address image with specific top padding
                     Padding(
                       padding: EdgeInsets.only(top: AppDimensions.padding70h),
                       child: Image.asset(
@@ -52,14 +57,16 @@ class _AddressScreenState extends State<AddressScreen> {
                   ],
                 ),
               ),
-              
+
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppDimensions.padding20w),
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppDimensions.padding20w,
+                ),
                 child: Column(
                   children: [
                     SizedBox(height: AppDimensions.padding20h),
-                    
-                    // 1. Select Your Service Address Text
+
+                    // 1. Title Section
                     Text(
                       'Select Your Service Address',
                       textAlign: TextAlign.center,
@@ -69,22 +76,24 @@ class _AddressScreenState extends State<AddressScreen> {
                         FontWeight.w600,
                       ),
                     ),
-                    
+
                     SizedBox(height: AppDimensions.padding10h),
-                    
-                    // 2. Horizontal divider with gradient
+
+                    // 2. Gradient Divider
                     Container(
                       width: AppDimensions.containerWidth75w,
                       height: AppDimensions.containerHeight5h,
                       decoration: BoxDecoration(
                         gradient: AppColors.gradient,
-                        borderRadius: BorderRadius.circular(AppDimensions.radius10r),
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.radius10r,
+                        ),
                       ),
                     ),
-                    
+
                     SizedBox(height: AppDimensions.padding15h),
-                    
-                    // 3. Choose the address description Text
+
+                    // 3. Description Section
                     Text(
                       'Choose the address where you want the service to be provided.',
                       textAlign: TextAlign.center,
@@ -94,14 +103,16 @@ class _AddressScreenState extends State<AddressScreen> {
                         FontWeight.w400,
                       ),
                     ),
-                    
+
                     SizedBox(height: AppDimensions.padding20h),
-                    
-                    // 4. Current Location Container
+
+                    // 4. Current Location Action Container
                     Container(
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(AppDimensions.radius5r),
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.radius5r,
+                        ),
                       ),
                       padding: EdgeInsets.symmetric(
                         horizontal: AppDimensions.padding15w,
@@ -124,8 +135,8 @@ class _AddressScreenState extends State<AddressScreen> {
                             ),
                           ),
                           const Spacer(),
-                          
-                          // Enable Gradient Button
+
+                          // Enable Button: Triggers Location Accuracy Dialog
                           GestureDetector(
                             onTap: () {
                               Get.dialog(
@@ -140,7 +151,9 @@ class _AddressScreenState extends State<AddressScreen> {
                               ),
                               decoration: BoxDecoration(
                                 gradient: AppColors.gradient,
-                                borderRadius: BorderRadius.circular(AppDimensions.radius3r),
+                                borderRadius: BorderRadius.circular(
+                                  AppDimensions.radius3r,
+                                ),
                               ),
                               child: Text(
                                 'Enable',
@@ -158,31 +171,40 @@ class _AddressScreenState extends State<AddressScreen> {
 
                     SizedBox(height: AppDimensions.padding20h),
 
-                    // 5. Address Detail Card
+                    // 5. Selected Address Detail Card
                     Container(
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(AppDimensions.radius12r),
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.radius12r,
+                        ),
                         boxShadow: [
                           BoxShadow(
                             color: AppColors.black.withValues(alpha: 0.25),
                             blurRadius: 9.66,
                             spreadRadius: 0,
-                            offset: Offset(0, AppDimensions.containerHeight9_66h),
+                            offset: Offset(
+                              0,
+                              AppDimensions.containerHeight9_66h,
+                            ),
                           ),
                         ],
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Header Container
+                          // Header: Card label and radio-style indicator
                           Container(
                             padding: EdgeInsets.all(AppDimensions.padding15h),
                             decoration: BoxDecoration(
                               color: AppColors.background,
                               borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(AppDimensions.radius12r),
-                                topRight: Radius.circular(AppDimensions.radius12r),
+                                topLeft: Radius.circular(
+                                  AppDimensions.radius12r,
+                                ),
+                                topRight: Radius.circular(
+                                  AppDimensions.radius12r,
+                                ),
                               ),
                             ),
                             child: Row(
@@ -211,13 +233,13 @@ class _AddressScreenState extends State<AddressScreen> {
                             ),
                           ),
 
-                          // Content Area
+                          // Content: City and Detailed Address text
                           Padding(
                             padding: EdgeInsets.all(AppDimensions.padding15h),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // 1st Row: City
+                                // City/Area Row
                                 Text(
                                   'Indore MP',
                                   style: customTextStyle(
@@ -227,8 +249,8 @@ class _AddressScreenState extends State<AddressScreen> {
                                   ),
                                 ),
                                 SizedBox(height: AppDimensions.padding8h),
-                                
-                                // 2nd Row: Detailed Address
+
+                                // Full Address String
                                 Text(
                                   '1016, opposite Shalimar township, Sector B, Slice 5. Aranya Nagar, Scheme 78, Vijay Nagar.',
                                   style: customTextStyle(
@@ -240,11 +262,13 @@ class _AddressScreenState extends State<AddressScreen> {
                               ],
                             ),
                           ),
-                          // 3rd Row: Change Address Button (Sticking to edge)
+
+                          // Action: Change Address Button (Flush to bottom-right edge)
                           Align(
                             alignment: Alignment.bottomRight,
                             child: GestureDetector(
-                              onTap: () => Get.toNamed(RouteNames.addAddressScreen),
+                              onTap: () =>
+                                  Get.toNamed(RouteNames.addAddressScreen),
                               child: Container(
                                 padding: EdgeInsets.symmetric(
                                   horizontal: AppDimensions.padding15w,
@@ -253,8 +277,12 @@ class _AddressScreenState extends State<AddressScreen> {
                                 decoration: BoxDecoration(
                                   color: AppColors.primary,
                                   borderRadius: BorderRadius.only(
-                                    topLeft: Radius.circular(AppDimensions.radius12r),
-                                    bottomRight: Radius.circular(AppDimensions.radius12r),
+                                    topLeft: Radius.circular(
+                                      AppDimensions.radius12r,
+                                    ),
+                                    bottomRight: Radius.circular(
+                                      AppDimensions.radius12r,
+                                    ),
                                   ),
                                 ),
                                 child: Text(
@@ -273,6 +301,7 @@ class _AddressScreenState extends State<AddressScreen> {
                     ),
                     SizedBox(height: AppDimensions.padding30h),
 
+                    // Primary Action: Navigate to Home
                     PrimaryButton(
                       text: 'Next',
                       onPressed: () => Get.offAllNamed(RouteNames.homeMain),

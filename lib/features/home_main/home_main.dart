@@ -39,7 +39,7 @@ class _HomeMainState extends State<HomeMain> {
                 child: Obx(() => _screens[controller.currentIndex.value]),
               ),
             ),
-            
+
             // Custom Bottom Bar with Sharp Semi-Circular Notch
             const Positioned(
               bottom: 0,
@@ -47,7 +47,7 @@ class _HomeMainState extends State<HomeMain> {
               right: 0,
               child: CustomBottomBar(),
             ),
-        
+
             // Home Button sitting inside the Semi-Circular Notch with a gap
             Positioned(
               bottom: 30, // Centered vertically relative to the 50px deep notch

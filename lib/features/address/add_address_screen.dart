@@ -1,3 +1,6 @@
+// File: lib/features/address/add_address_screen.dart
+// Purpose: Form screen for users to input and save a new service address.
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:urban_services/core/colors/colors.dart';
@@ -18,6 +21,7 @@ class AddAddressScreen extends StatefulWidget {
 }
 
 class _AddAddressScreenState extends State<AddAddressScreen> {
+  // Initialize AddAddressController for form state and validation
   final controller = Get.put(AddAddressController());
 
   @override
@@ -29,16 +33,19 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
           padding: EdgeInsets.symmetric(horizontal: AppDimensions.padding20w),
           child: Column(
             children: [
+              // Standard AppBar with "Add New Address" title
               const CommonAppBar(title: 'Add New Address', showMoreIcon: true),
-              
+
               Expanded(
                 child: SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Use Current Location Row
+                      // Quick Action: Use Current Location
                       Padding(
-                        padding: EdgeInsets.symmetric(horizontal: AppDimensions.padding12w),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: AppDimensions.padding12w,
+                        ),
                         child: Row(
                           children: [
                             Image.asset(
@@ -58,14 +65,18 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                           ],
                         ),
                       ),
-                      
+
                       SizedBox(height: AppDimensions.padding15h),
-                      
-                      // Location Image
+
+                      // Illustrative Location Image
                       Padding(
-                        padding: EdgeInsets.symmetric(horizontal: AppDimensions.padding12w),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: AppDimensions.padding12w,
+                        ),
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(AppDimensions.radius18r),
+                          borderRadius: BorderRadius.circular(
+                            AppDimensions.radius18r,
+                          ),
                           child: Image.asset(
                             AppImages.locationImage,
                             width: double.infinity,
@@ -74,51 +85,66 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                           ),
                         ),
                       ),
-                      
+
                       SizedBox(height: AppDimensions.padding20h),
-                      
-                      // Form Fields
-                      Obx(() => AddressFormField(
-                        label: 'Flat/Apartment/Suite',
-                        hintText: 'eg 101, A Wing Green Readency',
-                        controller: controller.flatController,
-                        focusNode: controller.flatFocus,
-                        textInputAction: TextInputAction.next,
-                        errorText: controller.flatError.value,
-                      )),
+
+                      // --- ADDRESS FORM SECTION ---
+
+                      // Flat / Apartment Input
+                      Obx(
+                        () => AddressFormField(
+                          label: 'Flat/Apartment/Suite',
+                          hintText: 'eg 101, A Wing Green Readency',
+                          controller: controller.flatController,
+                          focusNode: controller.flatFocus,
+                          textInputAction: TextInputAction.next,
+                          errorText: controller.flatError.value,
+                        ),
+                      ),
                       SizedBox(height: AppDimensions.padding15h),
-                      
-                      Obx(() => AddressFormField(
-                        label: 'Floor/Building',
-                        hintText: 'eg. 2nd Floor',
-                        controller: controller.floorController,
-                        focusNode: controller.floorFocus,
-                        textInputAction: TextInputAction.next,
-                        errorText: controller.floorError.value,
-                      )),
+
+                      // Floor / Building Input
+                      Obx(
+                        () => AddressFormField(
+                          label: 'Floor/Building',
+                          hintText: 'eg. 2nd Floor',
+                          controller: controller.floorController,
+                          focusNode: controller.floorFocus,
+                          textInputAction: TextInputAction.next,
+                          errorText: controller.floorError.value,
+                        ),
+                      ),
                       SizedBox(height: AppDimensions.padding15h),
-                      
-                      Obx(() => AddressFormField(
-                        label: 'Building/Society/Landmark',
-                        hintText: 'eg. Indus Business School',
-                        controller: controller.buildingController,
-                        focusNode: controller.buildingFocus,
-                        textInputAction: TextInputAction.next,
-                        errorText: controller.buildingError.value,
-                      )),
+
+                      // Building / Society / Landmark Input
+                      Obx(
+                        () => AddressFormField(
+                          label: 'Building/Society/Landmark',
+                          hintText: 'eg. Indus Business School',
+                          controller: controller.buildingController,
+                          focusNode: controller.buildingFocus,
+                          textInputAction: TextInputAction.next,
+                          errorText: controller.buildingError.value,
+                        ),
+                      ),
                       SizedBox(height: AppDimensions.padding15h),
-                      
-                      Obx(() => AddressFormField(
-                        label: 'Full Address',
-                        hintText: 'REBM, Indus Business School, Tonk Phatak Jaipur, Rajasthan-302015',
-                        controller: controller.fullAddressController,
-                        focusNode: controller.fullAddressFocus,
-                        maxLines: 3,
-                        textInputAction: TextInputAction.next,
-                        errorText: controller.fullAddressError.value,
-                      )),
+
+                      // Full Address Input (Multi-line)
+                      Obx(
+                        () => AddressFormField(
+                          label: 'Full Address',
+                          hintText:
+                              'REBM, Indus Business School, Tonk Phatak Jaipur, Rajasthan-302015',
+                          controller: controller.fullAddressController,
+                          focusNode: controller.fullAddressFocus,
+                          maxLines: 3,
+                          textInputAction: TextInputAction.next,
+                          errorText: controller.fullAddressError.value,
+                        ),
+                      ),
                       SizedBox(height: AppDimensions.padding15h),
-                      
+
+                      // Optional Landmark Input
                       AddressFormField(
                         label: 'Landmark (Optional)',
                         hintText: 'eg. Near Tonk Phatak',
@@ -126,39 +152,46 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                         focusNode: controller.landmarkFocus,
                         textInputAction: TextInputAction.done,
                       ),
-                      
+
                       SizedBox(height: AppDimensions.padding15h),
-                      
-                      // Checkbox
-                      Obx(() => Row(
-                        children: [
-                          Checkbox(
-                            value: controller.isDefault.value,
-                            onChanged: (val) => controller.isDefault.value = val ?? false,
-                            activeColor: AppColors.primary,
-                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
-                          ),
-                          SizedBox(width: AppDimensions.padding8w),
-                          Text(
-                            'Save as default address',
-                            style: customTextStyle(
-                              AppTextSizes.smallTextSize,
-                              AppColors.text,
-                              FontWeight.w500,
+
+                      // Settings: Save as Default Address
+                      Obx(
+                        () => Row(
+                          children: [
+                            Checkbox(
+                              value: controller.isDefault.value,
+                              onChanged: (val) =>
+                                  controller.isDefault.value = val ?? false,
+                              activeColor: AppColors.primary,
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
+                              visualDensity: const VisualDensity(
+                                horizontal: -4,
+                                vertical: -4,
+                              ),
                             ),
-                          ),
-                        ],
-                      )),
-                      
+                            SizedBox(width: AppDimensions.padding8w),
+                            Text(
+                              'Save as default address',
+                              style: customTextStyle(
+                                AppTextSizes.smallTextSize,
+                                AppColors.text,
+                                FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
                       SizedBox(height: AppDimensions.padding30h),
-                      
-                      // Save Button
+
+                      // Primary Action: Save address and navigate
                       PrimaryButton(
                         text: 'Save',
                         onPressed: controller.saveAddress,
                       ),
-                      
+
                       SizedBox(height: AppDimensions.padding30h),
                     ],
                   ),

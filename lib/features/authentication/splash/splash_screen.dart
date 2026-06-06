@@ -50,13 +50,13 @@ class _SplashScreenState extends State<SplashScreen>
     );
 
     // Logo slides up from 30% below its target position
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.0, 0.7, curve: Curves.easeInBack),
-    ));
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: const Interval(0.0, 0.7, curve: Curves.easeInBack),
+          ),
+        );
 
     // Start the animation sequence
     _controller.forward();
@@ -84,9 +84,7 @@ class _SplashScreenState extends State<SplashScreen>
         body: Container(
           width: double.infinity,
           height: double.infinity,
-          decoration: const BoxDecoration(
-            gradient: AppColors.gradient,
-          ),
+          decoration: const BoxDecoration(gradient: AppColors.gradient),
           child: SafeArea(
             child: Center(
               child: SlideTransition(

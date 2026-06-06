@@ -27,235 +27,269 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     return Scaffold(
       backgroundColor: AppColors.screenBackground,
       body: SafeArea(
-        child: isSmall ? SingleChildScrollView(
-          child: Padding(
-            padding: EdgeInsets.symmetric(vertical: AppDimensions.padding20h),
-            child: Column(
-              children: [
-                // --- Header Logo/Icon Section ---
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: AppDimensions.padding30w),
-                  child: Row(
-                    mainAxisAlignment: .start,
-                    children: [
-                      Image.asset(
-                        AppImages.splashVector,
-                        height: AppDimensions.containerHeight50h,
-                        width: AppDimensions.containerWidth50w,
-                      ),
-                    ],
+        child: isSmall
+            ? SingleChildScrollView(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    vertical: AppDimensions.padding20h,
                   ),
-                ),
-                SizedBox(height: AppDimensions.padding20h),
-
-                // --- Welcome Title Section ---
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: AppDimensions.padding30w),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
+                  child: Column(
                     children: [
-                      RichText(
-                        text: TextSpan(
+                      // --- Header Logo/Icon Section ---
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: AppDimensions.padding30w,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: .start,
                           children: [
-                            TextSpan(
-                              text: 'All Home Services\nAt',
-                              style: customTextStyle(
-                                AppTextSizes.headingTextSize,
-                                AppColors.black,
-                                FontWeight.w600,
-                              ),
+                            Image.asset(
+                              AppImages.splashVector,
+                              height: AppDimensions.containerHeight50h,
+                              width: AppDimensions.containerWidth50w,
                             ),
-                            TextSpan(
-                              text: ' One Place',
-                              style: customTextStyle(
-                                AppTextSizes.headingTextSize,
-                                AppColors.primary,
-                                FontWeight.w600,
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: AppDimensions.padding20h),
+
+                      // --- Welcome Title Section ---
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: AppDimensions.padding30w,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            RichText(
+                              text: TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: 'All Home Services\nAt',
+                                    style: customTextStyle(
+                                      AppTextSizes.headingTextSize,
+                                      AppColors.black,
+                                      FontWeight.w600,
+                                    ),
+                                  ),
+                                  TextSpan(
+                                    text: ' One Place',
+                                    style: customTextStyle(
+                                      AppTextSizes.headingTextSize,
+                                      AppColors.primary,
+                                      FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
                         ),
                       ),
-                    ],
-                  ),
-                ),
-                SizedBox(height: AppDimensions.padding10h),
+                      SizedBox(height: AppDimensions.padding10h),
 
-                // --- Accent Line / Indicator ---
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: AppDimensions.padding30w),
-                  child: Row(
-                    mainAxisAlignment: .start,
-                    children: [
-                      Container(
-                        height: AppDimensions.containerHeight4h,
-                        width: AppDimensions.containerWidth70w,
-                        decoration: BoxDecoration(gradient: AppColors.gradient),
+                      // --- Accent Line / Indicator ---
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: AppDimensions.padding30w,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: .start,
+                          children: [
+                            Container(
+                              height: AppDimensions.containerHeight4h,
+                              width: AppDimensions.containerWidth70w,
+                              decoration: BoxDecoration(
+                                gradient: AppColors.gradient,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ],
-                  ),
-                ),
-                SizedBox(height: AppDimensions.padding10h,),
+                      SizedBox(height: AppDimensions.padding10h),
 
-                // --- Description Section ---
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: AppDimensions.padding30w),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Trusted professionals for your \nhome and office needs.',
-                        style: customTextStyle(
-                          AppTextSizes.largeTextSize,
-                          AppColors.black,
-                          FontWeight.w400,
+                      // --- Description Section ---
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: AppDimensions.padding30w,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Trusted professionals for your \nhome and office needs.',
+                              style: customTextStyle(
+                                AppTextSizes.largeTextSize,
+                                AppColors.black,
+                                FontWeight.w400,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: AppDimensions.padding10h),
+
+                      // --- Main Illustration Section ---
+                      Image.asset(AppImages.cleaning, fit: BoxFit.fill),
+                      SizedBox(height: AppDimensions.padding20h),
+
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: AppDimensions.padding30w,
+                        ),
+                        child: PrimaryButton(
+                          text: 'Continue as User',
+                          onPressed: () {
+                            Get.toNamed(RouteNames.loginScreen);
+                          },
+                        ),
+                      ),
+                      SizedBox(height: AppDimensions.padding15h),
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: AppDimensions.padding30w,
+                        ),
+                        child: SecondaryButton(
+                          text: 'Continue as Provider',
+                          onPressed: () {
+                            Get.toNamed(RouteNames.loginScreen);
+                          },
                         ),
                       ),
                     ],
                   ),
                 ),
-                SizedBox(height: AppDimensions.padding10h),
-
-                // --- Main Illustration Section ---
-                Image.asset(AppImages.cleaning, fit: BoxFit.fill),
-                SizedBox(height: AppDimensions.padding20h),
-
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: AppDimensions.padding30w),
-                  child: PrimaryButton(
-                    text: 'Continue as User',
-                    onPressed: () {
-                      Get.toNamed(RouteNames.loginScreen);
-                    },
-                  ),
+              )
+            : Padding(
+                padding: EdgeInsets.symmetric(
+                  vertical: AppDimensions.padding20h,
                 ),
-                SizedBox(height: AppDimensions.padding15h),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: AppDimensions.padding30w),
-                  child: SecondaryButton(
-                    text: 'Continue as Provider',
-                    onPressed: () {
-                      Get.toNamed(RouteNames.loginScreen);
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ) : Padding(
-          padding: EdgeInsets.symmetric(vertical: AppDimensions.padding20h),
-          child: Column(
-            children: [
-              // --- Header Logo/Icon Section ---
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppDimensions.padding30w),
-                child: Row(
-                  mainAxisAlignment: .start,
+                child: Column(
                   children: [
-                    Image.asset(
-                      AppImages.splashVector,
-                      height: AppDimensions.containerHeight50h,
-                      width: AppDimensions.containerWidth50w,
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: AppDimensions.padding20h),
-
-              // --- Welcome Title Section ---
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppDimensions.padding30w),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    RichText(
-                      text: TextSpan(
+                    // --- Header Logo/Icon Section ---
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: AppDimensions.padding30w,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: .start,
                         children: [
-                          TextSpan(
-                            text: 'All Home Services\nAt',
-                            style: customTextStyle(
-                              AppTextSizes.headingTextSize,
-                              AppColors.black,
-                              FontWeight.w600,
-                            ),
+                          Image.asset(
+                            AppImages.splashVector,
+                            height: AppDimensions.containerHeight50h,
+                            width: AppDimensions.containerWidth50w,
                           ),
-                          TextSpan(
-                            text: ' One Place',
-                            style: customTextStyle(
-                              AppTextSizes.headingTextSize,
-                              AppColors.primary,
-                              FontWeight.w600,
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: AppDimensions.padding20h),
+
+                    // --- Welcome Title Section ---
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: AppDimensions.padding30w,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          RichText(
+                            text: TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: 'All Home Services\nAt',
+                                  style: customTextStyle(
+                                    AppTextSizes.headingTextSize,
+                                    AppColors.black,
+                                    FontWeight.w600,
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: ' One Place',
+                                  style: customTextStyle(
+                                    AppTextSizes.headingTextSize,
+                                    AppColors.primary,
+                                    FontWeight.w600,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
                       ),
                     ),
-                  ],
-                ),
-              ),
-              SizedBox(height: AppDimensions.padding10h),
+                    SizedBox(height: AppDimensions.padding10h),
 
-              // --- Accent Line / Indicator ---
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppDimensions.padding30w),
-                child: Row(
-                  mainAxisAlignment: .start,
-                  children: [
-                    Container(
-                      height: AppDimensions.containerHeight4h,
-                      width: AppDimensions.containerWidth70w,
-                      decoration: BoxDecoration(gradient: AppColors.gradient),
+                    // --- Accent Line / Indicator ---
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: AppDimensions.padding30w,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: .start,
+                        children: [
+                          Container(
+                            height: AppDimensions.containerHeight4h,
+                            width: AppDimensions.containerWidth70w,
+                            decoration: BoxDecoration(
+                              gradient: AppColors.gradient,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
-                ),
-              ),
-              SizedBox(height: AppDimensions.padding10h,),
+                    SizedBox(height: AppDimensions.padding10h),
 
-              // --- Description Section ---
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppDimensions.padding30w),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Trusted professionals for your \nhome and office needs.',
-                      style: customTextStyle(
-                        AppTextSizes.largeTextSize,
-                        AppColors.black,
-                        FontWeight.w400,
+                    // --- Description Section ---
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: AppDimensions.padding30w,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Trusted professionals for your \nhome and office needs.',
+                            style: customTextStyle(
+                              AppTextSizes.largeTextSize,
+                              AppColors.black,
+                              FontWeight.w400,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: AppDimensions.padding10h),
+
+                    // --- Main Illustration Section ---
+                    Image.asset(AppImages.cleaning, fit: BoxFit.fill),
+                    SizedBox(height: AppDimensions.padding20h),
+
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: AppDimensions.padding30w,
+                      ),
+                      child: PrimaryButton(
+                        text: 'Continue as User',
+                        onPressed: () {
+                          Get.toNamed(RouteNames.loginScreen);
+                        },
+                      ),
+                    ),
+                    SizedBox(height: AppDimensions.padding15h),
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: AppDimensions.padding30w,
+                      ),
+                      child: SecondaryButton(
+                        text: 'Continue as Provider',
+                        onPressed: () {
+                          Get.toNamed(RouteNames.loginScreen);
+                        },
                       ),
                     ),
                   ],
                 ),
               ),
-              SizedBox(height: AppDimensions.padding10h),
-
-              // --- Main Illustration Section ---
-              Image.asset(AppImages.cleaning, fit: BoxFit.fill),
-              SizedBox(height: AppDimensions.padding20h),
-
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppDimensions.padding30w),
-                child: PrimaryButton(
-                  text: 'Continue as User',
-                  onPressed: () {
-                    Get.toNamed(RouteNames.loginScreen);
-                  },
-                ),
-              ),
-              SizedBox(height: AppDimensions.padding15h),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppDimensions.padding30w),
-                child: SecondaryButton(
-                  text: 'Continue as Provider',
-                  onPressed: () {
-                    Get.toNamed(RouteNames.loginScreen);
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

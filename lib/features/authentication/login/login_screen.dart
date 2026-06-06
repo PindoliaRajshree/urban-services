@@ -34,24 +34,20 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 Column(
                   children: [
-                    Image.asset(
-                      AppImages.vector,
-                      fit: BoxFit.fill,
-                    ),
+                    Image.asset(AppImages.vector, fit: BoxFit.fill),
                     SizedBox(height: AppDimensions.containerHeight40h),
                   ],
                 ),
                 Positioned(
                   top: AppDimensions.padding70h,
-                  child: Image.asset(
-                    AppImages.appLogo,
-                    fit: BoxFit.contain,
-                  ),
+                  child: Image.asset(AppImages.appLogo, fit: BoxFit.contain),
                 ),
               ],
             ),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: AppDimensions.padding20w),
+              padding: EdgeInsets.symmetric(
+                horizontal: AppDimensions.padding20w,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -82,40 +78,44 @@ class _LoginScreenState extends State<LoginScreen> {
                           color: AppColors.black.withValues(alpha: 0.1),
                           blurRadius: 6,
                           spreadRadius: 2,
-                          offset: Offset(0,3),
+                          offset: Offset(0, 3),
                         ),
-                      ]
+                      ],
                     ),
                     padding: .all(AppDimensions.radius20r),
                     child: Column(
                       children: [
-                        Obx(() => CustomTextField(
-                          hintText: 'Enter Mobile Number',
-                          prefixIconPath: AppImages.mobile,
-                          controller: controller.mobileController,
-                          focusNode: controller.mobileFocusNode,
-                          keyboardType: TextInputType.phone,
-                          textInputAction: TextInputAction.next,
-                          errorText: controller.mobileError.value,
-                          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                        )),
+                        Obx(
+                          () => CustomTextField(
+                            hintText: 'Enter Mobile Number',
+                            prefixIconPath: AppImages.mobile,
+                            controller: controller.mobileController,
+                            focusNode: controller.mobileFocusNode,
+                            keyboardType: TextInputType.phone,
+                            textInputAction: TextInputAction.next,
+                            errorText: controller.mobileError.value,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                            ],
+                          ),
+                        ),
                         SizedBox(height: AppDimensions.padding20h),
-                        Obx(() => CustomTextField(
-                          hintText: 'Enter Password',
-                          prefixIconPath: AppImages.password,
-                          isPassword: true,
-                          controller: controller.passwordController,
-                          focusNode: controller.passwordFocusNode,
-                          textInputAction: TextInputAction.done,
-                          onSubmitted: (_) => controller.login(),
-                          errorText: controller.passwordError.value,
-                        )),
+                        Obx(
+                          () => CustomTextField(
+                            hintText: 'Enter Password',
+                            prefixIconPath: AppImages.password,
+                            isPassword: true,
+                            controller: controller.passwordController,
+                            focusNode: controller.passwordFocusNode,
+                            textInputAction: TextInputAction.done,
+                            onSubmitted: (_) => controller.login(),
+                            errorText: controller.passwordError.value,
+                          ),
+                        ),
                         Align(
                           alignment: Alignment.centerRight,
                           child: TextButton(
-                            onPressed: () {
-
-                            },
+                            onPressed: () {},
                             child: Text(
                               'Forgot Password?',
                               style: customTextStyle(
@@ -133,9 +133,16 @@ class _LoginScreenState extends State<LoginScreen> {
                         SizedBox(height: AppDimensions.padding10h),
                         Row(
                           children: [
-                            const Expanded(child: Divider(color: AppColors.grey,thickness: 1.5,)),
+                            const Expanded(
+                              child: Divider(
+                                color: AppColors.grey,
+                                thickness: 1.5,
+                              ),
+                            ),
                             Padding(
-                              padding: EdgeInsets.symmetric(horizontal: AppDimensions.padding10w),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: AppDimensions.padding10w,
+                              ),
                               child: Container(
                                 height: 28,
                                 width: 28,
@@ -158,7 +165,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ),
                             ),
-                            const Expanded(child: Divider(color: AppColors.grey,thickness: 1.5,)),
+                            const Expanded(
+                              child: Divider(
+                                color: AppColors.grey,
+                                thickness: 1.5,
+                              ),
+                            ),
                           ],
                         ),
                         SizedBox(height: AppDimensions.padding20h),

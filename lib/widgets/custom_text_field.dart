@@ -55,7 +55,9 @@ class _CustomTextFieldState extends State<CustomTextField> {
             color: AppColors.white,
             borderRadius: BorderRadius.circular(AppDimensions.radius10r),
             border: Border.all(
-              color: widget.errorText != null ? AppColors.danger : AppColors.grey,
+              color: widget.errorText != null
+                  ? AppColors.danger
+                  : AppColors.grey,
               width: 1,
             ),
           ),
@@ -92,7 +94,9 @@ class _CustomTextFieldState extends State<CustomTextField> {
               suffixIcon: widget.isPassword
                   ? IconButton(
                       icon: Icon(
-                        _obscureText ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                        _obscureText
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
                         color: AppColors.grey,
                       ),
                       onPressed: () {

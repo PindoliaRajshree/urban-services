@@ -16,9 +16,15 @@ List<GetPage> getRoutes() {
     GetPage(name: RouteNames.splashScreen, page: () => const SplashScreen()),
     GetPage(name: RouteNames.welcomeScreen, page: () => const WelcomeScreen()),
     GetPage(name: RouteNames.loginScreen, page: () => const LoginScreen()),
-    GetPage(name: RouteNames.registerScreen, page: () => const RegisterScreen()),
+    GetPage(
+      name: RouteNames.registerScreen,
+      page: () => const RegisterScreen(),
+    ),
     GetPage(name: RouteNames.homeMain, page: () => const HomeMain()),
     GetPage(name: RouteNames.addressScreen, page: () => const AddressScreen()),
-    GetPage(name: RouteNames.addAddressScreen, page: () => const AddAddressScreen()),
+    GetPage(
+      name: RouteNames.addAddressScreen,
+      page: () => const AddAddressScreen(),
+    ),
   ];
 }

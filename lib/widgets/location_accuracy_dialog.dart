@@ -1,3 +1,6 @@
+// File: lib/widgets/location_accuracy_dialog.dart
+// Purpose: A custom system-style dialog to request Location Accuracy from the user.
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:urban_services/core/colors/colors.dart';
@@ -12,6 +15,7 @@ class LocationAccuracyDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Access AddressController to handle button actions
     final controller = Get.find<AddressController>();
 
     return Dialog(
@@ -35,8 +39,8 @@ class LocationAccuracyDialog extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(height: AppDimensions.padding20h),
-            
-            // 1. Main Heading
+
+            // 1. Heading: Benefit explanation
             Padding(
               padding: EdgeInsets.only(
                 left: AppDimensions.padding40w,
@@ -44,17 +48,13 @@ class LocationAccuracyDialog extends StatelessWidget {
               ),
               child: Text(
                 'For a better experience, your device will need to use Location Accuracy',
-                style: customTextStyle(
-                  15,
-                  AppColors.text,
-                  FontWeight.w600,
-                ),
+                style: customTextStyle(15, AppColors.text, FontWeight.w600),
               ),
             ),
-            
+
             SizedBox(height: AppDimensions.padding15h),
-            
-            // 2. Subheading
+
+            // 2. Subheading: Required settings
             Padding(
               padding: EdgeInsets.only(
                 left: AppDimensions.padding40w,
@@ -69,12 +69,14 @@ class LocationAccuracyDialog extends StatelessWidget {
                 ),
               ),
             ),
-            
+
             SizedBox(height: AppDimensions.padding20h),
-            
-            // 3. Device location Row
+
+            // 3. Info Item: Device Location
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: AppDimensions.padding16w),
+              padding: EdgeInsets.symmetric(
+                horizontal: AppDimensions.padding16w,
+              ),
               child: Row(
                 children: [
                   Image.asset(
@@ -85,21 +87,19 @@ class LocationAccuracyDialog extends StatelessWidget {
                   const SizedBox(width: 5),
                   Text(
                     'Device location',
-                    style: customTextStyle(
-                      15,
-                      AppColors.text,
-                      FontWeight.w600,
-                    ),
+                    style: customTextStyle(15, AppColors.text, FontWeight.w600),
                   ),
                 ],
               ),
             ),
-            
+
             SizedBox(height: AppDimensions.padding15h),
-            
-            // 4. Accuracy Details Row
+
+            // 4. Detailed explanation with Clock icon
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: AppDimensions.padding16w),
+              padding: EdgeInsets.symmetric(
+                horizontal: AppDimensions.padding16w,
+              ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -122,10 +122,10 @@ class LocationAccuracyDialog extends StatelessWidget {
                 ],
               ),
             ),
-            
+
             SizedBox(height: AppDimensions.padding20h),
-            
-            // 5. Footer Info & RichText
+
+            // 5. Footer: Settings manage info and RichText link
             Padding(
               padding: EdgeInsets.only(
                 left: AppDimensions.padding40w,
@@ -134,47 +134,49 @@ class LocationAccuracyDialog extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-
+                  Text(
+                    'You can change this at any time in location settings.',
+                    style: customTextStyle(
+                      AppTextSizes.smallTextSize,
+                      AppColors.text,
+                      FontWeight.w400,
+                    ),
+                  ),
                   const SizedBox(height: 4),
                   RichText(
                     text: TextSpan(
-                      children: [
-                        TextSpan(
-                          text: 'You can change this at any time in location settings.',
-                          style: customTextStyle(
-                            AppTextSizes.smallTextSize,
-                            AppColors.text,
-                            FontWeight.w400,
-                          ),
-                        ),
-                        TextSpan(
-                          text: 'Manage settings or learn more',
-                          style: customTextStyle(
-                            15,
-                            AppColors.primaryDark,
-                            FontWeight.w600,
-                          ),
-                        )
-                      ],
+                      text: 'Manage settings or\nlearn more',
+                      style: customTextStyle(
+                        15,
+                        AppColors.primaryDark,
+                        FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-            
+
             SizedBox(height: AppDimensions.padding30h),
-            
-            // 6. Action Buttons
+
+            // 6. Action Buttons: Dismiss vs. Enable
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: AppDimensions.padding40w),
+              padding: EdgeInsets.symmetric(
+                horizontal: AppDimensions.padding40w,
+              ),
               child: Row(
                 children: [
+                  // Negative Action: Close Dialog
                   Expanded(
                     child: TextButton(
                       onPressed: controller.closeDialog,
                       style: TextButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: AppDimensions.padding12h),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero,side: BorderSide(color: AppColors.primaryDark,width: AppDimensions.containerWidth1w)),
+                        padding: EdgeInsets.symmetric(
+                          vertical: AppDimensions.padding12h,
+                        ),
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.zero,
+                        ),
                       ),
                       child: Text(
                         'No, thanks',
@@ -187,13 +189,18 @@ class LocationAccuracyDialog extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 20),
+                  // Positive Action: Trigger Permission Request
                   Expanded(
                     child: ElevatedButton(
                       onPressed: controller.requestLocationPermission,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
-                        padding: EdgeInsets.symmetric(vertical: AppDimensions.padding12h),
-                        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                        padding: EdgeInsets.symmetric(
+                          vertical: AppDimensions.padding12h,
+                        ),
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.zero,
+                        ),
                         elevation: 0,
                       ),
                       child: Text(
@@ -209,7 +216,7 @@ class LocationAccuracyDialog extends StatelessWidget {
                 ],
               ),
             ),
-            
+
             SizedBox(height: AppDimensions.padding20h),
           ],
         ),

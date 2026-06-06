@@ -33,24 +33,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 children: [
                   Column(
                     children: [
-                      Image.asset(
-                        AppImages.vector,
-                        fit: BoxFit.fill,
-                      ),
+                      Image.asset(AppImages.vector, fit: BoxFit.fill),
                       SizedBox(height: AppDimensions.containerHeight40h),
                     ],
                   ),
                   Positioned(
                     top: AppDimensions.padding70h,
-                    child: Image.asset(
-                      AppImages.appLogo,
-                      fit: BoxFit.contain,
-                    ),
+                    child: Image.asset(AppImages.appLogo, fit: BoxFit.contain),
                   ),
                 ],
               ),
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppDimensions.padding20w),
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppDimensions.padding20w,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -75,7 +71,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     Container(
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(AppDimensions.radius22r),
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.radius22r,
+                        ),
                         boxShadow: [
                           BoxShadow(
                             color: AppColors.black.withValues(alpha: 0.1),
@@ -88,113 +86,131 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       padding: EdgeInsets.all(AppDimensions.radius20r),
                       child: Column(
                         children: [
-                          Obx(() => CustomTextField(
-                            hintText: 'Enter Name',
-                            prefixIconPath: AppImages.name,
-                            controller: controller.nameController,
-                            focusNode: controller.nameFocusNode,
-                            textInputAction: TextInputAction.next,
-                            errorText: controller.nameError.value,
-                          )),
+                          Obx(
+                            () => CustomTextField(
+                              hintText: 'Enter Name',
+                              prefixIconPath: AppImages.name,
+                              controller: controller.nameController,
+                              focusNode: controller.nameFocusNode,
+                              textInputAction: TextInputAction.next,
+                              errorText: controller.nameError.value,
+                            ),
+                          ),
                           SizedBox(height: AppDimensions.padding20h),
-                          Obx(() => CustomTextField(
-                            hintText: 'Enter Email (Optional)',
-                            prefixIconPath: AppImages.email,
-                            controller: controller.emailController,
-                            focusNode: controller.emailFocusNode,
-                            keyboardType: TextInputType.emailAddress,
-                            textInputAction: TextInputAction.next,
-                            errorText: controller.emailError.value,
-                          )),
+                          Obx(
+                            () => CustomTextField(
+                              hintText: 'Enter Email (Optional)',
+                              prefixIconPath: AppImages.email,
+                              controller: controller.emailController,
+                              focusNode: controller.emailFocusNode,
+                              keyboardType: TextInputType.emailAddress,
+                              textInputAction: TextInputAction.next,
+                              errorText: controller.emailError.value,
+                            ),
+                          ),
                           SizedBox(height: AppDimensions.padding20h),
-                          Obx(() => CustomTextField(
-                            hintText: 'Enter Password',
-                            prefixIconPath: AppImages.password,
-                            isPassword: true,
-                            controller: controller.passwordController,
-                            focusNode: controller.passwordFocusNode,
-                            textInputAction: TextInputAction.next,
-                            errorText: controller.passwordError.value,
-                          )),
+                          Obx(
+                            () => CustomTextField(
+                              hintText: 'Enter Password',
+                              prefixIconPath: AppImages.password,
+                              isPassword: true,
+                              controller: controller.passwordController,
+                              focusNode: controller.passwordFocusNode,
+                              textInputAction: TextInputAction.next,
+                              errorText: controller.passwordError.value,
+                            ),
+                          ),
                           SizedBox(height: AppDimensions.padding20h),
-                          Obx(() => CustomTextField(
-                            hintText: 'Confirm Password',
-                            prefixIconPath: AppImages.password,
-                            isPassword: true,
-                            controller: controller.confirmPasswordController,
-                            focusNode: controller.confirmPasswordFocusNode,
-                            textInputAction: TextInputAction.done,
-                            onSubmitted: (_) => controller.register(),
-                            errorText: controller.confirmPasswordError.value,
-                          )),
+                          Obx(
+                            () => CustomTextField(
+                              hintText: 'Confirm Password',
+                              prefixIconPath: AppImages.password,
+                              isPassword: true,
+                              controller: controller.confirmPasswordController,
+                              focusNode: controller.confirmPasswordFocusNode,
+                              textInputAction: TextInputAction.done,
+                              onSubmitted: (_) => controller.register(),
+                              errorText: controller.confirmPasswordError.value,
+                            ),
+                          ),
                           SizedBox(height: AppDimensions.padding10h),
-                          Obx(() => Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Checkbox(
-                                    value: controller.agreeToTerms.value,
-                                    onChanged: (val) => controller.agreeToTerms.value = val ?? false,
-                                    activeColor: AppColors.primary,
-                                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                    visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
-                                  ),
-                                  SizedBox(width: AppDimensions.padding5w,),
-                                  RichText(
-                                    text: TextSpan(
-                                      children: [
-                                        TextSpan(
-                                          text: 'I agree to the',
-                                          style: customTextStyle(
-                                            AppTextSizes.smallTextSize,
-                                            AppColors.text,
-                                            FontWeight.w400,
-                                          ),
-                                        ),
-                                        TextSpan(
-                                          text: ' Terms & Conditions',
-                                          style: customTextStyle(
-                                            AppTextSizes.smallTextSize,
-                                            AppColors.primaryOrange,
-                                            FontWeight.w400,
-                                          ),
-                                        ),
-                                        TextSpan(
-                                          text: ' and ',
-                                          style: customTextStyle(
-                                            AppTextSizes.smallTextSize,
-                                            AppColors.text,
-                                            FontWeight.w400,
-                                          ),
-                                        ),
-                                        TextSpan(
-                                          text: 'Policy',
-                                          style: customTextStyle(
-                                            AppTextSizes.smallTextSize,
-                                            AppColors.primaryOrange,
-                                            FontWeight.w400,
-                                          ),
-                                        ),
-                                      ],
+                          Obx(
+                            () => Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Checkbox(
+                                      value: controller.agreeToTerms.value,
+                                      onChanged: (val) =>
+                                          controller.agreeToTerms.value =
+                                              val ?? false,
+                                      activeColor: AppColors.primary,
+                                      materialTapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                      visualDensity: const VisualDensity(
+                                        horizontal: -4,
+                                        vertical: -4,
+                                      ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                              if (controller.termsError.value != null)
-                                Padding(
-                                  padding: EdgeInsets.only(left: AppDimensions.padding10w),
-                                  child: Text(
-                                    controller.termsError.value!,
-                                    style: customTextStyle(
-                                      AppTextSizes.smallTextSize,
-                                      AppColors.danger,
-                                      FontWeight.w400,
+                                    SizedBox(width: AppDimensions.padding5w),
+                                    RichText(
+                                      text: TextSpan(
+                                        children: [
+                                          TextSpan(
+                                            text: 'I agree to the',
+                                            style: customTextStyle(
+                                              AppTextSizes.smallTextSize,
+                                              AppColors.text,
+                                              FontWeight.w400,
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text: ' Terms & Conditions',
+                                            style: customTextStyle(
+                                              AppTextSizes.smallTextSize,
+                                              AppColors.primaryOrange,
+                                              FontWeight.w400,
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text: ' and ',
+                                            style: customTextStyle(
+                                              AppTextSizes.smallTextSize,
+                                              AppColors.text,
+                                              FontWeight.w400,
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text: 'Policy',
+                                            style: customTextStyle(
+                                              AppTextSizes.smallTextSize,
+                                              AppColors.primaryOrange,
+                                              FontWeight.w400,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
+                                  ],
                                 ),
-                            ],
-                          )),
+                                if (controller.termsError.value != null)
+                                  Padding(
+                                    padding: EdgeInsets.only(
+                                      left: AppDimensions.padding10w,
+                                    ),
+                                    child: Text(
+                                      controller.termsError.value!,
+                                      style: customTextStyle(
+                                        AppTextSizes.smallTextSize,
+                                        AppColors.danger,
+                                        FontWeight.w400,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
                           SizedBox(height: AppDimensions.padding10h),
                           PrimaryButton(
                             text: 'Register',
@@ -203,9 +219,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           SizedBox(height: AppDimensions.padding10h),
                           Row(
                             children: [
-                              const Expanded(child: Divider(color: AppColors.grey, thickness: 1.5)),
+                              const Expanded(
+                                child: Divider(
+                                  color: AppColors.grey,
+                                  thickness: 1.5,
+                                ),
+                              ),
                               Padding(
-                                padding: EdgeInsets.symmetric(horizontal: AppDimensions.padding10w),
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: AppDimensions.padding10w,
+                                ),
                                 child: Container(
                                   height: 28,
                                   width: 28,
@@ -219,11 +242,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   ),
                                   child: Text(
                                     'OR',
-                                    style: customTextStyle(12, AppColors.text, FontWeight.w400),
+                                    style: customTextStyle(
+                                      12,
+                                      AppColors.text,
+                                      FontWeight.w400,
+                                    ),
                                   ),
                                 ),
                               ),
-                              const Expanded(child: Divider(color: AppColors.grey, thickness: 1.5)),
+                              const Expanded(
+                                child: Divider(
+                                  color: AppColors.grey,
+                                  thickness: 1.5,
+                                ),
+                              ),
                             ],
                           ),
                           SizedBox(height: AppDimensions.padding20h),
