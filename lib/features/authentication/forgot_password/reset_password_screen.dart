@@ -163,7 +163,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 color: errorRx.value != null
                     ? AppColors.danger
                     : AppColors.grey,
-                width: 1,
+                width: AppDimensions.containerWidth1w,
               ),
             ),
             padding: EdgeInsets.symmetric(horizontal: AppDimensions.padding10w),
@@ -199,7 +199,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                         ? Icons.visibility_off_outlined
                         : Icons.visibility_outlined,
                     color: AppColors.grey,
-                    size: 20,
+                    size: AppDimensions.containerHeight20h,
                   ),
                   onPressed: toggleVisibility,
                 ),

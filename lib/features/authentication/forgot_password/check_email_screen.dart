@@ -142,7 +142,10 @@ class _CheckEmailScreenState extends State<CheckEmailScreen> {
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(AppDimensions.radius12r),
-        border: Border.all(color: AppColors.text, width: 1),
+        border: Border.all(
+          color: AppColors.text,
+          width: AppDimensions.containerWidth1w,
+        ),
       ),
       child: TextField(
         controller: controller.otpControllers[index],

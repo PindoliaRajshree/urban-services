@@ -109,7 +109,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           color: controller.mobileError.value != null
                               ? AppColors.danger
                               : AppColors.grey,
-                          width: 1,
+                          width: AppDimensions.containerWidth1w,
                         ),
                       ),
                       padding: EdgeInsets.symmetric(
@@ -163,15 +163,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 ),
               ),
 
-              SizedBox(height: AppDimensions.padding20h),
+              SizedBox(height: AppDimensions.padding30h),
 
               // 8. Reset Password Button
-              Padding(
-                padding: .symmetric(horizontal: AppDimensions.padding10w),
-                child: PrimaryButton(
-                  text: 'Reset Password',
-                  onPressed: controller.resetPassword,
-                ),
+              PrimaryButton(
+                text: 'Reset Password',
+                onPressed: controller.resetPassword,
               ),
             ],
           ),
