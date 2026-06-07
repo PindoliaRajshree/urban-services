@@ -111,7 +111,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Image.asset(
-                        AppImages.phoneRing,
+                        AppImages.ringerVolume,
                         height: AppDimensions.containerHeight30h,
                         width: AppDimensions.containerWidth30w,
                       ),

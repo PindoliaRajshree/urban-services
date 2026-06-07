@@ -1,8 +1,14 @@
+// File: lib/features/home_main/home_main.dart
+// Purpose: Main entry point screen after login/registration, featuring the primary navigation structure.
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:urban_services/core/colors/colors.dart';
+import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
+import 'package:urban_services/core/constants/app_text_sizes.dart';
 import 'package:urban_services/features/home_main/main_navigation_controller.dart';
+import 'package:urban_services/features/home/home_screen.dart';
 import 'package:urban_services/features/profile/profile_screen.dart';
 import 'package:urban_services/widgets/custom_bottom_bar.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
@@ -15,14 +21,16 @@ class HomeMain extends StatefulWidget {
 }
 
 class _HomeMainState extends State<HomeMain> {
+  // Navigation controller to manage active tab state
   final controller = Get.put(MainNavigationController());
 
+  // List of screens corresponding to each navigation tab
   final List<Widget> _screens = [
     const Center(child: Text('Services')),
     const Center(child: Text('Booking')),
-    const Center(child: Text('Home')),
+    const HomeScreen(),
     const Center(child: Text('Chat')),
-    ProfileScreen(),
+    const ProfileScreen(),
   ];
 
   @override
@@ -32,7 +40,7 @@ class _HomeMainState extends State<HomeMain> {
       body: SafeArea(
         child: Stack(
           children: [
-            // Screen Content
+            // Current Screen Content based on selection
             Positioned.fill(
               child: SafeArea(
                 bottom: false,
@@ -40,7 +48,7 @@ class _HomeMainState extends State<HomeMain> {
               ),
             ),
 
-            // Custom Bottom Bar with Sharp Semi-Circular Notch
+            // Standardized Custom Bottom Bar
             const Positioned(
               bottom: 0,
               left: 0,
@@ -48,17 +56,18 @@ class _HomeMainState extends State<HomeMain> {
               child: CustomBottomBar(),
             ),
 
-            // Home Button sitting inside the Semi-Circular Notch with a gap
+            // Floating Central 'Home' Button
             Positioned(
-              bottom: 30, // Centered vertically relative to the 50px deep notch
+              bottom:
+                  AppDimensions.padding30h, // Aligned with the concave notch
               left: 0,
               right: 0,
               child: Center(
                 child: GestureDetector(
                   onTap: () => controller.changeIndex(2),
                   child: Container(
-                    width: 60,
-                    height: 60,
+                    width: AppDimensions.containerWidth60w,
+                    height: AppDimensions.containerHeight60h,
                     decoration: const BoxDecoration(
                       gradient: AppColors.gradient,
                       shape: BoxShape.circle,
@@ -73,17 +82,19 @@ class _HomeMainState extends State<HomeMain> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        // Home Icon
                         Image.asset(
                           AppImages.home,
-                          width: 26,
-                          height: 26,
+                          width: AppDimensions.containerWidth24w,
+                          height: AppDimensions.containerHeight24h,
                           color: AppColors.white,
                         ),
-                        const SizedBox(height: 2),
+                        SizedBox(height: AppDimensions.padding2h),
+                        // Tab Label
                         Text(
                           'Home',
                           style: customTextStyle(
-                            10,
+                            AppTextSizes.stableTextSize,
                             AppColors.white,
                             FontWeight.w600,
                           ),

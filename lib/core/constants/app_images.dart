@@ -31,7 +31,8 @@ class AppImages {
   static const String name = '$_basePath/Name.webp';
   static const String password = '$_basePath/Password.webp';
   static const String eye = '$_basePath/Eye.webp';
-  static const String phoneRing = '$_basePath/Ringer Volume.webp';
+  static const String phoneRing = '$_basePath/phone-ring.webp';
+  static const String ringerVolume = '$_basePath/Ringer Volume.webp';
   static const String mobile = '$_basePath/mobile.webp';
   static const String sms = '$_basePath/SMS.webp';
 
@@ -45,7 +46,16 @@ class AppImages {
   static const String paymentMethods = '$_basePath/payment-methods.webp';
   static const String ratingStar = '$_basePath/Star Filled.webp';
 
+  // Services Icons
+  static const String electrician = '$_basePath/electrician.webp';
+  static const String plumber = '$_basePath/plumber.webp';
+  static const String laundry = '$_basePath/laundry.webp';
+  static const String cleaningService = '$_basePath/cleaning-service.webp';
+  static const String serviceProvider = '$_basePath/service-provider.webp';
+
   // Misc
+  static const String ads = '$_basePath/ads.webp';
+  static const String addToCart = '$_basePath/add to cart.webp';
   static const String cleaning = '$_basePath/cleaning.webp';
   static const String image = '$_basePath/image.webp';
   static const String vector = '$_basePath/Vector.webp';
@@ -53,4 +63,7 @@ class AppImages {
   static const String splashVector = '$_basePath/splash-vector.webp';
   static const String clock = '$_basePath/Clock.webp';
   static const String locationImage = '$_basePath/location-image.webp';
+  static const String location = '$_basePath/location.webp';
+  static const String homeLocation = '$_basePath/home-location.webp';
+  static const String forwardArrow = '$_basePath/forward-arrow.webp';
 }

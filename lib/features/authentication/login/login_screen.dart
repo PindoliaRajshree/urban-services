@@ -1,3 +1,6 @@
+// File: lib/features/authentication/login/login_screen.dart
+// Purpose: Screen for user authentication via mobile number and password.
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -20,6 +23,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  // Logic controller for login form handling
   final controller = Get.put(LoginController());
 
   @override
@@ -29,6 +33,7 @@ class _LoginScreenState extends State<LoginScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
+            // Header Image Section
             Stack(
               alignment: Alignment.center,
               children: [
@@ -44,6 +49,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ],
             ),
+
             Padding(
               padding: EdgeInsets.symmetric(
                 horizontal: AppDimensions.padding20w,
@@ -51,6 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Welcome Headers
                   Text(
                     'Welcome Back',
                     style: customTextStyle(
@@ -69,22 +76,27 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   SizedBox(height: AppDimensions.padding15h),
+
+                  // Login Form Card
                   Container(
                     decoration: BoxDecoration(
                       color: AppColors.white,
-                      borderRadius: .circular(AppDimensions.radius22r),
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.radius22r,
+                      ),
                       boxShadow: [
                         BoxShadow(
                           color: AppColors.black.withValues(alpha: 0.1),
                           blurRadius: 6,
                           spreadRadius: 2,
-                          offset: Offset(0, 3),
+                          offset: const Offset(0, 3),
                         ),
                       ],
                     ),
-                    padding: .all(AppDimensions.radius20r),
+                    padding: EdgeInsets.all(AppDimensions.radius20r),
                     child: Column(
                       children: [
+                        // Mobile Number Input
                         Obx(
                           () => CustomTextField(
                             hintText: 'Enter Mobile Number',
@@ -100,6 +112,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         SizedBox(height: AppDimensions.padding20h),
+
+                        // Password Input
                         Obx(
                           () => CustomTextField(
                             hintText: 'Enter Password',
@@ -112,6 +126,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             errorText: controller.passwordError.value,
                           ),
                         ),
+
+                        // Forgot Password Link
                         Align(
                           alignment: Alignment.centerRight,
                           child: TextButton(
@@ -126,11 +142,16 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ),
+
+                        // Login Action
                         PrimaryButton(
                           text: 'Login',
                           onPressed: controller.login,
                         ),
+
                         SizedBox(height: AppDimensions.padding10h),
+
+                        // Divider Section
                         Row(
                           children: [
                             const Expanded(
@@ -144,8 +165,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 horizontal: AppDimensions.padding10w,
                               ),
                               child: Container(
-                                height: 28,
-                                width: 28,
+                                height: AppDimensions.containerHeight28h,
+                                width: AppDimensions.containerWidth28w,
                                 alignment: Alignment.center,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
@@ -154,11 +175,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                     width: 1.5,
                                   ),
                                 ),
-                                padding: .all(AppDimensions.radius2r),
                                 child: Text(
                                   'OR',
                                   style: customTextStyle(
-                                    12,
+                                    AppTextSizes.smallTextSize,
                                     AppColors.text,
                                     FontWeight.w400,
                                   ),
@@ -173,7 +193,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ],
                         ),
+
                         SizedBox(height: AppDimensions.padding20h),
+
+                        // Social Login Action
                         SecondaryButton(
                           text: 'Continue with Google',
                           iconPath: AppImages.google,
@@ -182,7 +205,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       ],
                     ),
                   ),
+
                   SizedBox(height: AppDimensions.padding30h),
+
+                  // Navigation to Registration
                   Center(
                     child: InkWell(
                       onTap: () => Get.toNamed(RouteNames.registerScreen),

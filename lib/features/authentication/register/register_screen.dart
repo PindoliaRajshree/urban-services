@@ -1,3 +1,6 @@
+// File: lib/features/authentication/register/register_screen.dart
+// Purpose: Screen for user registration, including name, email, and password fields with validation.
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:urban_services/core/colors/colors.dart';
@@ -18,6 +21,7 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
+  // Logic controller for registration form handling
   final controller = Get.put(RegisterController());
 
   @override
@@ -28,6 +32,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         child: SingleChildScrollView(
           child: Column(
             children: [
+              // Header Image Section
               Stack(
                 alignment: Alignment.center,
                 children: [
@@ -43,6 +48,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ],
               ),
+
               Padding(
                 padding: EdgeInsets.symmetric(
                   horizontal: AppDimensions.padding20w,
@@ -50,6 +56,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Welcome Headers
                     Text(
                       'Create your account',
                       style: customTextStyle(
@@ -68,6 +75,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ),
                     SizedBox(height: AppDimensions.padding15h),
+
+                    // Registration Form Card
                     Container(
                       decoration: BoxDecoration(
                         color: AppColors.white,
@@ -86,6 +95,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       padding: EdgeInsets.all(AppDimensions.radius20r),
                       child: Column(
                         children: [
+                          // Name Input
                           Obx(
                             () => CustomTextField(
                               hintText: 'Enter Name',
@@ -97,6 +107,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ),
                           ),
                           SizedBox(height: AppDimensions.padding20h),
+
+                          // Email Input
                           Obx(
                             () => CustomTextField(
                               hintText: 'Enter Email (Optional)',
@@ -109,6 +121,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ),
                           ),
                           SizedBox(height: AppDimensions.padding20h),
+
+                          // Password Input
                           Obx(
                             () => CustomTextField(
                               hintText: 'Enter Password',
@@ -121,6 +135,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ),
                           ),
                           SizedBox(height: AppDimensions.padding20h),
+
+                          // Confirm Password Input
                           Obx(
                             () => CustomTextField(
                               hintText: 'Confirm Password',
@@ -133,7 +149,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               errorText: controller.confirmPasswordError.value,
                             ),
                           ),
+
                           SizedBox(height: AppDimensions.padding10h),
+
+                          // Terms and Conditions Section
                           Obx(
                             () => Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -211,12 +230,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ],
                             ),
                           ),
+
                           SizedBox(height: AppDimensions.padding10h),
+
+                          // Register Action
                           PrimaryButton(
                             text: 'Register',
                             onPressed: controller.register,
                           ),
+
                           SizedBox(height: AppDimensions.padding10h),
+
+                          // Divider Section
                           Row(
                             children: [
                               const Expanded(
@@ -230,8 +255,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   horizontal: AppDimensions.padding10w,
                                 ),
                                 child: Container(
-                                  height: 28,
-                                  width: 28,
+                                  height: AppDimensions.containerHeight28h,
+                                  width: AppDimensions.containerWidth28w,
                                   alignment: Alignment.center,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
@@ -243,7 +268,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   child: Text(
                                     'OR',
                                     style: customTextStyle(
-                                      12,
+                                      AppTextSizes.smallTextSize,
                                       AppColors.text,
                                       FontWeight.w400,
                                     ),
@@ -258,7 +283,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ),
                             ],
                           ),
+
                           SizedBox(height: AppDimensions.padding20h),
+
+                          // Social Registration Action
                           SecondaryButton(
                             text: 'Continue with Google',
                             iconPath: AppImages.google,
@@ -267,7 +295,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ],
                       ),
                     ),
+
                     SizedBox(height: AppDimensions.padding30h),
+
+                    // Navigation to Login
                     Center(
                       child: InkWell(
                         onTap: controller.goToLogin,

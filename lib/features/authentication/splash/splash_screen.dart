@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:urban_services/core/colors/colors.dart';
+import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
 import 'package:urban_services/routes/route_names.dart';
 
@@ -95,7 +96,7 @@ class _SplashScreenState extends State<SplashScreen>
                     opacity: _fadeAnimation,
                     child: Image.asset(
                       AppImages.splash,
-                      width: 200,
+                      width: AppDimensions.containerWidth200w,
                       fit: BoxFit.contain,
                     ),
                   ),
