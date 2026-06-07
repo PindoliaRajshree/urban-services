@@ -25,6 +25,8 @@ class _CheckEmailScreenState extends State<CheckEmailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isSmall = MediaQuery.of(context).size.height < 720;
+
     return Scaffold(
       backgroundColor: AppColors.screenBackground,
       body: SafeArea(
@@ -85,7 +87,7 @@ class _CheckEmailScreenState extends State<CheckEmailScreen> {
               // 7. 5-Digit OTP Input Row
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: List.generate(5, (index) => _buildOtpSlot(index)),
+                children: List.generate(5, (index) => _buildOtpSlot(index,isSmall)),
               ),
 
               SizedBox(height: AppDimensions.padding20h),
@@ -135,10 +137,10 @@ class _CheckEmailScreenState extends State<CheckEmailScreen> {
   }
 
   /// Helper to build individual OTP input slots
-  Widget _buildOtpSlot(int index) {
+  Widget _buildOtpSlot(int index, bool isSmall) {
     return Container(
-      width: AppDimensions.containerWidth47w,
-      height: AppDimensions.containerHeight47h,
+      width: isSmall ? AppDimensions.containerWidth40w : AppDimensions.containerWidth47w,
+      height: isSmall ? AppDimensions.containerHeight40h : AppDimensions.containerHeight47h,
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(AppDimensions.radius12r),
@@ -160,10 +162,11 @@ class _CheckEmailScreenState extends State<CheckEmailScreen> {
           AppColors.black,
           FontWeight.w600,
         ),
-        decoration: const InputDecoration(
+        decoration: InputDecoration(
           counterText: "",
           border: InputBorder.none,
-          contentPadding: EdgeInsets.zero,
+          isDense: isSmall ? true : false,
+          contentPadding: isSmall ? .only(top: AppDimensions.padding5h ) : EdgeInsets.zero,
         ),
       ),
     );

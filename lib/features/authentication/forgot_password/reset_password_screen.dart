@@ -168,6 +168,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             ),
             padding: EdgeInsets.symmetric(horizontal: AppDimensions.padding10w),
             child: TextField(
+              textAlignVertical: .center,
               controller: controller,
               focusNode: focusNode,
               obscureText: obscureRx.value,

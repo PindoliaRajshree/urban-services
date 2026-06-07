@@ -24,6 +24,8 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isSmall = MediaQuery.of(context).size.height < 720;
+
     return Scaffold(
       backgroundColor: AppColors.screenBackground,
       body: Stack(
@@ -185,12 +187,14 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                               Row(
                                 children: [
                                   SizedBox(width: AppDimensions.padding8w),
-                                  Text(
-                                    'You will receive new service requests',
-                                    style: customTextStyle(
-                                      AppTextSizes.mediumTextSize, // 10
-                                      AppColors.text,
-                                      FontWeight.w400,
+                                  Expanded(
+                                    child: Text(
+                                      'You will receive new service requests',
+                                      style: customTextStyle(
+                                        AppTextSizes.mediumTextSize, // 10
+                                        AppColors.text,
+                                        FontWeight.w400,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -503,13 +507,14 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _buildActionCard(AppImages.editServices, 'Edit Services'),
+                      _buildActionCard(AppImages.editServices, 'Edit Services',isSmall),
                       _buildActionCard(
                         AppImages.updatePricing,
                         'Update Pricing',
+                        isSmall
                       ),
-                      _buildActionCard(AppImages.availability, 'Availability'),
-                      _buildActionCard(AppImages.documents, 'Documents'),
+                      _buildActionCard(AppImages.availability, 'Availability',isSmall),
+                      _buildActionCard(AppImages.documents, 'Documents',isSmall),
                     ],
                   ),
 
@@ -628,10 +633,10 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
   }
 
   /// Helper to build quick action cards with gradient borders
-  Widget _buildActionCard(String icon, String title) {
+  Widget _buildActionCard(String icon, String title, bool isSmall) {
     return Container(
       width: AppDimensions.containerWidth80w,
-      height: AppDimensions.containerHeight85h,
+      height: isSmall ? AppDimensions.containerHeight90h : AppDimensions.containerHeight85h,
       padding: EdgeInsets.all(AppDimensions.padding8w),
       decoration: BoxDecoration(
         color: AppColors.white,
