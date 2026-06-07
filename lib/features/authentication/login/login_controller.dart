@@ -1,17 +1,32 @@
+// File: lib/features/authentication/login/login_controller.dart
+// Purpose: Logic for user authentication, including validation and role-based navigation.
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:urban_services/routes/route_names.dart';
 
 class LoginController extends GetxController {
+  // Input controllers for mobile number and password
   final mobileController = TextEditingController();
   final passwordController = TextEditingController();
 
+  // Focus nodes for managing input focus flow
   final mobileFocusNode = FocusNode();
   final passwordFocusNode = FocusNode();
 
+  // Reactive error strings for real-time validation feedback
   final mobileError = RxnString();
   final passwordError = RxnString();
 
+  // Track the selected user role (User or Provider) to determine post-login navigation
+  final userRole = 'User'.obs;
+
+  /// Sets the current user role based on the welcome screen selection
+  void setRole(String role) {
+    userRole.value = role;
+  }
+
+  /// Validates the login form fields
   bool validate() {
     bool isValid = true;
 
@@ -29,30 +44,10 @@ class LoginController extends GetxController {
       passwordError.value = "Password is required";
       isValid = false;
     } else {
+      // Basic password validation
       final password = passwordController.text;
-      final hasUpperCase = password.contains(RegExp(r'[A-Z]'));
-      final hasLowerCase = password.contains(RegExp(r'[a-z]'));
-      final hasDigit = password.contains(RegExp(r'[0-9]'));
-      final hasSpecialCharacters = password.contains(
-        RegExp(r'[!@#$%^&*(),.?":{}|<>]'),
-      );
-      final hasMinLength = password.length >= 8;
-      final hasMaxLength = password.length <= 20;
-
-      if (!hasMinLength || !hasMaxLength) {
-        passwordError.value = "Password must be between 8 and 20 characters";
-        isValid = false;
-      } else if (!hasUpperCase) {
-        passwordError.value = "At least one uppercase letter required";
-        isValid = false;
-      } else if (!hasLowerCase) {
-        passwordError.value = "At least one lowercase letter required";
-        isValid = false;
-      } else if (!hasDigit) {
-        passwordError.value = "At least one digit required";
-        isValid = false;
-      } else if (!hasSpecialCharacters) {
-        passwordError.value = "At least one special character required";
+      if (password.length < 8) {
+        passwordError.value = "Password must be at least 8 characters";
         isValid = false;
       } else {
         passwordError.value = null;
@@ -62,19 +57,25 @@ class LoginController extends GetxController {
     return isValid;
   }
 
+  /// Performs the login action and navigates to the unified dashboard
   void login() {
     if (validate()) {
-      debugPrint("Login with: ${mobileController.text}");
+      debugPrint("Login with: ${mobileController.text} as ${userRole.value}");
+
+      // Navigate to the unified home main structure
+      // Role-specific screens are handled dynamically within HomeMain
       Get.offAllNamed(RouteNames.homeMain);
     }
   }
 
+  /// Placeholder for Google authentication logic
   void loginWithGoogle() {
     debugPrint("Login with Google");
   }
 
   @override
   void onClose() {
+    // Standard cleanup to prevent memory leaks
     mobileController.dispose();
     passwordController.dispose();
     mobileFocusNode.dispose();

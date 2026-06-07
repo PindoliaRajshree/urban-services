@@ -53,6 +53,14 @@ class AppImages {
   static const String cleaningService = '$_basePath/cleaning-service.webp';
   static const String serviceProvider = '$_basePath/service-provider.webp';
 
+  // Provider Specific Icons
+  static const String documents = '$_basePath/documents.webp';
+  static const String availability = '$_basePath/availability.webp';
+  static const String editServices = '$_basePath/edit-services.webp';
+  static const String updatePricing = '$_basePath/update-pricing.webp';
+  static const String clockOutlined = '$_basePath/clock-outlined.webp';
+  static const String locationOutlined = '$_basePath/location-outlined.webp';
+
   // Misc
   static const String ads = '$_basePath/ads.webp';
   static const String addToCart = '$_basePath/add to cart.webp';

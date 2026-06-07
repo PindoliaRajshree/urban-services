@@ -82,7 +82,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           Text(
                             'Hi, Anamika',
                             style: customTextStyle(
-                              AppTextSizes.stableTextSize, // 10
+                              AppTextSizes.smallTextSize, // 10
                               AppColors.text,
                               FontWeight.w600,
                             ),
@@ -91,14 +91,14 @@ class _HomeScreenState extends State<HomeScreen> {
                             children: [
                               Image.asset(
                                 AppImages.placeMarker,
-                                height: AppDimensions.containerHeight10h,
-                                width: AppDimensions.containerWidth10w,
+                                height: AppDimensions.containerHeight15h,
+                                width: AppDimensions.containerWidth15w,
                               ),
                               SizedBox(width: AppDimensions.padding4w),
                               Text(
                                 'Indore, MP',
                                 style: customTextStyle(
-                                  AppTextSizes.stableTextSize, // 10
+                                  AppTextSizes.smallTextSize, // 10
                                   AppColors.text,
                                   FontWeight.w500,
                                 ),
@@ -111,14 +111,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       // Action Icons
                       Image.asset(
                         AppImages.homeLocation,
-                        height: AppDimensions.containerHeight24h,
-                        width: AppDimensions.containerWidth24w,
+                        height: AppDimensions.containerHeight50h,
+                        width: AppDimensions.containerWidth50w,
                       ),
                       SizedBox(width: AppDimensions.padding15w),
                       Image.asset(
                         AppImages.addToCart,
-                        height: AppDimensions.containerHeight24h,
-                        width: AppDimensions.containerWidth24w,
+                        height: AppDimensions.containerHeight50h,
+                        width: AppDimensions.containerWidth50w,
                       ),
                     ],
                   ),

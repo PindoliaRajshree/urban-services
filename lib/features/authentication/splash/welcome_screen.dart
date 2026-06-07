@@ -7,6 +7,7 @@ import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
+import 'package:urban_services/features/authentication/login/login_controller.dart';
 import 'package:urban_services/routes/route_names.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
 import 'package:urban_services/widgets/primary_button.dart';
@@ -20,9 +21,12 @@ class WelcomeScreen extends StatefulWidget {
 }
 
 class _WelcomeScreenState extends State<WelcomeScreen> {
+  // Access LoginController to set the user role early
+  final loginController = Get.put(LoginController());
+
   @override
   Widget build(BuildContext context) {
-    // Check screen height to decide on scrollability
+    // Check screen height to decide on scrollability for smaller devices
     final isSmall = MediaQuery.of(context).size.height < 720;
 
     return Scaffold(
@@ -145,6 +149,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           child: PrimaryButton(
             text: 'Continue as User',
             onPressed: () {
+              loginController.setRole('User');
               Get.toNamed(RouteNames.loginScreen);
             },
           ),
@@ -155,6 +160,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           child: SecondaryButton(
             text: 'Continue as Provider',
             onPressed: () {
+              loginController.setRole('Provider');
               Get.toNamed(RouteNames.loginScreen);
             },
           ),

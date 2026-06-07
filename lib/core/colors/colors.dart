@@ -33,6 +33,8 @@ class AppColors {
   static const Color info = Color.fromRGBO(0, 201, 243, 1);
   static const Color danger = Color.fromRGBO(232, 0, 63, 1);
   static const Color primaryOrange = Color.fromRGBO(245, 158, 11, 1);
+  static const Color cardWhite = Color.fromRGBO(252, 253, 255, 1);
+  static const Color lightSuccess = Color.fromRGBO(212, 255, 187, 1);
 
   // UI Colors
   static const Color background = Color.fromRGBO(222, 241, 255, 1);

@@ -7,8 +7,10 @@ import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
+import 'package:urban_services/features/authentication/login/login_controller.dart';
 import 'package:urban_services/features/home_main/main_navigation_controller.dart';
 import 'package:urban_services/features/home/home_screen.dart';
+import 'package:urban_services/features/home_provider/provider_home_screen.dart';
 import 'package:urban_services/features/profile/profile_screen.dart';
 import 'package:urban_services/widgets/custom_bottom_bar.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
@@ -23,15 +25,22 @@ class HomeMain extends StatefulWidget {
 class _HomeMainState extends State<HomeMain> {
   // Navigation controller to manage active tab state
   final controller = Get.put(MainNavigationController());
+  // Login controller to determine the user's role
+  final loginController = Get.find<LoginController>();
 
-  // List of screens corresponding to each navigation tab
-  final List<Widget> _screens = [
-    const Center(child: Text('Services')),
-    const Center(child: Text('Booking')),
-    const HomeScreen(),
-    const Center(child: Text('Chat')),
-    const ProfileScreen(),
-  ];
+  /// Returns the appropriate list of screens based on the current user role
+  List<Widget> _getScreens() {
+    return [
+      const Center(child: Text('Services')),
+      const Center(child: Text('Booking')),
+      // Dynamically load the dashboard based on role
+      loginController.userRole.value == 'Provider'
+          ? const ProviderHomeScreen()
+          : const HomeScreen(),
+      const Center(child: Text('Chat')),
+      const ProfileScreen(),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +53,10 @@ class _HomeMainState extends State<HomeMain> {
             Positioned.fill(
               child: SafeArea(
                 bottom: false,
-                child: Obx(() => _screens[controller.currentIndex.value]),
+                child: Obx(() {
+                  final screens = _getScreens();
+                  return screens[controller.currentIndex.value];
+                }),
               ),
             ),
 
