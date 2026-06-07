@@ -216,7 +216,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                   Container(
                     decoration: BoxDecoration(
                       color: AppColors.primaryDark,
-                      borderRadius: BorderRadius.circular(1),
+                      borderRadius: BorderRadius.circular(AppDimensions.radius2r),
                     ),
                     padding: EdgeInsets.all(AppDimensions.padding8h),
                     child: Column(
@@ -453,8 +453,8 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                             ),
                             // Status Badge
                             Positioned(
-                              bottom: 25,
-                              right: 20,
+                              bottom: AppDimensions.padding25h,
+                              right: AppDimensions.padding20w,
                               child: Container(
                                 padding: EdgeInsets.symmetric(
                                   horizontal: AppDimensions.padding8w,
@@ -479,7 +479,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                             // Price at top right
                             Positioned(
                               bottom: 0,
-                              right: 50,
+                              right: AppDimensions.padding50w,
                               child: Text(
                                 '₹ 699',
                                 style: customTextStyle(
@@ -536,8 +536,8 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                       children: [
                         Image.asset(
                           AppImages.image,
-                          height: 54,
-                          width: 54,
+                          height: AppDimensions.containerHeight54h,
+                          width: AppDimensions.containerWidth54w,
                           fit: BoxFit.cover,
                         ),
                         SizedBox(width: AppDimensions.padding12w),
@@ -551,8 +551,8 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                                   5,
                                   (index) => Image.asset(
                                     AppImages.ratingStar,
-                                    height: 12,
-                                    width: 12,
+                                    height: AppDimensions.containerHeight12h,
+                                    width: AppDimensions.containerWidth12w,
                                   ),
                                 ),
                               ),
@@ -593,7 +593,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
   /// Helper to build summary statistic cards
   Widget _buildSummaryCard(String value, String label) {
     return Container(
-      padding: .symmetric(
+      padding: EdgeInsets.symmetric(
         horizontal: AppDimensions.padding5w,
         vertical: AppDimensions.padding5h,
       ),
@@ -630,8 +630,8 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
   /// Helper to build quick action cards with gradient borders
   Widget _buildActionCard(String icon, String title) {
     return Container(
-      width: 80,
-      height: 85,
+      width: AppDimensions.containerWidth80w,
+      height: AppDimensions.containerHeight85h,
       padding: EdgeInsets.all(AppDimensions.padding8w),
       decoration: BoxDecoration(
         color: AppColors.white,
@@ -648,9 +648,13 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: .center,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Image.asset(icon, height: 30, width: 30),
+          Image.asset(
+            icon,
+            height: AppDimensions.containerHeight30h,
+            width: AppDimensions.containerWidth30w,
+          ),
           SizedBox(height: AppDimensions.padding4h),
           Text(
             title,
@@ -669,8 +673,8 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
   /// Helper for building service request images with shadows and borders
   Widget _buildBorderedImage(String image) {
     return Container(
-      width: 75,
-      height: 60,
+      width: AppDimensions.containerWidth75w,
+      height: AppDimensions.containerHeight60h,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppDimensions.radius6r),
         border: Border.all(color: AppColors.primaryLight, width: 1),
@@ -693,7 +697,11 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
       padding: EdgeInsets.symmetric(vertical: AppDimensions.padding2h),
       child: Row(
         children: [
-          Image.asset(icon, height: 14, width: 14),
+          Image.asset(
+            icon,
+            height: AppDimensions.containerHeight14h,
+            width: AppDimensions.containerWidth14w,
+          ),
           SizedBox(width: AppDimensions.padding4w),
           Expanded(
             child: Text(

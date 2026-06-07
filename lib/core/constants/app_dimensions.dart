@@ -99,6 +99,8 @@ class AppDimensions {
   static double containerHeight9_66h = 9.66.h;
   static double containerHeight10h = 10.h;
   static double containerHeight12h = 12.h;
+  static double containerHeight13h = 13.h;
+  static double containerHeight14h = 14.h;
   static double containerHeight15h = 15.h;
   static double containerHeight16h = 16.h;
   static double containerHeight18h = 18.h;
@@ -114,6 +116,7 @@ class AppDimensions {
   static double containerHeight47h = 47.h;
   static double containerHeight48h = 48.h;
   static double containerHeight50h = 50.h;
+  static double containerHeight54h = 54.h;
   static double containerHeight60h = 60.h;
   static double containerHeight70h = 70.h;
   static double containerHeight74h = 74.h;
@@ -159,6 +162,8 @@ class AppDimensions {
   static double containerWidth9w = 9.w;
   static double containerWidth10w = 10.w;
   static double containerWidth12w = 12.w;
+  static double containerWidth13w = 13.w;
+  static double containerWidth14w = 14.w;
   static double containerWidth15w = 15.w;
   static double containerWidth18w = 18.w;
   static double containerWidth20w = 20.w;
@@ -173,6 +178,7 @@ class AppDimensions {
   static double containerWidth47w = 47.w;
   static double containerWidth48w = 48.w;
   static double containerWidth50w = 50.w;
+  static double containerWidth54w = 54.w;
   static double containerWidth60w = 60.w;
   static double containerWidth70w = 70.w;
   static double containerWidth74w = 74.w;
