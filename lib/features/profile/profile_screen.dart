@@ -1,10 +1,16 @@
+// File: lib/features/profile/profile_screen.dart
+// Purpose: Screen for displaying user profile details and account options.
+
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
+import 'package:urban_services/features/profile/profile_controller.dart';
 import 'package:urban_services/widgets/common_app_bar.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
+import 'package:urban_services/widgets/logout_dialog.dart';
 import 'package:urban_services/widgets/profile_option_tile.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -15,6 +21,9 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  // Initialize ProfileController for logic management
+  final controller = Get.put(ProfileController());
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,6 +37,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           child: Column(
             children: [
+              // Reusable AppBar with title and more icon
               CommonAppBar(
                 title: 'Profile Screen',
                 showMoreIcon: true,
@@ -37,10 +47,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               SizedBox(height: AppDimensions.padding15h),
 
-              // Profile Details Row
+              // Profile Details Section: Avatar and User Info
               Row(
                 children: [
-                  // Left: Person icon
+                  // User Avatar Container
                   Container(
                     height: AppDimensions.containerHeight60h,
                     width: AppDimensions.containerWidth60w,
@@ -55,7 +65,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   SizedBox(width: AppDimensions.padding15w),
 
-                  // Center: Details
+                  // User Info: Name, Rating, and Category
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -106,7 +116,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
 
-                  // Right: Action Icons
+                  // Action Icons: Call and Chat
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -127,7 +137,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               SizedBox(height: AppDimensions.padding20h),
 
-              // Profile Options
+              // Account Options Menu
               Container(
                 padding: EdgeInsets.symmetric(
                   vertical: AppDimensions.padding15h,
@@ -183,13 +193,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       showDivider: false,
                     ),
                     SizedBox(height: AppDimensions.padding10h),
+
+                    // Logout Button: Triggers confirmation dialog
                     Padding(
                       padding: EdgeInsets.symmetric(
                         vertical: AppDimensions.padding10h,
                       ),
                       child: InkWell(
                         onTap: () {
-                          // Handle logout
+                          // Show custom logout confirmation dialog
+                          Get.dialog(
+                            const LogoutDialog(),
+                            barrierDismissible: false,
+                          );
                         },
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,

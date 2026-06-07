@@ -184,7 +184,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                               ),
                               Row(
                                 children: [
-                                  SizedBox(width: AppDimensions.padding8w,),
+                                  SizedBox(width: AppDimensions.padding8w),
                                   Text(
                                     'You will receive new service requests',
                                     style: customTextStyle(
@@ -240,7 +240,10 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                             ),
                             SizedBox(width: AppDimensions.padding8w),
                             Expanded(
-                              child: _buildSummaryCard('₹1,250', 'Earnings Today'),
+                              child: _buildSummaryCard(
+                                '₹1,250',
+                                'Earnings Today',
+                              ),
                             ),
                             SizedBox(width: AppDimensions.padding8w),
                             Expanded(
@@ -590,7 +593,10 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
   /// Helper to build summary statistic cards
   Widget _buildSummaryCard(String value, String label) {
     return Container(
-      padding: .symmetric(horizontal: AppDimensions.padding5w,vertical: AppDimensions.padding5h),
+      padding: .symmetric(
+        horizontal: AppDimensions.padding5w,
+        vertical: AppDimensions.padding5h,
+      ),
       decoration: BoxDecoration(
         color: AppColors.background,
         borderRadius: BorderRadius.circular(AppDimensions.radius5r),

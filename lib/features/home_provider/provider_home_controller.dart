@@ -10,6 +10,5 @@ class ProviderHomeController extends GetxController {
   /// Toggles the provider's work availability status
   void toggleAvailability(bool value) {
     isAvailable.value = value;
-    // TODO: Implement backend synchronization for availability status
   }
 }
