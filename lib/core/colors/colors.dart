@@ -23,6 +23,8 @@ class AppColors {
   static const Color lightGrey2 = Color.fromRGBO(217, 217, 217, 1);
   static const Color headingGrey = Color.fromRGBO(83, 83, 83, 1);
   static const Color darkBlack = Color.fromRGBO(38, 38, 38, 1);
+  static const Color grey3 = Color.fromRGBO(42, 42, 42, 1);
+  static const Color lightGrey3 = Color.fromRGBO(236, 236, 236, 1);
   static const Color lightGrey = Color.fromRGBO(226, 232, 240, 1);
 
   // Semantic Colors (Status)

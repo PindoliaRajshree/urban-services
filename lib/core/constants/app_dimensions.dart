@@ -111,6 +111,7 @@ class AppDimensions {
   static double containerHeight35h = 35.h;
   static double containerHeight40h = 40.h;
   static double containerHeight45h = 45.h;
+  static double containerHeight47h = 47.h;
   static double containerHeight48h = 48.h;
   static double containerHeight50h = 50.h;
   static double containerHeight60h = 60.h;
@@ -169,6 +170,7 @@ class AppDimensions {
   static double containerWidth35w = 35.w;
   static double containerWidth40w = 40.w;
   static double containerWidth45w = 45.w;
+  static double containerWidth47w = 47.w;
   static double containerWidth48w = 48.w;
   static double containerWidth50w = 50.w;
   static double containerWidth60w = 60.w;

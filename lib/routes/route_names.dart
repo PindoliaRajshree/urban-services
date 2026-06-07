@@ -9,6 +9,9 @@ class RouteNames {
 
   //login
   static const String loginScreen = '/login';
+  static const String forgotPasswordScreen = '/forgotPassword';
+  static const String checkEmailScreen = '/checkEmail';
+  static const String resetPasswordScreen = '/resetPassword';
 
   //register
   static const String registerScreen = '/register';

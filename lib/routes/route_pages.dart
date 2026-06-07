@@ -4,6 +4,9 @@
 import 'package:get/get.dart';
 import 'package:urban_services/features/authentication/login/login_screen.dart';
 import 'package:urban_services/features/authentication/register/register_screen.dart';
+import 'package:urban_services/features/authentication/forgot_password/forgot_password_screen.dart';
+import 'package:urban_services/features/authentication/forgot_password/check_email_screen.dart';
+import 'package:urban_services/features/authentication/forgot_password/reset_password_screen.dart';
 import 'package:urban_services/features/authentication/splash/splash_screen.dart';
 import 'package:urban_services/features/authentication/splash/welcome_screen.dart';
 import 'package:urban_services/features/home_main/home_main.dart';
@@ -16,6 +19,18 @@ List<GetPage> getRoutes() {
     GetPage(name: RouteNames.splashScreen, page: () => const SplashScreen()),
     GetPage(name: RouteNames.welcomeScreen, page: () => const WelcomeScreen()),
     GetPage(name: RouteNames.loginScreen, page: () => const LoginScreen()),
+    GetPage(
+      name: RouteNames.forgotPasswordScreen,
+      page: () => const ForgotPasswordScreen(),
+    ),
+    GetPage(
+      name: RouteNames.checkEmailScreen,
+      page: () => const CheckEmailScreen(),
+    ),
+    GetPage(
+      name: RouteNames.resetPasswordScreen,
+      page: () => const ResetPasswordScreen(),
+    ),
     GetPage(
       name: RouteNames.registerScreen,
       page: () => const RegisterScreen(),
