@@ -21,32 +21,22 @@ class WelcomeScreen extends StatefulWidget {
 }
 
 class _WelcomeScreenState extends State<WelcomeScreen> {
-  // Access LoginController to set the user role early
-  final loginController = Get.put(LoginController());
+  // Access LoginController to set the user role early; marked as permanent to persist through offAllNamed
+  final loginController = Get.put(LoginController(), permanent: true);
 
   @override
   Widget build(BuildContext context) {
     // Check screen height to decide on scrollability for smaller devices
-    final isSmall = MediaQuery.of(context).size.height < 720;
 
     return Scaffold(
       backgroundColor: AppColors.screenBackground,
       body: SafeArea(
-        child: isSmall
-            ? SingleChildScrollView(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    vertical: AppDimensions.padding20h,
-                  ),
-                  child: _buildContent(),
-                ),
-              )
-            : Padding(
-                padding: EdgeInsets.symmetric(
-                  vertical: AppDimensions.padding20h,
-                ),
-                child: _buildContent(),
-              ),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: AppDimensions.padding20h),
+            child: _buildContent(),
+          ),
+        ),
       ),
     );
   }

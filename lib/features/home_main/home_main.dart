@@ -25,8 +25,19 @@ class HomeMain extends StatefulWidget {
 class _HomeMainState extends State<HomeMain> {
   // Navigation controller to manage active tab state
   final controller = Get.put(MainNavigationController());
-  // Login controller to determine the user's role
-  final loginController = Get.find<LoginController>();
+  // Login controller to determine the user's role; ensure it exists
+  late final LoginController loginController;
+
+  @override
+  void initState() {
+    super.initState();
+    // Safely retrieve or initialize the LoginController
+    if (Get.isRegistered<LoginController>()) {
+      loginController = Get.find<LoginController>();
+    } else {
+      loginController = Get.put(LoginController(), permanent: true);
+    }
+  }
 
   /// Returns the appropriate list of screens based on the current user role
   List<Widget> _getScreens() {

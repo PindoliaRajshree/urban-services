@@ -57,7 +57,7 @@ class LoginController extends GetxController {
     return isValid;
   }
 
-  /// Performs the login action and navigates to the unified dashboard
+  /// Performs the login action and navigates to the main dashboard
   void login() {
     if (validate()) {
       debugPrint("Login with: ${mobileController.text} as ${userRole.value}");

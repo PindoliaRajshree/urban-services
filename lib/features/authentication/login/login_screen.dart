@@ -23,8 +23,8 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // Logic controller for login form handling
-  final controller = Get.put(LoginController());
+  // Logic controller for login form handling; marked as permanent to persist through navigation stack clears
+  final controller = Get.put(LoginController(), permanent: true);
 
   @override
   Widget build(BuildContext context) {

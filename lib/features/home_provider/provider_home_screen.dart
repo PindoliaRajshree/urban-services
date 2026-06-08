@@ -220,7 +220,9 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                   Container(
                     decoration: BoxDecoration(
                       color: AppColors.primaryDark,
-                      borderRadius: BorderRadius.circular(AppDimensions.radius2r),
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.radius2r,
+                      ),
                     ),
                     padding: EdgeInsets.all(AppDimensions.padding8h),
                     child: Column(
@@ -507,14 +509,26 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _buildActionCard(AppImages.editServices, 'Edit Services',isSmall),
+                      _buildActionCard(
+                        AppImages.editServices,
+                        'Edit Services',
+                        isSmall,
+                      ),
                       _buildActionCard(
                         AppImages.updatePricing,
                         'Update Pricing',
-                        isSmall
+                        isSmall,
                       ),
-                      _buildActionCard(AppImages.availability, 'Availability',isSmall),
-                      _buildActionCard(AppImages.documents, 'Documents',isSmall),
+                      _buildActionCard(
+                        AppImages.availability,
+                        'Availability',
+                        isSmall,
+                      ),
+                      _buildActionCard(
+                        AppImages.documents,
+                        'Documents',
+                        isSmall,
+                      ),
                     ],
                   ),
 
@@ -636,7 +650,9 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
   Widget _buildActionCard(String icon, String title, bool isSmall) {
     return Container(
       width: AppDimensions.containerWidth80w,
-      height: isSmall ? AppDimensions.containerHeight90h : AppDimensions.containerHeight85h,
+      height: isSmall
+          ? AppDimensions.containerHeight90h
+          : AppDimensions.containerHeight85h,
       padding: EdgeInsets.all(AppDimensions.padding8w),
       decoration: BoxDecoration(
         color: AppColors.white,

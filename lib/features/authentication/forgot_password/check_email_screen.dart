@@ -87,7 +87,10 @@ class _CheckEmailScreenState extends State<CheckEmailScreen> {
               // 7. 5-Digit OTP Input Row
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: List.generate(5, (index) => _buildOtpSlot(index,isSmall)),
+                children: List.generate(
+                  5,
+                  (index) => _buildOtpSlot(index, isSmall),
+                ),
               ),
 
               SizedBox(height: AppDimensions.padding20h),
@@ -139,8 +142,12 @@ class _CheckEmailScreenState extends State<CheckEmailScreen> {
   /// Helper to build individual OTP input slots
   Widget _buildOtpSlot(int index, bool isSmall) {
     return Container(
-      width: isSmall ? AppDimensions.containerWidth40w : AppDimensions.containerWidth47w,
-      height: isSmall ? AppDimensions.containerHeight40h : AppDimensions.containerHeight47h,
+      width: isSmall
+          ? AppDimensions.containerWidth40w
+          : AppDimensions.containerWidth47w,
+      height: isSmall
+          ? AppDimensions.containerHeight40h
+          : AppDimensions.containerHeight47h,
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(AppDimensions.radius12r),
@@ -166,7 +173,9 @@ class _CheckEmailScreenState extends State<CheckEmailScreen> {
           counterText: "",
           border: InputBorder.none,
           isDense: isSmall ? true : false,
-          contentPadding: isSmall ? .only(top: AppDimensions.padding5h ) : EdgeInsets.zero,
+          contentPadding: isSmall
+              ? .only(top: AppDimensions.padding5h)
+              : EdgeInsets.zero,
         ),
       ),
     );
