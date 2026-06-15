@@ -95,7 +95,8 @@ class RegisterController extends GetxController {
   void register() {
     if (validate()) {
       debugPrint("Registering: ${nameController.text}");
-      Get.offAllNamed(RouteNames.addressScreen);
+      // Redirect to login after successful registration
+      Get.offNamed(RouteNames.loginScreen);
     }
   }
 

@@ -57,14 +57,13 @@ class LoginController extends GetxController {
     return isValid;
   }
 
-  /// Performs the login action and navigates to the main dashboard
+  /// Performs the login action and navigates to the address selection flow
   void login() {
     if (validate()) {
       debugPrint("Login with: ${mobileController.text} as ${userRole.value}");
 
-      // Navigate to the unified home main structure
-      // Role-specific screens are handled dynamically within HomeMain
-      Get.offAllNamed(RouteNames.homeMain);
+      // Navigate to the address screen first before reaching the home dashboard
+      Get.offAllNamed(RouteNames.addressScreen);
     }
   }
 

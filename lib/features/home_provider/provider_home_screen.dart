@@ -8,6 +8,7 @@ import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
 import 'package:urban_services/features/home_provider/provider_home_controller.dart';
+import 'package:urban_services/widgets/complete_profile_card.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
 import 'package:urban_services/widgets/section_heading.dart';
 
@@ -125,7 +126,12 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                     ],
                   ),
 
-                  SizedBox(height: AppDimensions.padding20h),
+                  // Complete Your Profile Section with Animation
+                  CompleteProfileCard(
+                    onFinish: () {
+                      // Navigate to profile completion or settings
+                    },
+                  ),
 
                   // 4. Availability Toggle Container
                   Container(
