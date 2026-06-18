@@ -62,6 +62,7 @@ class CompleteProfileController extends GetxController {
   final dobError = RxnString();
   final adhaarFrontError = RxnString();
   final adhaarBackError = RxnString();
+  final panCardError = RxnString();
   // Service dropdown errors
   final categoryError = RxnString();
   final subServiceError = RxnString();
@@ -69,6 +70,7 @@ class CompleteProfileController extends GetxController {
   // IFSC and OTP errors
   final ifscError = RxnString();
   final otpError = RxnString();
+  final mobileError = RxnString();
 
   // --- OTP Controller for dialog ---
   final otpController = TextEditingController();
@@ -125,10 +127,22 @@ class CompleteProfileController extends GetxController {
       updateProgress();
     });
 
+    ever(panCard, (val) {
+      if (val != null) panCardError.value = null;
+      updateProgress();
+    });
+
     // Clear OTP error when typing
     otpController.addListener(() {
       if (otpController.text.isNotEmpty) {
         otpError.value = null;
+      }
+    });
+
+    // Clear mobile error when typing
+    mobileController.addListener(() {
+      if (mobileController.text.isNotEmpty) {
+        mobileError.value = null;
       }
     });
 
@@ -239,13 +253,10 @@ class CompleteProfileController extends GetxController {
   /// Handles OTP verification dialog logic
   void sendOtp() {
     if (mobileController.text.length != 10) {
-      Get.snackbar(
-        "Error",
-        "Enter a valid 10-digit mobile number",
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      mobileError.value = "Enter a valid 10-digit mobile number";
       return;
     }
+    mobileError.value = null;
     otpError.value = null;
     otpController.clear();
     debugPrint("Sending OTP to ${mobileController.text}");
@@ -282,7 +293,7 @@ class CompleteProfileController extends GetxController {
     Get.snackbar(
       "Success",
       "IFSC Code Verified",
-      snackPosition: SnackPosition.BOTTOM,
+      snackPosition: SnackPosition.TOP,
       backgroundColor: Colors.green,
       colorText: Colors.white,
     );
@@ -313,11 +324,9 @@ class CompleteProfileController extends GetxController {
       double sizeInMb = sizeInBytes / (1024 * 1024);
 
       if (sizeInMb > 4) {
-        Get.snackbar(
-          "Error",
-          "File size must be less than 4MB",
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        if (type == 'aadhaarFront') adhaarFrontError.value = "File size must be less than 4MB";
+        if (type == 'aadhaarBack') adhaarBackError.value = "File size must be less than 4MB";
+        if (type == 'pan') panCardError.value = "File size must be less than 4MB";
         return;
       }
 

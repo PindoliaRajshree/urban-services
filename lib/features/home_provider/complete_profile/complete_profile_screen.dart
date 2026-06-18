@@ -259,65 +259,68 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                         (v == null || v.isEmpty) ? "Required" : null,
                   ),
                   SizedBox(height: AppDimensions.padding15h),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      AddressFormField(
-                        label: "Mobile Number",
-                        hintText: "Enter your Number",
-                        controller: controller.mobileController,
-                        keyboardType: TextInputType.phone,
-                        validator: (v) => (v == null || v.length != 10)
-                            ? "Enter 10 digits"
-                            : null,
-                        prefix: Container(
-                          padding: EdgeInsets.all(AppDimensions.padding4w),
-                          decoration: BoxDecoration(
-                            color: AppColors.background,
-                            borderRadius: BorderRadius.circular(
-                              AppDimensions.radius3r,
-                            ),
-                          ),
-                          child: Text(
-                            "+91",
-                            style: customTextStyle(
-                              AppTextSizes.stableTextSize,
-                              AppColors.black,
-                              FontWeight.w400,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: GestureDetector(
-                          onTap: controller.sendOtp,
-                          child: Container(
-                            margin: EdgeInsets.only(
-                              top: AppDimensions.padding5h,
-                            ),
-                            padding: EdgeInsets.symmetric(
-                              horizontal: AppDimensions.padding12w,
-                              vertical: AppDimensions.padding5h,
-                            ),
+                  Obx(
+                    () => Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        AddressFormField(
+                          label: "Mobile Number",
+                          hintText: "Enter your Number",
+                          controller: controller.mobileController,
+                          keyboardType: TextInputType.phone,
+                          errorText: controller.mobileError.value,
+                          validator: (v) => (v == null || v.length != 10)
+                              ? "Enter 10 digits"
+                              : null,
+                          prefix: Container(
+                            padding: EdgeInsets.all(AppDimensions.padding4w),
                             decoration: BoxDecoration(
-                              gradient: AppColors.gradient,
+                              color: AppColors.background,
                               borderRadius: BorderRadius.circular(
-                                AppDimensions.radius10r,
+                                AppDimensions.radius3r,
                               ),
                             ),
                             child: Text(
-                              "Send OTP",
+                              "+91",
                               style: customTextStyle(
                                 AppTextSizes.stableTextSize,
-                                AppColors.white,
+                                AppColors.black,
                                 FontWeight.w400,
                               ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: GestureDetector(
+                            onTap: controller.sendOtp,
+                            child: Container(
+                              margin: EdgeInsets.only(
+                                top: AppDimensions.padding5h,
+                              ),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: AppDimensions.padding12w,
+                                vertical: AppDimensions.padding5h,
+                              ),
+                              decoration: BoxDecoration(
+                                gradient: AppColors.gradient,
+                                borderRadius: BorderRadius.circular(
+                                  AppDimensions.radius10r,
+                                ),
+                              ),
+                              child: Text(
+                                "Send OTP",
+                                style: customTextStyle(
+                                  AppTextSizes.stableTextSize,
+                                  AppColors.white,
+                                  FontWeight.w400,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -645,24 +648,17 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
             children: [
               DocumentUploadCard(
                 title: "Aadhaar",
-                subTitle: "Upload Front/Back",
+                subTitle: "Upload Front",
                 selectedFile: controller.adhaarFront.value,
                 onUpload: () => controller.pickDocument('aadhaarFront'),
                 onRemove: () => controller.removeDocument('aadhaarFront'),
               ),
               if (controller.adhaarFrontError.value != null)
                 _buildInlineError(controller.adhaarFrontError.value!),
-            ],
-          ),
-        ),
-        SizedBox(height: AppDimensions.padding20h),
-        Obx(
-          () => Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+              SizedBox(height: AppDimensions.padding20h),
               DocumentUploadCard(
-                title: "Aadhaar Back",
-                subTitle: "Upload Card",
+                title: "Aadhaar",
+                subTitle: "Upload Back",
                 selectedFile: controller.adhaarBack.value,
                 onUpload: () => controller.pickDocument('aadhaarBack'),
                 onRemove: () => controller.removeDocument('aadhaarBack'),
@@ -674,12 +670,19 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         ),
         SizedBox(height: AppDimensions.padding20h),
         Obx(
-          () => DocumentUploadCard(
-            title: "PAN Card (Optional)",
-            subTitle: "Upload Card",
-            selectedFile: controller.panCard.value,
-            onUpload: () => controller.pickDocument('pan'),
-            onRemove: () => controller.removeDocument('pan'),
+          () => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              DocumentUploadCard(
+                title: "PAN Card (Optional)",
+                subTitle: "Upload Card",
+                selectedFile: controller.panCard.value,
+                onUpload: () => controller.pickDocument('pan'),
+                onRemove: () => controller.removeDocument('pan'),
+              ),
+              if (controller.panCardError.value != null)
+                _buildInlineError(controller.panCardError.value!),
+            ],
           ),
         ),
       ],

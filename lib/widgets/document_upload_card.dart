@@ -106,17 +106,15 @@ class DocumentUploadCard extends StatelessWidget {
                       color: AppColors.primaryDark,
                     ),
                     SizedBox(width: AppDimensions.padding8w),
-                    Expanded(
-                      child: Text(
-                        selectedFile != null
-                            ? selectedFile!.path.split('/').last
-                            : "Click to upload",
-                        overflow: TextOverflow.ellipsis,
-                        style: customTextStyle(
-                          AppTextSizes.smallTextSize, // 12
-                          AppColors.primaryDark,
-                          FontWeight.w600,
-                        ),
+                    Text(
+                      selectedFile != null
+                          ? selectedFile!.path.split('/').last
+                          : "Click to upload",
+                      overflow: TextOverflow.ellipsis,
+                      style: customTextStyle(
+                        AppTextSizes.smallTextSize, // 12
+                        AppColors.primaryDark,
+                        FontWeight.w600,
                       ),
                     ),
                     if (selectedFile != null)
