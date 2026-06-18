@@ -35,6 +35,11 @@ class AppColors {
   static const Color primaryOrange = Color.fromRGBO(245, 158, 11, 1);
   static const Color cardWhite = Color.fromRGBO(252, 253, 255, 1);
   static const Color lightSuccess = Color.fromRGBO(212, 255, 187, 1);
+  static const Color successGreen = Color.fromRGBO(1, 128, 20, 1);
+  static const Color uploadBg = Color.fromRGBO(255, 253, 253, 1);
+  static const Color darkBlueText = Color.fromRGBO(31, 41, 55, 1);
+  static const Color greyText = Color.fromRGBO(107, 114, 128, 1);
+  static const Color lightGreyBorder = Color.fromRGBO(209, 213, 219, 1);
 
   // UI Colors
   static const Color background = Color.fromRGBO(222, 241, 255, 1);

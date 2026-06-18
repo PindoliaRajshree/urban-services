@@ -12,6 +12,8 @@ import 'package:urban_services/features/authentication/splash/welcome_screen.dar
 import 'package:urban_services/features/home_main/home_main.dart';
 import 'package:urban_services/features/address/address_screen.dart';
 import 'package:urban_services/features/address/add_address_screen.dart';
+import 'package:urban_services/features/home_provider/complete_profile/complete_profile_screen.dart';
+import 'package:urban_services/features/home_provider/provider_home_screen.dart';
 import 'package:urban_services/routes/route_names.dart';
 
 List<GetPage> getRoutes() {
@@ -36,6 +38,14 @@ List<GetPage> getRoutes() {
       page: () => const RegisterScreen(),
     ),
     GetPage(name: RouteNames.homeMain, page: () => const HomeMain()),
+    GetPage(
+      name: RouteNames.providerHomeScreen,
+      page: () => const ProviderHomeScreen(),
+    ),
+    GetPage(
+      name: RouteNames.completeProviderProfile,
+      page: () => const CompleteProfileScreen(),
+    ),
     GetPage(name: RouteNames.addressScreen, page: () => const AddressScreen()),
     GetPage(
       name: RouteNames.addAddressScreen,

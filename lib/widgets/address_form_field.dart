@@ -1,5 +1,5 @@
 // File: lib/widgets/address_form_field.dart
-// Purpose: A specialized input field with standardized styling for address-related forms.
+// Purpose: A specialized input field with standardized styling for address-related forms, supporting prefixes and trailing labels.
 
 import 'package:flutter/material.dart';
 import 'package:urban_services/core/colors/colors.dart';
@@ -11,6 +11,9 @@ class AddressFormField extends StatelessWidget {
   /// The descriptive label above the input field
   final String label;
 
+  /// Optional widget to display on the right side of the label (e.g., "Verify" link)
+  final Widget? labelTrailing;
+
   /// Placeholder text shown when the field is empty
   final String hintText;
 
@@ -18,6 +21,9 @@ class AddressFormField extends StatelessWidget {
   final FocusNode? focusNode;
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
+
+  /// Optional widget to display inside the text field at the start (e.g., country code)
+  final Widget? prefix;
 
   /// Number of lines the input can expand to (useful for full address)
   final int? maxLines;
@@ -31,10 +37,12 @@ class AddressFormField extends StatelessWidget {
     super.key,
     required this.label,
     required this.hintText,
+    this.labelTrailing,
     this.controller,
     this.focusNode,
     this.keyboardType,
     this.textInputAction,
+    this.prefix,
     this.maxLines = 1,
     this.validator,
     this.errorText,
@@ -45,14 +53,20 @@ class AddressFormField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Label Text
-        Text(
-          label,
-          style: customTextStyle(
-            AppTextSizes.smallTextSize,
-            AppColors.black,
-            FontWeight.w400,
-          ),
+        // Label Row
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: customTextStyle(
+                AppTextSizes.smallTextSize, // 12
+                AppColors.black,
+                FontWeight.w400,
+              ),
+            ),
+            labelTrailing ?? const SizedBox.shrink(),
+          ],
         ),
         SizedBox(height: AppDimensions.padding5h),
         // The core input field
@@ -74,6 +88,29 @@ class AddressFormField extends StatelessWidget {
               AppTextSizes.smallTextSize,
               AppColors.grey,
               FontWeight.w400,
+            ),
+            prefixIcon: prefix != null
+                ? Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: AppDimensions.padding8w,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        prefix!,
+                        SizedBox(width: AppDimensions.padding4w),
+                        Container(
+                          width: 1,
+                          height: 20,
+                          color: AppColors.grey.withValues(alpha: 0.5),
+                        ),
+                      ],
+                    ),
+                  )
+                : null,
+            prefixIconConstraints: const BoxConstraints(
+              minWidth: 0,
+              minHeight: 0,
             ),
             filled: true,
             fillColor: AppColors.white,

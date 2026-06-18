@@ -3,6 +3,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:urban_services/routes/route_names.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
@@ -129,7 +130,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                   // Complete Your Profile Section with Animation
                   CompleteProfileCard(
                     onFinish: () {
-                      // Navigate to profile completion or settings
+                      Get.toNamed(RouteNames.completeProviderProfile);
                     },
                   ),
 

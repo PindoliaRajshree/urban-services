@@ -25,6 +25,9 @@ class AppImages {
   static const String services = '$_basePath/services.webp';
   static const String chat = '$_basePath/chat.webp';
   static const String logout = '$_basePath/logout.webp';
+  static const String calendar = '$_basePath/calendar.webp';
+  static const String upload = '$_basePath/upload.webp';
+  static const String file = '$_basePath/file.webp';
 
   // Input & Forms
   static const String email = '$_basePath/Email.webp';
@@ -52,6 +55,7 @@ class AppImages {
   static const String laundry = '$_basePath/laundry.webp';
   static const String cleaningService = '$_basePath/cleaning-service.webp';
   static const String serviceProvider = '$_basePath/service-provider.webp';
+  static const String service = '$_basePath/service.webp';
 
   // Provider Specific Icons
   static const String documents = '$_basePath/documents.webp';
@@ -60,6 +64,7 @@ class AppImages {
   static const String updatePricing = '$_basePath/update-pricing.webp';
   static const String clockOutlined = '$_basePath/clock-outlined.webp';
   static const String locationOutlined = '$_basePath/location-outlined.webp';
+  static const String pricing = '$_basePath/pricing.webp';
 
   // Misc
   static const String ads = '$_basePath/ads.webp';
