@@ -14,6 +14,7 @@ import 'package:urban_services/features/address/address_screen.dart';
 import 'package:urban_services/features/address/add_address_screen.dart';
 import 'package:urban_services/features/home_provider/complete_profile/complete_profile_screen.dart';
 import 'package:urban_services/features/home_provider/provider_home_screen.dart';
+import 'package:urban_services/features/notification/notification_screen.dart';
 import 'package:urban_services/routes/route_names.dart';
 
 List<GetPage> getRoutes() {
@@ -50,6 +51,10 @@ List<GetPage> getRoutes() {
     GetPage(
       name: RouteNames.addAddressScreen,
       page: () => const AddAddressScreen(),
+    ),
+    GetPage(
+      name: RouteNames.notificationScreen,
+      page: () => const NotificationScreen(),
     ),
   ];
 }

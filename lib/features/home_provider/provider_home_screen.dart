@@ -124,6 +124,11 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                         height: AppDimensions.containerHeight50h,
                         width: AppDimensions.containerWidth50w,
                       ),
+                      SizedBox(width: AppDimensions.padding15w),
+                      GestureDetector(
+                        onTap: () => Get.toNamed(RouteNames.notificationScreen),
+                        child: Icon(Icons.notifications_on_outlined,color: AppColors.primaryDark,size: AppDimensions.radius36r,),
+                      ),
                     ],
                   ),
 

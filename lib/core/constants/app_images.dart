@@ -28,6 +28,7 @@ class AppImages {
   static const String calendar = '$_basePath/calendar.webp';
   static const String upload = '$_basePath/upload.webp';
   static const String file = '$_basePath/file.webp';
+  static const String filter = '$_basePath/filter.webp';
 
   // Input & Forms
   static const String email = '$_basePath/Email.webp';
@@ -79,4 +80,10 @@ class AppImages {
   static const String location = '$_basePath/location.webp';
   static const String homeLocation = '$_basePath/home-location.webp';
   static const String forwardArrow = '$_basePath/forward-arrow.webp';
+
+  // Notifications & Status
+  static const String bookingConfirmed = '$_basePath/booking-confirmed.webp';
+  static const String bookingNotify = '$_basePath/booking-notify.webp';
+  static const String paymentReceived = '$_basePath/payment-received.webp';
+  static const String serviceUpdate = '$_basePath/service-update.webp';
 }

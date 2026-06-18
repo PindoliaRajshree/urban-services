@@ -24,4 +24,7 @@ class RouteNames {
   //address
   static const String addressScreen = '/address';
   static const String addAddressScreen = '/addAddress';
+
+  //notification
+  static const String notificationScreen = '/notification';
 }

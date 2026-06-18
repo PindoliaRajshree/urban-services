@@ -2,6 +2,8 @@
 // Purpose: The primary dashboard for users to explore services, categories, and top-rated providers.
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:urban_services/routes/route_names.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
@@ -120,6 +122,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         AppImages.addToCart,
                         height: AppDimensions.containerHeight50h,
                         width: AppDimensions.containerWidth50w,
+                      ),
+                      SizedBox(width: AppDimensions.padding15w),
+                      GestureDetector(
+                        onTap: () => Get.toNamed(RouteNames.notificationScreen),
+                        child: Icon(Icons.notifications_on_outlined,color: AppColors.primaryDark,size: AppDimensions.radius36r,),
                       ),
                     ],
                   ),
