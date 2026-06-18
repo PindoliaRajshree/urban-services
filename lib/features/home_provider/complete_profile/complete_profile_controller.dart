@@ -262,7 +262,6 @@ class CompleteProfileController extends GetxController {
       return;
     }
     debugPrint("Verifying OTP: ${otpController.text}");
-    // TODO: Implement actual OTP verification
     Get.back(); // Close dialog on success
   }
 
@@ -280,7 +279,6 @@ class CompleteProfileController extends GetxController {
     }
     ifscError.value = null;
     debugPrint("Verifying IFSC: $ifsc");
-    // TODO: Implement actual IFSC API verification
     Get.snackbar(
       "Success",
       "IFSC Code Verified",

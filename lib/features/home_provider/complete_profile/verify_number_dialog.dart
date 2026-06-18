@@ -31,7 +31,7 @@ class VerifyNumberDialog extends StatelessWidget {
         padding: EdgeInsets.all(AppDimensions.padding20h),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppDimensions.radius16r),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -60,7 +60,7 @@ class VerifyNumberDialog extends StatelessWidget {
                 children: [
                   Container(
                     width: double.infinity,
-                    height: 50,
+                    height: AppDimensions.containerHeight50h,
                     decoration: BoxDecoration(
                       color: AppColors.white,
                       border: Border.all(
@@ -128,6 +128,7 @@ class VerifyNumberDialog extends StatelessWidget {
             // Adjusted Verify Button
             PrimaryButton(
               text: 'Verify',
+              width: AppDimensions.containerWidth150w,
               height: AppDimensions.containerHeight40h,
               onPressed: controller.verifyOtp,
             ),

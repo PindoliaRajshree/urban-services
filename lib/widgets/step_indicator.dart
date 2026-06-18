@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
+import 'package:urban_services/core/constants/app_text_sizes.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
 
 class StepIndicator extends StatelessWidget {
@@ -33,7 +34,7 @@ class StepIndicator extends StatelessWidget {
                     // Left line for intermediate steps
                     Expanded(
                       child: Container(
-                        height: 1,
+                        height: AppDimensions.containerHeight1h,
                         color: index == 0
                             ? Colors.transparent
                             : (index <= currentStep
@@ -46,7 +47,7 @@ class StepIndicator extends StatelessWidget {
                     // Right line for intermediate steps
                     Expanded(
                       child: Container(
-                        height: 1,
+                        height: AppDimensions.containerHeight1h,
                         color: isLast
                             ? Colors.transparent
                             : (index < currentStep
@@ -64,7 +65,7 @@ class StepIndicator extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: customTextStyle(
-                    8, // Smaller text to fit all 7 steps in a row
+                    AppTextSizes.smallestTextSize, // 8
                     index == currentStep ? AppColors.black : AppColors.grey,
                     index == currentStep ? FontWeight.w600 : FontWeight.w400,
                   ),
@@ -82,8 +83,8 @@ class StepIndicator extends StatelessWidget {
     final bool isCurrent = index == currentStep;
 
     return Container(
-      width: 20,
-      height: 20,
+      width: AppDimensions.containerWidth20w,
+      height: AppDimensions.containerHeight20h,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: isCompleted
@@ -91,13 +92,17 @@ class StepIndicator extends StatelessWidget {
             : (isCurrent ? AppColors.primary : AppColors.grey),
       ),
       child: isCompleted
-          ? const Icon(Icons.check, size: 14, color: AppColors.white)
+          ? Icon(
+              Icons.check,
+              size: AppDimensions.containerHeight14h,
+              color: AppColors.white,
+            )
           : (isCurrent
                 ? Center(
                     child: Text(
                       (index + 1).toString(),
                       style: customTextStyle(
-                        10,
+                        AppTextSizes.stableTextSize,
                         AppColors.white,
                         FontWeight.w600,
                       ),

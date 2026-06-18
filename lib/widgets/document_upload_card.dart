@@ -45,7 +45,11 @@ class DocumentUploadCard extends StatelessWidget {
             padding: EdgeInsets.all(AppDimensions.padding15w),
             child: Row(
               children: [
-                Image.asset(AppImages.file, height: 24, width: 24),
+                Image.asset(
+                  AppImages.file,
+                  height: AppDimensions.containerHeight24h,
+                  width: AppDimensions.containerWidth24w,
+                ),
                 SizedBox(width: AppDimensions.padding10w),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -79,7 +83,7 @@ class DocumentUploadCard extends StatelessWidget {
               padding: EdgeInsets.symmetric(vertical: AppDimensions.padding15h),
               decoration: BoxDecoration(
                 color: AppColors.background,
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(AppDimensions.radius4r),
                 border: Border.all(
                   color: AppColors.primaryLight.withValues(alpha: 0.5),
                   style: BorderStyle.solid, // Simple dash simulation
@@ -93,20 +97,26 @@ class DocumentUploadCard extends StatelessWidget {
                       selectedFile != null
                           ? AppImages.forward
                           : AppImages.upload,
-                      height: selectedFile != null ? 10 : 20,
-                      width: selectedFile != null ? 10 : 20,
+                      height: selectedFile != null
+                          ? AppDimensions.containerHeight10h
+                          : AppDimensions.containerHeight20h,
+                      width: selectedFile != null
+                          ? AppDimensions.containerWidth10w
+                          : AppDimensions.containerWidth20w,
                       color: AppColors.primaryDark,
                     ),
                     SizedBox(width: AppDimensions.padding8w),
-                    Text(
-                      selectedFile != null
-                          ? selectedFile!.path.split('/').last
-                          : "Click to upload",
-                      overflow: TextOverflow.ellipsis,
-                      style: customTextStyle(
-                        AppTextSizes.smallTextSize, // 12
-                        AppColors.primaryDark,
-                        FontWeight.w600,
+                    Expanded(
+                      child: Text(
+                        selectedFile != null
+                            ? selectedFile!.path.split('/').last
+                            : "Click to upload",
+                        overflow: TextOverflow.ellipsis,
+                        style: customTextStyle(
+                          AppTextSizes.smallTextSize, // 12
+                          AppColors.primaryDark,
+                          FontWeight.w600,
+                        ),
                       ),
                     ),
                     if (selectedFile != null)
@@ -115,9 +125,15 @@ class DocumentUploadCard extends StatelessWidget {
                           // Prevent triggering the parent GestureDetector
                           onRemove();
                         },
-                        child: const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 8.0),
-                          child: Icon(Icons.close, color: Colors.red, size: 18),
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: AppDimensions.padding8w,
+                          ),
+                          child: Icon(
+                            Icons.close,
+                            color: Colors.red,
+                            size: AppDimensions.containerHeight18h,
+                          ),
                         ),
                       ),
                   ],

@@ -166,17 +166,19 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                             color: controller.profileImageError.value != null
                                 ? AppColors.danger
                                 : AppColors.primaryDark,
-                            borderRadius: 4.0,
+                            borderRadius: AppDimensions.radius4r,
                             dashWidth: 5.0,
                             dashSpace: 3.0,
                           ),
                           child: Container(
-                            width: 80,
-                            height:
-                                145, // Adjusted to match right column height
+                            width: AppDimensions.containerWidth80w,
+                            height: AppDimensions
+                                .containerHeight145h, // Adjusted to match right column height
                             decoration: BoxDecoration(
                               color: AppColors.uploadBg,
-                              borderRadius: BorderRadius.circular(4),
+                              borderRadius: BorderRadius.circular(
+                                AppDimensions.radius4r,
+                              ),
                             ),
                             child: controller.profileImage.value == null
                                 ? Column(
@@ -189,7 +191,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                                       Text(
                                         "Upload",
                                         style: customTextStyle(
-                                          10,
+                                          AppTextSizes.stableTextSize,
                                           AppColors.primaryDark,
                                           FontWeight.w400,
                                         ),
@@ -199,12 +201,16 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                                 : Stack(
                                     children: [
                                       ClipRRect(
-                                        borderRadius: BorderRadius.circular(4),
+                                        borderRadius: BorderRadius.circular(
+                                          AppDimensions.radius4r,
+                                        ),
                                         child: Image.file(
                                           controller.profileImage.value!,
                                           fit: BoxFit.cover,
-                                          width: 80,
-                                          height: 145,
+                                          width:
+                                              AppDimensions.containerWidth80w,
+                                          height:
+                                              AppDimensions.containerHeight145h,
                                         ),
                                       ),
                                       Positioned(
@@ -213,14 +219,16 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                                         child: GestureDetector(
                                           onTap: controller.removeProfileImage,
                                           child: Container(
-                                            padding: const EdgeInsets.all(4),
+                                            padding: EdgeInsets.all(
+                                              AppDimensions.padding4w,
+                                            ),
                                             decoration: const BoxDecoration(
                                               color: Colors.red,
                                               shape: BoxShape.circle,
                                             ),
-                                            child: const Icon(
+                                            child: Icon(
                                               Icons.close,
-                                              size: 12,
+                                              size: AppDimensions.padding12w,
                                               color: Colors.white,
                                             ),
                                           ),
@@ -263,15 +271,17 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                             ? "Enter 10 digits"
                             : null,
                         prefix: Container(
-                          padding: const EdgeInsets.all(4),
+                          padding: EdgeInsets.all(AppDimensions.padding4w),
                           decoration: BoxDecoration(
                             color: AppColors.background,
-                            borderRadius: BorderRadius.circular(3),
+                            borderRadius: BorderRadius.circular(
+                              AppDimensions.radius3r,
+                            ),
                           ),
                           child: Text(
                             "+91",
                             style: customTextStyle(
-                              10,
+                              AppTextSizes.stableTextSize,
                               AppColors.black,
                               FontWeight.w400,
                             ),
@@ -292,12 +302,14 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                             ),
                             decoration: BoxDecoration(
                               gradient: AppColors.gradient,
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(
+                                AppDimensions.radius10r,
+                              ),
                             ),
                             child: Text(
                               "Send OTP",
                               style: customTextStyle(
-                                10,
+                                AppTextSizes.stableTextSize,
                                 AppColors.white,
                                 FontWeight.w400,
                               ),
@@ -366,7 +378,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                         GestureDetector(
                           onTap: () => controller.selectDate(context),
                           child: Container(
-                            height: 48,
+                            height: AppDimensions.containerHeight48h,
                             padding: EdgeInsets.symmetric(
                               horizontal: AppDimensions.padding12w,
                             ),
@@ -385,8 +397,8 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                               children: [
                                 Image.asset(
                                   AppImages.calendar,
-                                  height: 16,
-                                  width: 16,
+                                  height: AppDimensions.containerHeight16h,
+                                  width: AppDimensions.containerWidth16w,
                                 ),
                                 SizedBox(width: AppDimensions.padding8w),
                                 Text(
@@ -503,7 +515,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                 validator: (v) => (v == null || v.isEmpty) ? "Required" : null,
               ),
             ),
-            SizedBox(width: 15),
+            SizedBox(width: AppDimensions.padding15w),
             Expanded(
               child: AddressFormField(
                 label: "Per Hour Rate (₹)",
@@ -515,7 +527,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
             ),
           ],
         ),
-        SizedBox(height: 15),
+        SizedBox(height: AppDimensions.padding15h),
         Row(
           children: [
             Expanded(
@@ -526,7 +538,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                 keyboardType: TextInputType.number,
               ),
             ),
-            SizedBox(width: 15),
+            SizedBox(width: AppDimensions.padding15w),
             Expanded(
               child: AddressFormField(
                 label: "Custom Pricing (₹)",
@@ -556,7 +568,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                 validator: (v) => (v == null || v.isEmpty) ? "Required" : null,
               ),
             ),
-            SizedBox(width: 15),
+            SizedBox(width: AppDimensions.padding15w),
             Expanded(
               child: AddressFormField(
                 label: "Area/Locality",
@@ -567,12 +579,16 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
             ),
           ],
         ),
-        SizedBox(height: 15),
+        SizedBox(height: AppDimensions.padding15h),
         Text(
           "Service Radius",
-          style: customTextStyle(12, AppColors.black, FontWeight.w400),
+          style: customTextStyle(
+            AppTextSizes.smallTextSize,
+            AppColors.black,
+            FontWeight.w400,
+          ),
         ),
-        SizedBox(height: 10),
+        SizedBox(height: AppDimensions.padding10h),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: ['5km', '10km', '15km', '20km']
@@ -589,14 +605,18 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       children: [
         Text(
           "Work type",
-          style: customTextStyle(12, AppColors.black, FontWeight.w400),
+          style: customTextStyle(
+            AppTextSizes.smallTextSize,
+            AppColors.black,
+            FontWeight.w400,
+          ),
         ),
-        SizedBox(height: 10),
+        SizedBox(height: AppDimensions.padding10h),
         Row(
           children: ['Full Time', 'Part Time']
               .map(
                 (t) => Padding(
-                  padding: const EdgeInsets.only(right: 15),
+                  padding: EdgeInsets.only(right: AppDimensions.padding15w),
                   child: _buildSelectionChip(t, controller.workType),
                 ),
               )
@@ -612,9 +632,13 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       children: [
         Text(
           "Upload clear images of your documents",
-          style: customTextStyle(12, AppColors.darkGrey, FontWeight.w400),
+          style: customTextStyle(
+            AppTextSizes.smallTextSize,
+            AppColors.darkGrey,
+            FontWeight.w400,
+          ),
         ),
-        SizedBox(height: 15),
+        SizedBox(height: AppDimensions.padding15h),
         Obx(
           () => Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -631,7 +655,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
             ],
           ),
         ),
-        SizedBox(height: 20),
+        SizedBox(height: AppDimensions.padding20h),
         Obx(
           () => Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -648,7 +672,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
             ],
           ),
         ),
-        SizedBox(height: 20),
+        SizedBox(height: AppDimensions.padding20h),
         Obx(
           () => DocumentUploadCard(
             title: "PAN Card (Optional)",
@@ -676,7 +700,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                 validator: (v) => (v == null || v.isEmpty) ? "Required" : null,
               ),
             ),
-            SizedBox(width: 15),
+            SizedBox(width: AppDimensions.padding15w),
             Expanded(
               child: AddressFormField(
                 label: "Account number",
@@ -688,7 +712,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
             ),
           ],
         ),
-        SizedBox(height: 15),
+        SizedBox(height: AppDimensions.padding15h),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -706,7 +730,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                     child: Text(
                       "Verify",
                       style: customTextStyle(
-                        12,
+                        AppTextSizes.smallTextSize,
                         AppColors.primaryDark,
                         FontWeight.w500,
                       ),
@@ -715,7 +739,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                 ),
               ),
             ),
-            SizedBox(width: 15),
+            SizedBox(width: AppDimensions.padding15w),
             Expanded(
               child: AddressFormField(
                 label: "UPI ID (Optional)",
@@ -736,10 +760,13 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       return GestureDetector(
         onTap: () => groupValue.value = label,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: EdgeInsets.symmetric(
+            horizontal: AppDimensions.padding16w,
+            vertical: AppDimensions.padding8h,
+          ),
           decoration: BoxDecoration(
             color: AppColors.background,
-            borderRadius: BorderRadius.circular(3),
+            borderRadius: BorderRadius.circular(AppDimensions.radius3r),
             border: Border.all(
               color: isSelected ? AppColors.primaryDark : AppColors.grey,
             ),
@@ -747,7 +774,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
           child: Text(
             label,
             style: customTextStyle(
-              12,
+              AppTextSizes.smallTextSize,
               isSelected ? AppColors.primaryDark : AppColors.grey,
               FontWeight.w400,
             ),

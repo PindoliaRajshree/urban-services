@@ -21,8 +21,8 @@ class IconHeader extends StatelessWidget {
         children: [
           Image.asset(
             icon,
-            height: 20,
-            width: 20,
+            height: AppDimensions.containerHeight20h,
+            width: AppDimensions.containerWidth20w,
             color: AppColors.primaryDark,
           ),
           SizedBox(width: AppDimensions.padding10w),
