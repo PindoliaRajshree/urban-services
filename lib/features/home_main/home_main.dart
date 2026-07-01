@@ -4,16 +4,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:urban_services/core/colors/colors.dart';
-import 'package:urban_services/core/constants/app_dimensions.dart';
-import 'package:urban_services/core/constants/app_images.dart';
-import 'package:urban_services/core/constants/app_text_sizes.dart';
 import 'package:urban_services/features/authentication/login/login_controller.dart';
 import 'package:urban_services/features/home_main/main_navigation_controller.dart';
 import 'package:urban_services/features/home/home_screen.dart';
 import 'package:urban_services/features/home_provider/provider_home_screen.dart';
 import 'package:urban_services/features/profile/profile_screen.dart';
 import 'package:urban_services/widgets/custom_bottom_bar.dart';
-import 'package:urban_services/widgets/custom_text_style.dart';
 
 class HomeMain extends StatefulWidget {
   const HomeMain({super.key});
@@ -59,6 +55,7 @@ class _HomeMainState extends State<HomeMain> {
 
     return Scaffold(
       backgroundColor: AppColors.screenBackground,
+      resizeToAvoidBottomInset: false, // Prevents resizing which could break bottom bar
       body: SafeArea(
         child: Stack(
           children: [
@@ -73,64 +70,13 @@ class _HomeMainState extends State<HomeMain> {
               ),
             ),
 
-            // Standardized Custom Bottom Bar
+            // Standardized Custom Bottom Bar with integrated floating button
             if (!isKeyboardVisible)
               const Positioned(
                 bottom: 0,
                 left: 0,
                 right: 0,
                 child: CustomBottomBar(),
-              ),
-
-            // Floating Central 'Home' Button
-            if (!isKeyboardVisible)
-              Positioned(
-                bottom:
-                    AppDimensions.padding30h, // Aligned with the concave notch
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: GestureDetector(
-                    onTap: () => controller.changeIndex(2),
-                    child: Container(
-                      width: AppDimensions.containerWidth60w,
-                      height: AppDimensions.containerHeight60h,
-                      decoration: const BoxDecoration(
-                        gradient: AppColors.gradient,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black26,
-                            blurRadius: 10,
-                            offset: Offset(0, 5),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // Home Icon
-                          Image.asset(
-                            AppImages.home,
-                            width: AppDimensions.containerWidth24w,
-                            height: AppDimensions.containerHeight24h,
-                            color: AppColors.white,
-                          ),
-                          SizedBox(height: AppDimensions.padding2h),
-                          // Tab Label
-                          Text(
-                            'Home',
-                            style: customTextStyle(
-                              AppTextSizes.stableTextSize,
-                              AppColors.white,
-                              FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
               ),
           ],
         ),

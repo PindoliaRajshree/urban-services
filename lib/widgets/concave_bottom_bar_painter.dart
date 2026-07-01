@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 
 class ConcaveBottomBarPainter extends CustomPainter {
   final LinearGradient gradient;
+  final double notchX;
 
-  ConcaveBottomBarPainter({required this.gradient});
+  ConcaveBottomBarPainter({required this.gradient, required this.notchX});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -16,7 +17,7 @@ class ConcaveBottomBarPainter extends CustomPainter {
     Path path = Path();
     double radius = 14.0;
     double notchWidth = 80.0;
-    double center = size.width / 2;
+    double center = notchX;
 
     // Start bottom left
     path.moveTo(0, size.height);
@@ -31,11 +32,10 @@ class ConcaveBottomBarPainter extends CustomPainter {
       clockwise: true,
     );
 
-    // Line to notch start (sharp corner)
+    // Line to notch start
     path.lineTo(center - notchWidth / 2, 0);
 
     // Semi-circular Notch (dip down)
-    // We use arcToPoint with clockwise: false for a concave semi-circle
     path.arcToPoint(
       Offset(center + notchWidth / 2, 0),
       radius: Radius.circular(notchWidth / 2),
@@ -72,5 +72,7 @@ class ConcaveBottomBarPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant ConcaveBottomBarPainter oldDelegate) {
+    return oldDelegate.notchX != notchX || oldDelegate.gradient != gradient;
+  }
 }
