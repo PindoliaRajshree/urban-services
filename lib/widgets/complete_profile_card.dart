@@ -122,7 +122,7 @@ class _CompleteProfileCardState extends State<CompleteProfileCard>
                         ),
                         SizedBox(height: AppDimensions.padding4h),
                         Text(
-                          'Add phone & address to get better recommendations',
+                          'Only 2 steps left to get better recommendations & faster bookings',
                           style: customTextStyle(
                             AppTextSizes.smallTextSize,
                             AppColors.text,

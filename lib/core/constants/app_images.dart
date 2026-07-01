@@ -74,6 +74,11 @@ class AppImages {
   static const String image = '$_basePath/image.webp';
   static const String vector = '$_basePath/Vector.webp';
   static const String chatBubble = '$_basePath/Chat Bubble.webp';
+  static const String chatFile = '$_basePath/chat-file.webp';
+  static const String chatMic = '$_basePath/chat-mic.webp';
+  static const String camera = '$_basePath/camera.webp';
+  static const String video = '$_basePath/Video.webp';
+  static const String pin = '$_basePath/pin.webp';
   static const String splashVector = '$_basePath/splash-vector.webp';
   static const String clock = '$_basePath/Clock.webp';
   static const String locationImage = '$_basePath/location-image.webp';

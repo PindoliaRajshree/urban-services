@@ -55,6 +55,8 @@ class _HomeMainState extends State<HomeMain> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
+
     return Scaffold(
       backgroundColor: AppColors.screenBackground,
       body: SafeArea(
@@ -72,62 +74,64 @@ class _HomeMainState extends State<HomeMain> {
             ),
 
             // Standardized Custom Bottom Bar
-            const Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: CustomBottomBar(),
-            ),
+            if (!isKeyboardVisible)
+              const Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: CustomBottomBar(),
+              ),
 
             // Floating Central 'Home' Button
-            Positioned(
-              bottom:
-                  AppDimensions.padding30h, // Aligned with the concave notch
-              left: 0,
-              right: 0,
-              child: Center(
-                child: GestureDetector(
-                  onTap: () => controller.changeIndex(2),
-                  child: Container(
-                    width: AppDimensions.containerWidth60w,
-                    height: AppDimensions.containerHeight60h,
-                    decoration: const BoxDecoration(
-                      gradient: AppColors.gradient,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black26,
-                          blurRadius: 10,
-                          offset: Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        // Home Icon
-                        Image.asset(
-                          AppImages.home,
-                          width: AppDimensions.containerWidth24w,
-                          height: AppDimensions.containerHeight24h,
-                          color: AppColors.white,
-                        ),
-                        SizedBox(height: AppDimensions.padding2h),
-                        // Tab Label
-                        Text(
-                          'Home',
-                          style: customTextStyle(
-                            AppTextSizes.stableTextSize,
-                            AppColors.white,
-                            FontWeight.w600,
+            if (!isKeyboardVisible)
+              Positioned(
+                bottom:
+                    AppDimensions.padding30h, // Aligned with the concave notch
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: GestureDetector(
+                    onTap: () => controller.changeIndex(2),
+                    child: Container(
+                      width: AppDimensions.containerWidth60w,
+                      height: AppDimensions.containerHeight60h,
+                      decoration: const BoxDecoration(
+                        gradient: AppColors.gradient,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black26,
+                            blurRadius: 10,
+                            offset: Offset(0, 5),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Home Icon
+                          Image.asset(
+                            AppImages.home,
+                            width: AppDimensions.containerWidth24w,
+                            height: AppDimensions.containerHeight24h,
+                            color: AppColors.white,
+                          ),
+                          SizedBox(height: AppDimensions.padding2h),
+                          // Tab Label
+                          Text(
+                            'Home',
+                            style: customTextStyle(
+                              AppTextSizes.stableTextSize,
+                              AppColors.white,
+                              FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
           ],
         ),
       ),
