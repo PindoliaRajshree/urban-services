@@ -27,4 +27,8 @@ class RouteNames {
 
   //notification
   static const String notificationScreen = '/notification';
+
+  //chat
+  static const String chatScreen = '/chat';
+  static const String chatSearchScreen = '/chatSearch';
 }

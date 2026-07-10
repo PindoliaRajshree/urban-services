@@ -51,4 +51,10 @@ class AppColors {
   static const Color chatNameText = Color.fromRGBO(0, 14, 8, 1);
   static const Color chatSubText = Color.fromRGBO(121, 124, 123, 1);
   static const Color unreadBadge = Color.fromRGBO(240, 74, 76, 1);
+
+  // Chat Conversation Screen Colors
+  static const Color receiverBubble = Color.fromRGBO(16, 54, 137, 1);
+  static const Color dateChipBg = Color.fromRGBO(248, 251, 250, 1);
+  static const Color chatInputBorder = Color.fromRGBO(238, 250, 248, 1);
+  static const Color chatInputBg = Color.fromRGBO(243, 246, 246, 1);
 }
