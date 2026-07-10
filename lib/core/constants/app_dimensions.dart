@@ -79,6 +79,7 @@ class AppDimensions {
   static double radius26r = 26.r;
   static double radius30r = 30.r;
   static double radius36r = 36.r;
+  static double radius40r = 40.r;
   static double radius54r = 54.r;
   static double radius60r = 60.r;
   static double radius80r = 80.r;
@@ -105,6 +106,7 @@ class AppDimensions {
   static double containerHeight16h = 16.h;
   static double containerHeight18h = 18.h;
   static double containerHeight20h = 20.h;
+  static double containerHeight21_81h = 21.81.h;
   static double containerHeight22h = 22.h;
   static double containerHeight24h = 24.h;
   static double containerHeight25h = 25.h;
@@ -170,6 +172,7 @@ class AppDimensions {
   static double containerWidth16w = 16.w;
   static double containerWidth18w = 18.w;
   static double containerWidth20w = 20.w;
+  static double containerWidth21_81w = 21.81.w;
   static double containerWidth22w = 22.w;
   static double containerWidth24w = 24.w;
   static double containerWidth25w = 25.w;

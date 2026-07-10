@@ -44,4 +44,11 @@ class AppColors {
   // UI Colors
   static const Color background = Color.fromRGBO(222, 241, 255, 1);
   static const Color screenBackground = Color.fromRGBO(233, 242, 253, 1);
+
+  // Chat Screen Colors
+  static const Color chatAvatarBg = Color.fromRGBO(237, 238, 240, 1);
+  static const Color onlineStatus = Color.fromRGBO(15, 225, 109, 1);
+  static const Color chatNameText = Color.fromRGBO(0, 14, 8, 1);
+  static const Color chatSubText = Color.fromRGBO(121, 124, 123, 1);
+  static const Color unreadBadge = Color.fromRGBO(240, 74, 76, 1);
 }

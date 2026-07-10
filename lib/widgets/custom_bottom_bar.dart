@@ -133,7 +133,6 @@ class _CustomBottomBarState extends State<CustomBottomBar>
   }
 
   Widget _buildNavItem(int index, String iconPath, String label, {bool isHome = false}) {
-    final screenWidth = MediaQuery.of(context).size.width;
     return Expanded(
       child: GestureDetector(
         onTap: () => navigationController.changeIndex(index),

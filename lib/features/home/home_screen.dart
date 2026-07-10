@@ -10,6 +10,7 @@ import 'package:urban_services/core/constants/app_images.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
 import 'package:urban_services/widgets/category_item.dart';
 import 'package:urban_services/widgets/complete_profile_card.dart';
+import 'package:urban_services/widgets/custom_search_bar.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
 import 'package:urban_services/widgets/section_heading.dart';
 import 'package:urban_services/widgets/top_rated_card.dart';
@@ -139,52 +140,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
 
                   // 4. Search Bar
-                  Container(
-                    height: AppDimensions.containerHeight45h,
-                    decoration: BoxDecoration(
-                      color: AppColors.white,
-                      borderRadius: BorderRadius.circular(
-                        AppDimensions.radius30r,
-                      ),
-                      border: Border.all(color: AppColors.white, width: 1),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.25),
-                          offset: const Offset(0, 1),
-                          blurRadius: 4,
-                          spreadRadius: 0,
-                        ),
-                      ],
-                    ),
-                    padding: EdgeInsets.symmetric(
-                      horizontal: AppDimensions.padding15w,
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.search, color: AppColors.grey),
-                        SizedBox(width: AppDimensions.padding10w),
-                        Expanded(
-                          child: TextField(
-                            decoration: InputDecoration(
-                              hintText: 'Search',
-                              hintStyle: customTextStyle(
-                                AppTextSizes.smallTextSize, // 12
-                                AppColors.darkGrey,
-                                FontWeight.w400,
-                              ),
-                              border: InputBorder.none,
-                              isDense: true,
-                            ),
-                            style: customTextStyle(
-                              AppTextSizes.smallTextSize, // 12
-                              AppColors.black,
-                              FontWeight.w400,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  const CustomSearchBar(hintText: 'Search'),
 
                   SizedBox(height: AppDimensions.padding20h),
 

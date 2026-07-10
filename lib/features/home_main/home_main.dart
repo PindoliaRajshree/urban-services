@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/features/authentication/login/login_controller.dart';
+import 'package:urban_services/features/chat/chat_list_screen.dart';
 import 'package:urban_services/features/home_main/main_navigation_controller.dart';
 import 'package:urban_services/features/home/home_screen.dart';
 import 'package:urban_services/features/home_provider/provider_home_screen.dart';
@@ -44,7 +45,7 @@ class _HomeMainState extends State<HomeMain> {
       loginController.userRole.value == 'Provider'
           ? const ProviderHomeScreen()
           : const HomeScreen(),
-      const Center(child: Text('Chat')),
+      const ChatListScreen(),
       const ProfileScreen(),
     ];
   }
