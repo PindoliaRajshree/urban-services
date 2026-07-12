@@ -265,7 +265,7 @@ class ServiceDetailsScreen extends StatelessWidget {
                                 child: Row(
                                   children: [
                                     Image.asset(
-                                      AppImages.person,
+                                      AppImages.personPro,
                                       width: AppDimensions.containerWidth24w,
                                       height: AppDimensions.containerHeight24h,
                                     ),

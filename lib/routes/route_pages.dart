@@ -23,6 +23,7 @@ import 'package:urban_services/features/service_category/service_category_screen
 import 'package:urban_services/features/service_details/service_details_screen.dart';
 import 'package:urban_services/features/booking_service/booking_service_screen.dart';
 import 'package:urban_services/features/payment/payment_screen.dart';
+import 'package:urban_services/features/payment_success/payment_success_screen.dart';
 import 'package:urban_services/routes/route_names.dart';
 
 List<GetPage> getRoutes() {
@@ -129,6 +130,21 @@ List<GetPage> getRoutes() {
         final args = Get.arguments as Map<String, dynamic>? ?? {};
         return PaymentScreen(
           price: args['price'] as String? ?? '699',
+          dateTime:
+              args['dateTime'] as String? ?? '20 May 2024, 11:00 AM',
+          address:
+              args['address'] as String? ??
+              '123, Green Park, Main Road, New Delhi-110016',
+        );
+      },
+    ),
+    GetPage(
+      name: RouteNames.paymentSuccessScreen,
+      page: () {
+        final args = Get.arguments as Map<String, dynamic>? ?? {};
+        return PaymentSuccessScreen(
+          bookingId: args['bookingId'] as String? ?? 'US123456789',
+          serviceName: args['serviceName'] as String? ?? 'Deep Cleaning',
           dateTime:
               args['dateTime'] as String? ?? '20 May 2024, 11:00 AM',
           address:

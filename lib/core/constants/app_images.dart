@@ -93,6 +93,8 @@ class AppImages {
   static const String location = '$_basePath/location.webp';
   static const String homeLocation = '$_basePath/home-location.webp';
   static const String forwardArrow = '$_basePath/forward-arrow.webp';
+  static const String homePage = '$_basePath/Home Page.webp';
+  static const String personPro = '$_basePath/person-pro.webp';
 
   // Notifications & Status
   static const String bookingConfirmed = '$_basePath/booking-confirmed.webp';
