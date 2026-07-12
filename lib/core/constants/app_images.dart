@@ -107,4 +107,7 @@ class AppImages {
   static const String paymentSuccess = '$_basePath/payment-success.webp';
   static const String upi = '$_basePath/upi.webp';
   static const String creditDebitCard = '$_basePath/CD.webp';
+
+  // Tracking
+  static const String liveTracking = '$_basePath/live-tracking.webp';
 }

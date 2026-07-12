@@ -220,8 +220,14 @@ class PaymentSuccessScreen extends StatelessWidget {
                 children: [
                   PrimaryButton(
                     text: 'Track Booking',
-                    onPressed: () =>
-                        Get.toNamed(RouteNames.myBookingsScreen),
+                    onPressed: () => Get.toNamed(
+                      RouteNames.liveTrackingScreen,
+                      arguments: {
+                        'bookingId': bookingId,
+                        'serviceName': serviceName,
+                        'dateTime': dateTime,
+                      },
+                    ),
                   ),
                   SizedBox(height: AppDimensions.padding12h),
                   SecondaryButton(

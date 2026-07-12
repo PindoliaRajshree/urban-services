@@ -229,19 +229,40 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         SizedBox(width: AppDimensions.padding15w),
-                        const CategoryItem(
+                        CategoryItem(
                           icon: AppImages.electrician,
                           title: 'Electrician',
+                          onTap: () => Get.toNamed(
+                            RouteNames.serviceCategoryScreen,
+                            arguments: {
+                              'categoryTitle': 'Electrician Service',
+                              'serviceCount': '30+ Services',
+                            },
+                          ),
                         ),
                         SizedBox(width: AppDimensions.padding15w),
-                        const CategoryItem(
+                        CategoryItem(
                           icon: AppImages.plumber,
                           title: 'Plumber',
+                          onTap: () => Get.toNamed(
+                            RouteNames.serviceCategoryScreen,
+                            arguments: {
+                              'categoryTitle': 'Plumber Service',
+                              'serviceCount': '30+ Services',
+                            },
+                          ),
                         ),
                         SizedBox(width: AppDimensions.padding15w),
-                        const CategoryItem(
+                        CategoryItem(
                           icon: AppImages.laundry,
                           title: 'Laundry',
+                          onTap: () => Get.toNamed(
+                            RouteNames.serviceCategoryScreen,
+                            arguments: {
+                              'categoryTitle': 'Laundry Service',
+                              'serviceCount': '30+ Services',
+                            },
+                          ),
                         ),
                       ],
                     ),

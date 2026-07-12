@@ -49,4 +49,7 @@ class RouteNames {
 
   //payment success
   static const String paymentSuccessScreen = '/paymentSuccess';
+
+  //live tracking
+  static const String liveTrackingScreen = '/liveTracking';
 }

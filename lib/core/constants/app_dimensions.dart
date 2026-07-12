@@ -70,6 +70,7 @@ class AppDimensions {
   static double radius10r = 10.r;
   static double radius11r = 11.r;
   static double radius12r = 12.r;
+  static double radius15r = 15.r;
   static double radius16r = 16.r;
   static double radius18r = 18.r;
   static double radius20r = 20.r;
