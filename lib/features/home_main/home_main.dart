@@ -9,6 +9,7 @@ import 'package:urban_services/features/chat/chat_list_screen.dart';
 import 'package:urban_services/features/home_main/main_navigation_controller.dart';
 import 'package:urban_services/features/home/home_screen.dart';
 import 'package:urban_services/features/home_provider/provider_home_screen.dart';
+import 'package:urban_services/features/my_bookings/my_bookings_screen.dart';
 import 'package:urban_services/features/profile/profile_screen.dart';
 import 'package:urban_services/widgets/custom_bottom_bar.dart';
 
@@ -40,7 +41,7 @@ class _HomeMainState extends State<HomeMain> {
   List<Widget> _getScreens() {
     return [
       const Center(child: Text('Services')),
-      const Center(child: Text('Booking')),
+      const MyBookingsScreen(),
       // Dynamically load the dashboard based on role
       loginController.userRole.value == 'Provider'
           ? const ProviderHomeScreen()

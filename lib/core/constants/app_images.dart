@@ -58,6 +58,12 @@ class AppImages {
   static const String serviceProvider = '$_basePath/service-provider.webp';
   static const String service = '$_basePath/service.webp';
 
+  // Booking Card Service Icons
+  static const String serviceDeep = '$_basePath/service-deep.webp';
+  static const String serviceBathroom = '$_basePath/service-bathroom.webp';
+  static const String serviceKitchen = '$_basePath/service-kitchen.webp';
+  static const String serviceSofa = '$_basePath/service-sofa.webp';
+
   // Provider Specific Icons
   static const String documents = '$_basePath/documents.webp';
   static const String availability = '$_basePath/availability.webp';

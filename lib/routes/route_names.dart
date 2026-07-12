@@ -31,4 +31,7 @@ class RouteNames {
   //chat
   static const String chatScreen = '/chat';
   static const String chatSearchScreen = '/chatSearch';
+
+  //bookings
+  static const String myBookingsScreen = '/myBookings';
 }

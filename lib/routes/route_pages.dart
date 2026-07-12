@@ -18,6 +18,7 @@ import 'package:urban_services/features/home_provider/provider_home_screen.dart'
 import 'package:urban_services/features/notification/notification_screen.dart';
 import 'package:urban_services/features/chat/chat_screen.dart';
 import 'package:urban_services/features/chat/chat_search_screen.dart';
+import 'package:urban_services/features/my_bookings/my_bookings_screen.dart';
 import 'package:urban_services/routes/route_names.dart';
 
 List<GetPage> getRoutes() {
@@ -73,6 +74,10 @@ List<GetPage> getRoutes() {
     GetPage(
       name: RouteNames.chatSearchScreen,
       page: () => const ChatSearchScreen(),
+    ),
+    GetPage(
+      name: RouteNames.myBookingsScreen,
+      page: () => const MyBookingsScreen(),
     ),
   ];
 }
