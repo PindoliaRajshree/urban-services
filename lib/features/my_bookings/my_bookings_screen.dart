@@ -111,7 +111,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
   }
 
   void _onMorePressed() {
-    // TODO: Hook up menu actions (e.g. filter, help) for the three-dot menu.
+
   }
 
   @override
@@ -195,7 +195,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                           bottom: AppDimensions.padding20h,
                         ),
                         itemCount: filteredBookings.length,
-                        separatorBuilder: (_, __) =>
+                        separatorBuilder: (_, _) =>
                             SizedBox(height: AppDimensions.padding12h),
                         itemBuilder: (context, index) {
                           final booking = filteredBookings[index];

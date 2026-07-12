@@ -157,7 +157,7 @@ class _BookingServiceScreenState extends State<BookingServiceScreen> {
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
                         itemCount: _dates.length,
-                        separatorBuilder: (_, __) =>
+                        separatorBuilder: (_, _) =>
                             SizedBox(width: AppDimensions.padding10w),
                         itemBuilder: (context, index) {
                           final date = _dates[index];

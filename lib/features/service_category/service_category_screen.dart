@@ -164,7 +164,7 @@ class ServiceCategoryScreen extends StatelessWidget {
                 child: ListView.separated(
                   padding: EdgeInsets.only(bottom: AppDimensions.padding20h),
                   itemCount: _services.length,
-                  separatorBuilder: (_, __) =>
+                  separatorBuilder: (_, _) =>
                       SizedBox(height: AppDimensions.padding15h),
                   itemBuilder: (context, index) {
                     final service = _services[index];
