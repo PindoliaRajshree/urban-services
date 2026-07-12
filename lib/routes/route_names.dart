@@ -34,4 +34,10 @@ class RouteNames {
 
   //bookings
   static const String myBookingsScreen = '/myBookings';
+
+  //service category
+  static const String serviceCategoryScreen = '/serviceCategory';
+
+  //service details
+  static const String serviceDetailsScreen = '/serviceDetails';
 }

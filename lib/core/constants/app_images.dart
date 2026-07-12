@@ -29,6 +29,7 @@ class AppImages {
   static const String upload = '$_basePath/upload.webp';
   static const String file = '$_basePath/file.webp';
   static const String filter = '$_basePath/filter.webp';
+  static const String filterPipe = '$_basePath/filter-pipe.webp';
 
   // Input & Forms
   static const String email = '$_basePath/Email.webp';

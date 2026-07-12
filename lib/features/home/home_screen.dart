@@ -217,9 +217,16 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: ListView(
                       scrollDirection: Axis.horizontal,
                       children: [
-                        const CategoryItem(
+                        CategoryItem(
                           icon: AppImages.cleaningService,
                           title: 'Cleaning',
+                          onTap: () => Get.toNamed(
+                            RouteNames.serviceCategoryScreen,
+                            arguments: {
+                              'categoryTitle': 'Cleaning Service',
+                              'serviceCount': '30+ Services',
+                            },
+                          ),
                         ),
                         SizedBox(width: AppDimensions.padding15w),
                         const CategoryItem(

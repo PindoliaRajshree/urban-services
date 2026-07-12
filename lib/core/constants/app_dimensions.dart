@@ -150,6 +150,7 @@ class AppDimensions {
   static double containerHeight280h = 280.h;
   static double containerHeight290h = 290.h;
   static double containerHeight300h = 300.h;
+  static double containerHeight315h = 315.h;
   static double containerHeight350h = 350.h;
   static double containerHeight400h = 400.h;
   static double containerHeight450h = 450.h;

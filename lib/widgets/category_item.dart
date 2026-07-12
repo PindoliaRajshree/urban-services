@@ -11,45 +11,56 @@ class CategoryItem extends StatelessWidget {
   final String icon;
   final String title;
 
-  const CategoryItem({super.key, required this.icon, required this.title});
+  /// Callback fired when the category is tapped (e.g. to open its service list)
+  final VoidCallback? onTap;
+
+  const CategoryItem({
+    super.key,
+    required this.icon,
+    required this.title,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Category Icon Container
-        Container(
-          width:
-              AppDimensions.containerWidth74w, // Fixed size for category items
-          height: AppDimensions.containerHeight74h,
-          padding: EdgeInsets.all(AppDimensions.padding10w),
-          decoration: BoxDecoration(
-            color: AppColors.white,
-            borderRadius: BorderRadius.circular(AppDimensions.radius10r),
-            // Gradient Border effect (simplified using a stack or colored border)
-            border: Border.all(color: AppColors.primaryLight, width: 1),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.25),
-                offset: const Offset(0, 3),
-                blurRadius: 3,
-                spreadRadius: 0,
-              ),
-            ],
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          // Category Icon Container
+          Container(
+            width:
+                AppDimensions.containerWidth74w, // Fixed size for category items
+            height: AppDimensions.containerHeight74h,
+            padding: EdgeInsets.all(AppDimensions.padding10w),
+            decoration: BoxDecoration(
+              color: AppColors.white,
+              borderRadius: BorderRadius.circular(AppDimensions.radius10r),
+              // Gradient Border effect (simplified using a stack or colored border)
+              border: Border.all(color: AppColors.primaryLight, width: 1),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.25),
+                  offset: const Offset(0, 3),
+                  blurRadius: 3,
+                  spreadRadius: 0,
+                ),
+              ],
+            ),
+            child: Center(child: Image.asset(icon, fit: BoxFit.contain)),
           ),
-          child: Center(child: Image.asset(icon, fit: BoxFit.contain)),
-        ),
-        SizedBox(height: AppDimensions.padding8h),
-        // Category Label
-        Text(
-          title,
-          style: customTextStyle(
-            AppTextSizes.smallTextSize, // 12
-            AppColors.text,
-            FontWeight.w600,
+          SizedBox(height: AppDimensions.padding8h),
+          // Category Label
+          Text(
+            title,
+            style: customTextStyle(
+              AppTextSizes.smallTextSize, // 12
+              AppColors.text,
+              FontWeight.w600,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

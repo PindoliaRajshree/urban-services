@@ -19,6 +19,8 @@ import 'package:urban_services/features/notification/notification_screen.dart';
 import 'package:urban_services/features/chat/chat_screen.dart';
 import 'package:urban_services/features/chat/chat_search_screen.dart';
 import 'package:urban_services/features/my_bookings/my_bookings_screen.dart';
+import 'package:urban_services/features/service_category/service_category_screen.dart';
+import 'package:urban_services/features/service_details/service_details_screen.dart';
 import 'package:urban_services/routes/route_names.dart';
 
 List<GetPage> getRoutes() {
@@ -78,6 +80,37 @@ List<GetPage> getRoutes() {
     GetPage(
       name: RouteNames.myBookingsScreen,
       page: () => const MyBookingsScreen(),
+    ),
+    GetPage(
+      name: RouteNames.serviceCategoryScreen,
+      page: () {
+        final args = Get.arguments as Map<String, dynamic>? ?? {};
+        return ServiceCategoryScreen(
+          categoryTitle: args['categoryTitle'] as String? ?? 'Cleaning Service',
+          serviceCount: args['serviceCount'] as String? ?? '30+ Services',
+        );
+      },
+    ),
+    GetPage(
+      name: RouteNames.serviceDetailsScreen,
+      page: () {
+        final args = Get.arguments as Map<String, dynamic>? ?? {};
+        return ServiceDetailsScreen(
+          imagePath: args['imagePath'] as String? ?? AppImages.serviceDeep,
+          reviewCount: args['reviewCount'] as String? ?? '256',
+          price: args['price'] as String? ?? '699',
+          duration: args['duration'] as String? ?? '2-3 Hours',
+          includes:
+              args['includes'] as List<String>? ??
+              const [
+                'Full home deep cleaning',
+                'Dusting all areas',
+                'Floor cleaning & mopping',
+                'Kitchen platform cleaning',
+                'Bathroom sanitization',
+              ],
+        );
+      },
     ),
   ];
 }
