@@ -3,9 +3,11 @@
 // on the Service Category screen).
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
+import 'package:urban_services/routes/route_names.dart';
 import 'package:urban_services/widgets/common_app_bar.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
 
@@ -318,7 +320,10 @@ class ServiceDetailsScreen extends StatelessWidget {
                 children: [
                   _priceColumn(),
                   GestureDetector(
-                    onTap: () {},
+                    onTap: () => Get.toNamed(
+                      RouteNames.bookingServiceScreen,
+                      arguments: {'price': price},
+                    ),
                     child: Container(
                       padding: EdgeInsets.symmetric(
                         horizontal: AppDimensions.padding30w,

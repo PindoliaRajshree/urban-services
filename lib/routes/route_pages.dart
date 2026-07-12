@@ -21,6 +21,7 @@ import 'package:urban_services/features/chat/chat_search_screen.dart';
 import 'package:urban_services/features/my_bookings/my_bookings_screen.dart';
 import 'package:urban_services/features/service_category/service_category_screen.dart';
 import 'package:urban_services/features/service_details/service_details_screen.dart';
+import 'package:urban_services/features/booking_service/booking_service_screen.dart';
 import 'package:urban_services/routes/route_names.dart';
 
 List<GetPage> getRoutes() {
@@ -109,6 +110,15 @@ List<GetPage> getRoutes() {
                 'Kitchen platform cleaning',
                 'Bathroom sanitization',
               ],
+        );
+      },
+    ),
+    GetPage(
+      name: RouteNames.bookingServiceScreen,
+      page: () {
+        final args = Get.arguments as Map<String, dynamic>? ?? {};
+        return BookingServiceScreen(
+          price: args['price'] as String? ?? '699',
         );
       },
     ),

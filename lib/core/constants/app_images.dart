@@ -99,4 +99,9 @@ class AppImages {
   static const String bookingNotify = '$_basePath/booking-notify.webp';
   static const String paymentReceived = '$_basePath/payment-received.webp';
   static const String serviceUpdate = '$_basePath/service-update.webp';
+
+  // Payment
+  static const String merchant = '$_basePath/merchant.webp';
+  static const String paymentSuccess = '$_basePath/payment-success.webp';
+  static const String upi = '$_basePath/upi.webp';
 }

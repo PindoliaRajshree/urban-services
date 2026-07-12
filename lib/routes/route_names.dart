@@ -40,4 +40,7 @@ class RouteNames {
 
   //service details
   static const String serviceDetailsScreen = '/serviceDetails';
+
+  //booking service
+  static const String bookingServiceScreen = '/bookingService';
 }
