@@ -17,7 +17,8 @@ ApiResult<T> handleApiResponse<T>(
       return ApiFailure("Invalid response format");
     }
     final map = response.data as Map<String, dynamic>;
-    if (map['status'] == 'success') {
+    final isSuccess = map['status'] == true || map['status'] == 'success';
+    if (isSuccess) {
       try {
         final result = fromJson(map);
         debugPrint("handleApiResponse - Successfully parsed response");

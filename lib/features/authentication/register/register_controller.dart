@@ -1,26 +1,61 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:urban_services/core/constants/api_status.dart';
+import 'package:urban_services/core/constants/storage_keys.dart';
+import 'package:urban_services/core/services/api_result.dart';
 import 'package:urban_services/core/utils/validators.dart';
+import 'package:urban_services/features/authentication/login/login_controller.dart';
+import 'package:urban_services/features/authentication/register/models/register_request.dart';
+import 'package:urban_services/features/authentication/register/models/register_response.dart';
+import 'package:urban_services/features/authentication/register/register_repository.dart';
 import 'package:urban_services/routes/route_names.dart';
+import 'package:urban_services/shared_preferences/sharedpreference_helper.dart';
+import 'package:urban_services/widgets/custom_snackbar.dart';
 
 class RegisterController extends GetxController {
+  RegisterController({AuthRepository? authRepository})
+    : _authRepository = authRepository ?? AuthRepository();
+
+  final AuthRepository _authRepository;
+  final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: const ['email']);
+
   final nameController = TextEditingController();
+  final mobileController = TextEditingController();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
 
   final nameFocusNode = FocusNode();
+  final mobileFocusNode = FocusNode();
   final emailFocusNode = FocusNode();
   final passwordFocusNode = FocusNode();
   final confirmPasswordFocusNode = FocusNode();
 
   final nameError = RxnString();
+  final mobileError = RxnString();
   final emailError = RxnString();
   final passwordError = RxnString();
   final confirmPasswordError = RxnString();
   final termsError = RxnString();
 
   final agreeToTerms = false.obs;
+
+  /// Tracks the current /register call so the UI can disable buttons and
+  /// show a loading state.
+  final status = ApiStatus.initial.obs;
+
+  bool get isLoading => status.value == ApiStatus.loading;
+
+  /// The role ('user' or 'provider') is chosen on the Welcome screen and
+  /// stored on the shared, permanent LoginController. Registration reuses
+  /// it rather than asking again.
+  String get _role {
+    if (Get.isRegistered<LoginController>()) {
+      return Get.find<LoginController>().userRole.value.toLowerCase();
+    }
+    return 'user';
+  }
 
   bool validate() {
     bool isValid = true;
@@ -30,6 +65,16 @@ class RegisterController extends GetxController {
       isValid = false;
     } else {
       nameError.value = null;
+    }
+
+    if (mobileController.text.trim().isEmpty) {
+      mobileError.value = "Mobile number is required";
+      isValid = false;
+    } else if (mobileController.text.trim().length != 10) {
+      mobileError.value = "Please enter a valid 10-digit mobile number";
+      isValid = false;
+    } else {
+      mobileError.value = null;
     }
 
     if (emailController.text.trim().isNotEmpty &&
@@ -92,16 +137,119 @@ class RegisterController extends GetxController {
     return isValid;
   }
 
-  void register() {
-    if (validate()) {
-      debugPrint("Registering: ${nameController.text}");
-      // Redirect to login after successful registration
-      Get.offNamed(RouteNames.loginScreen);
+  /// Manual registration: name, mobile, email (optional), password.
+  Future<void> register() async {
+    if (isLoading) return;
+    if (!validate()) return;
+
+    status.value = ApiStatus.loading;
+
+    final request = RegisterRequest(
+      loginType: 'manual',
+      role: _role,
+      name: nameController.text.trim(),
+      mobile: mobileController.text.trim(),
+      email: emailController.text.trim(),
+      password: passwordController.text,
+    );
+
+    final result = await _authRepository.register(request);
+    await _handleResult(result, isGoogle: false);
+  }
+
+  /// Google registration/login: sign in with Google, then pass both the
+  /// account id (`google_id`) and the auth token (`id_token`) to /register.
+  /// name/email are passed along when Google provides them.
+  Future<void> loginWithGoogle() async {
+    if (isLoading) return;
+    status.value = ApiStatus.loading;
+
+    try {
+      // Google caches the last-picked account and will silently re-sign
+      // into it on the next call, skipping the account chooser. Sign out
+      // first so the picker (with "Add account" / other Gmail options)
+      // shows every time, even if the user picked one before.
+      await _googleSignIn.signOut();
+
+      final account = await _googleSignIn.signIn();
+      if (account == null) {
+        // User cancelled the Google sign-in flow.
+        status.value = ApiStatus.initial;
+        return;
+      }
+
+      // Pull the actual auth token from the completed sign-in — prefer the
+      // ID token (signed JWT the backend can verify with Google); fall
+      // back to the access token if for some reason the ID token isn't
+      // returned.
+      final GoogleSignInAuthentication auth = await account.authentication;
+      final String? googleToken = auth.idToken ?? auth.accessToken;
+
+      if (googleToken == null || googleToken.isEmpty) {
+        status.value = ApiStatus.error;
+        CustomSnackBar.showError(
+          title: "Error",
+          message: "Couldn't get Google auth token. Please try again.",
+        );
+        return;
+      }
+
+      final request = RegisterRequest(
+        loginType: 'google',
+        role: _role,
+        name: account.displayName,
+        email: account.email,
+        googleId: account.id,
+        idToken: googleToken,
+      );
+
+      final result = await _authRepository.register(request);
+      await _handleResult(result, isGoogle: true);
+    } catch (e) {
+      status.value = ApiStatus.error;
+      debugPrint("Google sign-in error: $e");
+      CustomSnackBar.showError(
+        title: "Error",
+        message: "Google sign-in failed. Please try again.",
+      );
     }
   }
 
-  void loginWithGoogle() {
-    debugPrint("Register with Google");
+  Future<void> _handleResult(
+    ApiResult<RegisterResponse> result, {
+    required bool isGoogle,
+  }) async {
+    switch (result) {
+      case ApiSuccess(data: final data):
+        status.value = ApiStatus.successful;
+
+        if (data.token != null && data.token!.isNotEmpty) {
+          await SharedPreferencesHelper.instance.setValue(
+            StorageKeys.authToken,
+            data.token!,
+          );
+        }
+        await SharedPreferencesHelper.instance.setValue(
+          StorageKeys.userRole,
+          data.role ?? _role,
+        );
+
+        CustomSnackBar.showSuccess(
+          title: "Success",
+          message: data.message ?? "Registered successfully",
+        );
+
+        if (isGoogle) {
+          // Google sign-up doubles as sign-in — take the user straight in.
+          Get.offAllNamed(RouteNames.addressScreen);
+        } else {
+          Get.offNamed(RouteNames.loginScreen);
+        }
+
+      case ApiFailure(message: final message):
+        status.value = ApiStatus.error;
+        CustomSnackBar.showError(title: "Registration Failed", message: message);
+    }
   }
 
   void goToLogin() {
@@ -111,10 +259,12 @@ class RegisterController extends GetxController {
   @override
   void onClose() {
     nameController.dispose();
+    mobileController.dispose();
     emailController.dispose();
     passwordController.dispose();
     confirmPasswordController.dispose();
     nameFocusNode.dispose();
+    mobileFocusNode.dispose();
     emailFocusNode.dispose();
     passwordFocusNode.dispose();
     confirmPasswordFocusNode.dispose();

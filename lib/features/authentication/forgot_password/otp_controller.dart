@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:urban_services/routes/route_names.dart';
+import 'package:urban_services/widgets/custom_snackbar.dart';
 
 class OtpController extends GetxController {
   // Controllers for the 5 OTP input fields
@@ -34,10 +35,10 @@ class OtpController extends GetxController {
       // TODO: Implement actual verification logic
       Get.toNamed(RouteNames.resetPasswordScreen);
     } else {
-      Get.snackbar(
-        "Error",
-        "Please enter the full 5-digit code",
-        snackPosition: SnackPosition.BOTTOM,
+      CustomSnackBar.showError(
+        title: "Error",
+        message: "Please enter the full 5-digit code",
+        position: SnackPosition.BOTTOM,
       );
     }
   }

@@ -57,6 +57,7 @@ dependencies:
   #G
   geolocator: ^13.0.0
   get: ^4.7.3
+  google_sign_in: ^6.2.2
 
   #I
   image_picker: ^1.1.2

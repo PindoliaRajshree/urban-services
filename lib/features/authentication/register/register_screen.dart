@@ -2,11 +2,13 @@
 // Purpose: Screen for user registration, including name, email, and password fields with validation.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
+import 'package:urban_services/core/constants/api_status.dart';
 import 'package:urban_services/features/authentication/register/register_controller.dart';
 import 'package:urban_services/widgets/custom_text_field.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
@@ -104,6 +106,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               focusNode: controller.nameFocusNode,
                               textInputAction: TextInputAction.next,
                               errorText: controller.nameError.value,
+                            ),
+                          ),
+                          SizedBox(height: AppDimensions.padding20h),
+
+                          // Mobile Number Input
+                          Obx(
+                            () => CustomTextField(
+                              hintText: 'Enter Mobile Number',
+                              prefixIconPath: AppImages.mobile,
+                              controller: controller.mobileController,
+                              focusNode: controller.mobileFocusNode,
+                              keyboardType: TextInputType.phone,
+                              textInputAction: TextInputAction.next,
+                              errorText: controller.mobileError.value,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                              ],
                             ),
                           ),
                           SizedBox(height: AppDimensions.padding20h),
@@ -234,9 +253,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           SizedBox(height: AppDimensions.padding10h),
 
                           // Register Action
-                          PrimaryButton(
-                            text: 'Register',
-                            onPressed: controller.register,
+                          Obx(
+                            () => PrimaryButton(
+                              text: controller.status.value ==
+                                      ApiStatus.loading
+                                  ? 'Please wait...'
+                                  : 'Register',
+                              onPressed: controller.status.value ==
+                                      ApiStatus.loading
+                                  ? () {}
+                                  : controller.register,
+                            ),
                           ),
 
                           SizedBox(height: AppDimensions.padding10h),
@@ -287,10 +314,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           SizedBox(height: AppDimensions.padding20h),
 
                           // Social Registration Action
-                          SecondaryButton(
-                            text: 'Continue with Google',
-                            iconPath: AppImages.google,
-                            onPressed: controller.loginWithGoogle,
+                          Obx(
+                            () => SecondaryButton(
+                              text: 'Continue with Google',
+                              iconPath: AppImages.google,
+                              onPressed: controller.status.value ==
+                                      ApiStatus.loading
+                                  ? () {}
+                                  : controller.loginWithGoogle,
+                            ),
                           ),
                         ],
                       ),

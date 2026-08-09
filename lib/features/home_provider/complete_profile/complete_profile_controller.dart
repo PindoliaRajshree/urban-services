@@ -10,6 +10,7 @@ import 'package:intl/intl.dart';
 import 'package:urban_services/core/utils/validators.dart';
 import 'package:urban_services/features/home_provider/complete_profile/verify_number_dialog.dart';
 import 'package:urban_services/routes/route_names.dart';
+import 'package:urban_services/widgets/custom_snackbar.dart';
 
 class CompleteProfileController extends GetxController {
   final ImagePicker _picker = ImagePicker();
@@ -290,13 +291,7 @@ class CompleteProfileController extends GetxController {
     }
     ifscError.value = null;
     debugPrint("Verifying IFSC: $ifsc");
-    Get.snackbar(
-      "Success",
-      "IFSC Code Verified",
-      snackPosition: SnackPosition.TOP,
-      backgroundColor: Colors.green,
-      colorText: Colors.white,
-    );
+    CustomSnackBar.showSuccess(title: "Success", message: "IFSC Code Verified");
   }
 
   /// Sets the service radius selection
