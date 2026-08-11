@@ -1,13 +1,13 @@
 // File: lib/features/authentication/login/login_screen.dart
-// Purpose: Screen for user authentication via mobile number and password.
+// Purpose: Screen for user authentication via email and password.
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
+import 'package:urban_services/core/constants/api_status.dart';
 import 'package:urban_services/features/authentication/login/login_controller.dart';
 import 'package:urban_services/routes/route_names.dart';
 import 'package:urban_services/widgets/custom_text_field.dart';
@@ -96,19 +96,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     padding: EdgeInsets.all(AppDimensions.radius20r),
                     child: Column(
                       children: [
-                        // Mobile Number Input
+                        // Email Input
                         Obx(
                           () => CustomTextField(
-                            hintText: 'Enter Mobile Number',
-                            prefixIconPath: AppImages.mobile,
-                            controller: controller.mobileController,
-                            focusNode: controller.mobileFocusNode,
-                            keyboardType: TextInputType.phone,
+                            hintText: 'Enter Email',
+                            prefixIconPath: AppImages.email,
+                            controller: controller.emailController,
+                            focusNode: controller.emailFocusNode,
+                            keyboardType: TextInputType.emailAddress,
                             textInputAction: TextInputAction.next,
-                            errorText: controller.mobileError.value,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                            ],
+                            errorText: controller.emailError.value,
                           ),
                         ),
                         SizedBox(height: AppDimensions.padding20h),
@@ -145,9 +142,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
 
                         // Login Action
-                        PrimaryButton(
-                          text: 'Login',
-                          onPressed: controller.login,
+                        Obx(
+                          () => PrimaryButton(
+                            text: 'Login',
+                            isLoading:
+                                controller.status.value == ApiStatus.loading,
+                            onPressed: controller.login,
+                          ),
                         ),
 
                         SizedBox(height: AppDimensions.padding10h),
@@ -201,7 +202,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         SecondaryButton(
                           text: 'Continue with Google',
                           iconPath: AppImages.google,
-                          onPressed: () {},
+                          onPressed: controller.loginWithGoogle,
                         ),
                       ],
                     ),

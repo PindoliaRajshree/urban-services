@@ -255,14 +255,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           // Register Action
                           Obx(
                             () => PrimaryButton(
-                              text: controller.status.value ==
-                                      ApiStatus.loading
-                                  ? 'Please wait...'
-                                  : 'Register',
-                              onPressed: controller.status.value ==
-                                      ApiStatus.loading
-                                  ? () {}
-                                  : controller.register,
+                              text: 'Register',
+                              isLoading:
+                                  controller.status.value == ApiStatus.loading,
+                              onPressed: controller.register,
                             ),
                           ),
 
@@ -318,10 +314,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             () => SecondaryButton(
                               text: 'Continue with Google',
                               iconPath: AppImages.google,
-                              onPressed: controller.status.value ==
-                                      ApiStatus.loading
-                                  ? () {}
-                                  : controller.loginWithGoogle,
+                              isLoading:
+                                  controller.status.value == ApiStatus.loading,
+                              onPressed: controller.loginWithGoogle,
                             ),
                           ),
                         ],

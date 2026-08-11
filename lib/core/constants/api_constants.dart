@@ -19,4 +19,5 @@ class ApiConstants {
 
   // ---- Auth ----
   static const String register = 'register';
+  static const String login = 'login';
 }

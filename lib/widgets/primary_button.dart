@@ -20,33 +20,66 @@ class PrimaryButton extends StatelessWidget {
   /// Optional custom height for the button
   final double? height;
 
+  /// When true, the label is swapped for a spinner and taps are ignored.
+  /// Callers no longer need to juggle their own "Please wait..." text /
+  /// no-op callback while an API call is in flight — just pass the
+  /// controller's loading flag straight through.
+  final bool isLoading;
+
   const PrimaryButton({
     super.key,
     required this.text,
     required this.onPressed,
     this.width,
     this.height,
+    this.isLoading = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final double spinnerSize = AppDimensions.containerHeight22h;
+
     return GestureDetector(
-      onTap: onPressed,
-      child: Container(
-        width: width ?? double.infinity,
-        height: height ?? AppDimensions.containerHeight50h,
-        decoration: BoxDecoration(
-          // Uses the primary brand gradient
-          gradient: AppColors.gradient,
-          borderRadius: BorderRadius.circular(AppDimensions.radius10r),
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          text,
-          style: customTextStyle(
-            AppTextSizes.doubleLargeTextSize, // Font size 18
-            AppColors.white,
-            FontWeight.w600, // Medium weight
+      onTap: isLoading ? null : onPressed,
+      child: AnimatedOpacity(
+        opacity: isLoading ? 0.75 : 1,
+        duration: const Duration(milliseconds: 200),
+        child: Container(
+          width: width ?? double.infinity,
+          height: height ?? AppDimensions.containerHeight50h,
+          decoration: BoxDecoration(
+            // Uses the primary brand gradient
+            gradient: AppColors.gradient,
+            borderRadius: BorderRadius.circular(AppDimensions.radius10r),
+          ),
+          alignment: Alignment.center,
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            transitionBuilder: (child, animation) => FadeTransition(
+              opacity: animation,
+              child: ScaleTransition(scale: animation, child: child),
+            ),
+            child: isLoading
+                ? SizedBox(
+                    key: const ValueKey('loading'),
+                    width: spinnerSize,
+                    height: spinnerSize,
+                    child: const CircularProgressIndicator(
+                      strokeWidth: 2.4,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        AppColors.white,
+                      ),
+                    ),
+                  )
+                : Text(
+                    text,
+                    key: const ValueKey('label'),
+                    style: customTextStyle(
+                      AppTextSizes.doubleLargeTextSize, // Font size 18
+                      AppColors.white,
+                      FontWeight.w600, // Medium weight
+                    ),
+                  ),
           ),
         ),
       ),

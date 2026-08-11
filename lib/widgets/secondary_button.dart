@@ -23,6 +23,10 @@ class SecondaryButton extends StatelessWidget {
   /// Optional prefix icon path for the button
   final String? iconPath;
 
+  /// When true, the icon + label are swapped for a spinner and taps are
+  /// ignored.
+  final bool isLoading;
+
   const SecondaryButton({
     super.key,
     required this.text,
@@ -30,42 +34,69 @@ class SecondaryButton extends StatelessWidget {
     this.width,
     this.height,
     this.iconPath,
+    this.isLoading = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final double spinnerSize = AppDimensions.containerHeight22h;
+
     return GestureDetector(
-      onTap: onPressed,
-      child: Container(
-        width: width ?? double.infinity,
-        height: height ?? AppDimensions.containerHeight50h,
-        decoration: BoxDecoration(
-          color: Colors.transparent,
-          // Outline border with darkGrey color
-          border: Border.all(color: AppColors.darkGrey),
-          borderRadius: BorderRadius.circular(AppDimensions.radius10r),
-        ),
-        alignment: Alignment.center,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (iconPath != null) ...[
-              Image.asset(
-                iconPath!,
-                height: AppDimensions.containerHeight20h,
-                width: AppDimensions.containerWidth20w,
-              ),
-              SizedBox(width: AppDimensions.padding10w),
-            ],
-            Text(
-              text,
-              style: customTextStyle(
-                AppTextSizes.doubleLargeTextSize, // Font size 18
-                AppColors.text,
-                FontWeight.w600, // Medium weight
-              ),
+      onTap: isLoading ? null : onPressed,
+      child: AnimatedOpacity(
+        opacity: isLoading ? 0.75 : 1,
+        duration: const Duration(milliseconds: 200),
+        child: Container(
+          width: width ?? double.infinity,
+          height: height ?? AppDimensions.containerHeight50h,
+          decoration: BoxDecoration(
+            color: Colors.transparent,
+            // Outline border with darkGrey color
+            border: Border.all(color: AppColors.darkGrey),
+            borderRadius: BorderRadius.circular(AppDimensions.radius10r),
+          ),
+          alignment: Alignment.center,
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            transitionBuilder: (child, animation) => FadeTransition(
+              opacity: animation,
+              child: ScaleTransition(scale: animation, child: child),
             ),
-          ],
+            child: isLoading
+                ? SizedBox(
+                    key: const ValueKey('loading'),
+                    width: spinnerSize,
+                    height: spinnerSize,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.4,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        AppColors.darkGrey,
+                      ),
+                    ),
+                  )
+                : Row(
+                    key: const ValueKey('label'),
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (iconPath != null) ...[
+                        Image.asset(
+                          iconPath!,
+                          height: AppDimensions.containerHeight20h,
+                          width: AppDimensions.containerWidth20w,
+                        ),
+                        SizedBox(width: AppDimensions.padding10w),
+                      ],
+                      Text(
+                        text,
+                        style: customTextStyle(
+                          AppTextSizes.doubleLargeTextSize, // Font size 18
+                          AppColors.text,
+                          FontWeight.w600, // Medium weight
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
         ),
       ),
     );

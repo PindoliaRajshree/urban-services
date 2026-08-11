@@ -239,6 +239,8 @@ class RegisterController extends GetxController {
           message: data.message ?? "Registered successfully",
         );
 
+        _clearForm();
+
         if (isGoogle) {
           // Google sign-up doubles as sign-in — take the user straight in.
           Get.offAllNamed(RouteNames.addressScreen);
@@ -250,6 +252,26 @@ class RegisterController extends GetxController {
         status.value = ApiStatus.error;
         CustomSnackBar.showError(title: "Registration Failed", message: message);
     }
+  }
+
+  /// Resets every input field and validation error back to a blank state.
+  /// Called after a successful register so the form doesn't carry stale
+  /// values into the next screen/attempt.
+  void _clearForm() {
+    nameController.clear();
+    mobileController.clear();
+    emailController.clear();
+    passwordController.clear();
+    confirmPasswordController.clear();
+
+    nameError.value = null;
+    mobileError.value = null;
+    emailError.value = null;
+    passwordError.value = null;
+    confirmPasswordError.value = null;
+    termsError.value = null;
+
+    agreeToTerms.value = false;
   }
 
   void goToLogin() {
