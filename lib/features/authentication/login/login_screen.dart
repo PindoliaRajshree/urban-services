@@ -199,10 +199,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         SizedBox(height: AppDimensions.padding20h),
 
                         // Social Login Action
-                        SecondaryButton(
-                          text: 'Continue with Google',
-                          iconPath: AppImages.google,
-                          onPressed: controller.loginWithGoogle,
+                        Obx(
+                          () => SecondaryButton(
+                            text: 'Continue with Google',
+                            iconPath: AppImages.google,
+                            isLoading:
+                                controller.status.value == ApiStatus.loading,
+                            onPressed: controller.loginWithGoogle,
+                          ),
                         ),
                       ],
                     ),

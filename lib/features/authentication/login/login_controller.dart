@@ -1,9 +1,10 @@
 // File: lib/features/authentication/login/login_controller.dart
 // Purpose: State management and logic for user authentication via
-// POST /login (email + password). Google login isn't available yet.
+// POST /login — manual (email + password) and Google (google_id + id_token).
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:urban_services/core/constants/api_status.dart';
 import 'package:urban_services/core/constants/storage_keys.dart';
 import 'package:urban_services/core/services/api_result.dart';
@@ -20,6 +21,7 @@ class LoginController extends GetxController {
     : _authRepository = authRepository ?? AuthRepository();
 
   final AuthRepository _authRepository;
+  final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: const ['email']);
 
   // Input controllers for email and password
   final emailController = TextEditingController();
@@ -79,9 +81,9 @@ class LoginController extends GetxController {
     status.value = ApiStatus.loading;
 
     final request = LoginRequest(
+      loginType: 'manual',
       email: emailController.text.trim(),
       password: passwordController.text,
-      loginType: 'manual',
     );
 
     final result = await _authRepository.login(request);
@@ -160,12 +162,60 @@ class LoginController extends GetxController {
     passwordError.value = null;
   }
 
-  /// Google login isn't available yet.
-  void loginWithGoogle() {
-    CustomSnackBar.showInfo(
-      title: "Coming Soon",
-      message: "Google login isn't available yet.",
-    );
+  /// Signs in with Google, then calls POST /login with `login_type: google`
+  /// plus the account id (`google_id`) and auth token (`id_token`) — no
+  /// password is sent for this flow. Mirrors RegisterController's Google
+  /// flow.
+  Future<void> loginWithGoogle() async {
+    if (isLoading) return;
+    status.value = ApiStatus.loading;
+
+    try {
+      // Google caches the last-picked account and will silently re-sign
+      // into it on the next call, skipping the account chooser. Sign out
+      // first so the picker shows every time, even if the user picked one
+      // before.
+      await _googleSignIn.signOut();
+
+      final account = await _googleSignIn.signIn();
+      if (account == null) {
+        // User cancelled the Google sign-in flow.
+        status.value = ApiStatus.initial;
+        return;
+      }
+
+      // Pull the actual auth token from the completed sign-in — prefer the
+      // ID token (signed JWT the backend can verify with Google); fall back
+      // to the access token if for some reason the ID token isn't returned.
+      final GoogleSignInAuthentication auth = await account.authentication;
+      final String? googleToken = auth.idToken ?? auth.accessToken;
+
+      if (googleToken == null || googleToken.isEmpty) {
+        status.value = ApiStatus.error;
+        CustomSnackBar.showError(
+          title: "Error",
+          message: "Couldn't get Google auth token. Please try again.",
+        );
+        return;
+      }
+
+      final request = LoginRequest(
+        loginType: 'google',
+        email: account.email,
+        googleId: account.id,
+        idToken: googleToken,
+      );
+
+      final result = await _authRepository.login(request);
+      await _handleResult(result);
+    } catch (e) {
+      status.value = ApiStatus.error;
+      debugPrint("Google sign-in error: $e");
+      CustomSnackBar.showError(
+        title: "Error",
+        message: "Google sign-in failed. Please try again.",
+      );
+    }
   }
 
   @override
