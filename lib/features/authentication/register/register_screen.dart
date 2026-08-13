@@ -130,7 +130,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           // Email Input
                           Obx(
                             () => CustomTextField(
-                              hintText: 'Enter Email (Optional)',
+                              hintText: 'Enter Email',
                               prefixIconPath: AppImages.email,
                               controller: controller.emailController,
                               focusNode: controller.emailFocusNode,

@@ -1,13 +1,14 @@
 // File: lib/features/authentication/forgot_password/forgot_password_screen.dart
-// Purpose: Screen for users to initiate password recovery via their mobile number.
+// Purpose: Screen for users to initiate password recovery via their email —
+// step 1 of the shared forgot-password flow (send OTP).
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
+import 'package:urban_services/core/constants/api_status.dart';
 import 'package:urban_services/features/authentication/forgot_password/forgot_password_controller.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
 import 'package:urban_services/widgets/primary_button.dart';
@@ -20,8 +21,9 @@ class ForgotPasswordScreen extends StatefulWidget {
 }
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
-  // Initialize the controller for this screen
-  final controller = Get.put(ForgotPasswordController());
+  // Marked permanent so this controller (and the email it captures) survives
+  // navigation into the OTP and Reset Password screens further down the flow.
+  final controller = Get.put(ForgotPasswordController(), permanent: true);
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +74,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
               // 5. Instruction Text
               Text(
-                'Please enter your number to reset the password',
+                'Please enter your email to reset the password',
                 style: customTextStyle(
                   AppTextSizes.largeMediumTextSize, // 14
                   AppColors.text,
@@ -82,9 +84,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
               SizedBox(height: AppDimensions.padding20h),
 
-              // 6. Mobile Number Label
+              // 6. Email Label
               Text(
-                'Your Mobile Number',
+                'Your Email Address',
                 style: customTextStyle(
                   AppTextSizes.largeTextSize, // 16
                   AppColors.grey3,
@@ -94,7 +96,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
               SizedBox(height: AppDimensions.padding10h),
 
-              // 7. Custom Styled Mobile TextField
+              // 7. Custom Styled Email TextField
               Obx(
                 () => Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -106,7 +108,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           AppDimensions.radius10r,
                         ),
                         border: Border.all(
-                          color: controller.mobileError.value != null
+                          color: controller.emailError.value != null
                               ? AppColors.danger
                               : AppColors.grey,
                           width: AppDimensions.containerWidth1w,
@@ -116,21 +118,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         horizontal: AppDimensions.padding10w,
                       ),
                       child: TextField(
-                        controller: controller.mobileController,
-                        focusNode: controller.mobileFocusNode,
-                        keyboardType: TextInputType.phone,
+                        controller: controller.emailController,
+                        focusNode: controller.emailFocusNode,
+                        keyboardType: TextInputType.emailAddress,
                         textInputAction: TextInputAction.done,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                        ],
-                        onSubmitted: (_) => controller.resetPassword(),
+                        onSubmitted: (_) => controller.sendOtp(),
                         style: customTextStyle(
                           AppTextSizes.smallTextSize,
                           AppColors.black,
                           FontWeight.w400,
                         ),
                         decoration: InputDecoration(
-                          hintText: 'Enter your mobile number',
+                          hintText: 'Enter your email',
                           hintStyle: customTextStyle(
                             AppTextSizes.smallTextSize, // 12
                             AppColors.darkGrey,
@@ -144,14 +143,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         ),
                       ),
                     ),
-                    if (controller.mobileError.value != null)
+                    if (controller.emailError.value != null)
                       Padding(
                         padding: EdgeInsets.only(
                           top: AppDimensions.padding4h,
                           left: AppDimensions.padding4w,
                         ),
                         child: Text(
-                          controller.mobileError.value!,
+                          controller.emailError.value!,
                           style: customTextStyle(
                             AppTextSizes.stableTextSize,
                             AppColors.danger,
@@ -166,9 +165,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               SizedBox(height: AppDimensions.padding30h),
 
               // 8. Reset Password Button
-              PrimaryButton(
-                text: 'Reset Password',
-                onPressed: controller.resetPassword,
+              Obx(
+                () => PrimaryButton(
+                  text: 'Reset Password',
+                  isLoading: controller.status.value == ApiStatus.loading,
+                  onPressed: controller.sendOtp,
+                ),
               ),
             ],
           ),

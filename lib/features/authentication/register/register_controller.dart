@@ -77,8 +77,10 @@ class RegisterController extends GetxController {
       mobileError.value = null;
     }
 
-    if (emailController.text.trim().isNotEmpty &&
-        !AppValidators.isValidEmail(emailController.text)) {
+    if (emailController.text.trim().isEmpty) {
+      emailError.value = "Email is required";
+      isValid = false;
+    } else if (!AppValidators.isValidEmail(emailController.text)) {
       emailError.value = "Please enter a valid email";
       isValid = false;
     } else {

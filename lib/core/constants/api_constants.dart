@@ -21,4 +21,9 @@ class ApiConstants {
   static const String register = 'register';
   static const String login = 'login';
   static const String logout = 'logout';
+
+  /// Single endpoint that handles all three forgot-password steps (send
+  /// OTP, verify OTP, reset password) — differentiated by which fields are
+  /// present in the request body. Common to both user and provider roles.
+  static const String forgotPassword = 'forgot-password';
 }

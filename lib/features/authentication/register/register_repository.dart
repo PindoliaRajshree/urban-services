@@ -1,11 +1,12 @@
 // File: lib/features/authentication/register/register_repository.dart
 // Purpose: Auth-related network calls — registration (manual + Google),
-// login and logout.
+// login, logout and forgot-password.
 
 import 'package:urban_services/core/constants/api_constants.dart';
 import 'package:urban_services/core/constants/storage_keys.dart';
 import 'package:urban_services/core/services/api_result.dart';
 import 'package:urban_services/core/services/api_service.dart';
+import 'package:urban_services/features/authentication/forgot_password/models/forgot_password_request.dart';
 import 'package:urban_services/features/authentication/login/models/login_request.dart';
 import 'package:urban_services/features/authentication/login/models/login_response.dart';
 import 'package:urban_services/features/authentication/register/models/register_request.dart';
@@ -48,6 +49,17 @@ class AuthRepository {
       data: {'token': token},
       fromJson: (json) =>
           (json['message'] ?? 'Logged out successfully').toString(),
+    );
+  }
+
+  /// Calls POST /forgot-password — shared across all three steps of the
+  /// flow (send OTP / verify OTP / reset password); see
+  /// [ForgotPasswordRequest] for the exact shape of each step.
+  Future<ApiResult<String>> forgotPassword(ForgotPasswordRequest request) {
+    return _apiService.post<String>(
+      ApiConstants.forgotPassword,
+      data: request.toJson(),
+      fromJson: (json) => (json['message'] ?? 'Success').toString(),
     );
   }
 }

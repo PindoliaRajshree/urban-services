@@ -1,13 +1,15 @@
 // File: lib/features/authentication/forgot_password/reset_password_screen.dart
-// Purpose: Screen for users to set a new password after successful OTP verification.
+// Purpose: Step 3 of the forgot-password flow — set a new password after
+// successful OTP verification.
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:urban_services/core/colors/colors.dart';
+import 'package:urban_services/core/constants/api_status.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
-import 'package:urban_services/features/authentication/forgot_password/reset_password_controller.dart';
+import 'package:urban_services/features/authentication/forgot_password/forgot_password_controller.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
 import 'package:urban_services/widgets/primary_button.dart';
 
@@ -19,8 +21,9 @@ class ResetPasswordScreen extends StatefulWidget {
 }
 
 class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
-  // Initialize the logic controller
-  final controller = Get.put(ResetPasswordController());
+  // Reuse the flow controller put (permanent) on ForgotPasswordScreen, so
+  // the verified email/OTP from steps 1-2 carry through here.
+  final controller = Get.find<ForgotPasswordController>();
 
   @override
   Widget build(BuildContext context) {
@@ -128,9 +131,12 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 SizedBox(height: AppDimensions.padding20h),
 
                 // 8. Update Password Button
-                PrimaryButton(
-                  text: 'Update Password',
-                  onPressed: controller.updatePassword,
+                Obx(
+                  () => PrimaryButton(
+                    text: 'Update Password',
+                    isLoading: controller.status.value == ApiStatus.loading,
+                    onPressed: controller.updatePassword,
+                  ),
                 ),
 
                 SizedBox(height: AppDimensions.padding30h),
