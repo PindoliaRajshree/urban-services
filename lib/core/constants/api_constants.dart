@@ -26,4 +26,8 @@ class ApiConstants {
   /// OTP, verify OTP, reset password) — differentiated by which fields are
   /// present in the request body. Common to both user and provider roles.
   static const String forgotPassword = 'forgot-password';
+
+  /// Resends the OTP for the email captured in step 1 of the
+  /// forgot-password flow. Separate from [forgotPassword] itself.
+  static const String resendOtp = 'resend-otp';
 }

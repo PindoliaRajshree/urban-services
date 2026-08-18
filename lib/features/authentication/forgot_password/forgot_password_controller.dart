@@ -1,13 +1,16 @@
 // File: lib/features/authentication/forgot_password/forgot_password_controller.dart
 // Purpose: Owns the entire forgot-password flow — send OTP, verify OTP,
 // reset password — all three of which call the same POST /forgot-password
-// endpoint. A single controller (put permanent on ForgotPasswordScreen, then
-// found via Get.find on the OTP and Reset screens) carries the email/OTP
-// state across the three screens, the same way LoginController carries the
-// selected role across the login/register screens.
+// endpoint, plus resend OTP (POST /resend-otp) with a 30s cooldown and a
+// 2-resend cap. A single controller (put permanent on ForgotPasswordScreen,
+// then found via Get.find on the OTP and Reset screens) carries the
+// email/OTP state across the three screens, the same way LoginController
+// carries the selected role across the login/register screens.
 //
 // Flow is identical for both 'user' and 'provider' accounts — no role is
 // involved anywhere here.
+
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -15,6 +18,7 @@ import 'package:urban_services/core/constants/api_status.dart';
 import 'package:urban_services/core/services/api_result.dart';
 import 'package:urban_services/core/utils/validators.dart';
 import 'package:urban_services/features/authentication/forgot_password/models/forgot_password_request.dart';
+import 'package:urban_services/features/authentication/forgot_password/models/resend_otp_request.dart';
 import 'package:urban_services/features/authentication/register/register_repository.dart';
 import 'package:urban_services/routes/route_names.dart';
 import 'package:urban_services/widgets/custom_snackbar.dart';
@@ -72,6 +76,8 @@ class ForgotPasswordController extends GetxController {
       case ApiSuccess(data: final message):
         status.value = ApiStatus.successful;
         _email = email;
+        resendAttempts.value = 0;
+        _startResendCooldown();
         CustomSnackBar.showSuccess(title: "Success", message: message);
         Get.toNamed(RouteNames.checkEmailScreen);
       case ApiFailure(message: final message):
@@ -151,22 +157,78 @@ class ForgotPasswordController extends GetxController {
     }
   }
 
-  /// Resends the OTP for the email captured in step 1.
+  // ---------------------------------------------------------------------
+  // Resend OTP — 30s cooldown after every send, capped at 2 resends
+  // ---------------------------------------------------------------------
+
+  /// Seconds to wait before "Resend code" becomes tappable again. Restarts
+  /// after the OTP is first sent (step 1) and after every successful resend.
+  static const int resendCooldownSeconds = 30;
+
+  /// Resend is capped at [maxResendAttempts] per flow. The attempt beyond
+  /// that is blocked client-side with a "try again later" message instead
+  /// of hitting the API.
+  static const int maxResendAttempts = 2;
+
+  final resendSecondsRemaining = 0.obs;
+  final resendAttempts = 0.obs;
+  Timer? _resendTimer;
+
+  /// True once the user has used up all [maxResendAttempts] resends.
+  bool get resendLimitReached => resendAttempts.value >= maxResendAttempts;
+
+  void _startResendCooldown() {
+    _resendTimer?.cancel();
+    resendSecondsRemaining.value = resendCooldownSeconds;
+    _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (resendSecondsRemaining.value <= 1) {
+        resendSecondsRemaining.value = 0;
+        timer.cancel();
+      } else {
+        resendSecondsRemaining.value--;
+      }
+    });
+  }
+
+  void _stopResendCooldown() {
+    _resendTimer?.cancel();
+    _resendTimer = null;
+    resendSecondsRemaining.value = 0;
+  }
+
+  /// Resends the OTP for the email captured in step 1 by calling
+  /// POST /resend-otp. Gated by the 30s cooldown (UI disables the tap
+  /// target while it's running, this is a belt-and-braces guard) and by
+  /// [maxResendAttempts] — once reached, the user is told to try later
+  /// instead of another request going out.
   Future<void> resendCode() async {
     if (isLoading) return;
+    if (resendSecondsRemaining.value > 0) return;
 
     final email = _email;
     if (email == null) return;
 
+    if (resendLimitReached) {
+      CustomSnackBar.showWarning(
+        title: "Please try again later",
+        message:
+            "You've reached the maximum number of resend attempts. "
+            "Please try again after some time.",
+      );
+      return;
+    }
+
     status.value = ApiStatus.loading;
 
-    final result = await _authRepository.forgotPassword(
-      ForgotPasswordRequest(email: email),
+    final result = await _authRepository.resendOtp(
+      ResendOtpRequest(email: email),
     );
 
     switch (result) {
       case ApiSuccess(data: final message):
         status.value = ApiStatus.successful;
+        resendAttempts.value++;
+        _startResendCooldown();
         CustomSnackBar.showSuccess(title: "Code Sent", message: message);
       case ApiFailure(message: final message):
         status.value = ApiStatus.error;
@@ -275,6 +337,9 @@ class ForgotPasswordController extends GetxController {
 
     _email = null;
     _verifiedOtp = null;
+
+    resendAttempts.value = 0;
+    _stopResendCooldown();
   }
 
   @override
@@ -291,6 +356,7 @@ class ForgotPasswordController extends GetxController {
     confirmPasswordController.dispose();
     passwordFocus.dispose();
     confirmPasswordFocus.dispose();
+    _resendTimer?.cancel();
     super.onClose();
   }
 }

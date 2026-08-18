@@ -1,6 +1,8 @@
 // File: lib/features/authentication/forgot_password/check_email_screen.dart
 // Purpose: Step 2 of the forgot-password flow — verify the OTP (see
-// ForgotPasswordController.otpLength) sent to the user's email.
+// ForgotPasswordController.otpLength) sent to the user's email. Also hosts
+// the "Resend code" action, which is disabled during the 30s cooldown and
+// capped at ForgotPasswordController.maxResendAttempts.
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -109,34 +111,48 @@ class _CheckEmailScreenState extends State<CheckEmailScreen> {
 
               SizedBox(height: AppDimensions.padding10h),
 
-              // 9. Resend Option (RichText)
+              // 9. Resend Option (RichText) — shows a live countdown while
+              // the 30s cooldown is running, and switches to a "try again
+              // later" message once the 2-resend cap is reached.
               Center(
-                child: GestureDetector(
-                  onTap: controller.resendCode,
-                  child: RichText(
-                    textAlign: TextAlign.center,
-                    text: TextSpan(
-                      children: [
-                        TextSpan(
-                          text: 'Haven’t got the email yet? ',
-                          style: customTextStyle(
-                            AppTextSizes.largeTextSize, // 16
-                            AppColors.grey,
-                            FontWeight.w600,
+                child: Obx(() {
+                  final secondsLeft = controller.resendSecondsRemaining.value;
+                  final limitReached = controller.resendLimitReached;
+                  final canTap = !limitReached && secondsLeft == 0;
+
+                  final String resendLabel = limitReached
+                      ? 'Please try again later'
+                      : secondsLeft > 0
+                      ? 'Resend code in ${secondsLeft}s'
+                      : 'Resend code';
+
+                  return GestureDetector(
+                    onTap: canTap ? controller.resendCode : null,
+                    child: RichText(
+                      textAlign: TextAlign.center,
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: 'Haven’t got the email yet? ',
+                            style: customTextStyle(
+                              AppTextSizes.largeTextSize, // 16
+                              AppColors.grey,
+                              FontWeight.w600,
+                            ),
                           ),
-                        ),
-                        TextSpan(
-                          text: 'Resend code',
-                          style: customTextStyle(
-                            AppTextSizes.largeTextSize, // 16
-                            AppColors.primaryDark,
-                            FontWeight.w600,
+                          TextSpan(
+                            text: resendLabel,
+                            style: customTextStyle(
+                              AppTextSizes.largeTextSize, // 16
+                              canTap ? AppColors.primaryDark : AppColors.grey,
+                              FontWeight.w600,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ),
+                  );
+                }),
               ),
             ],
           ),

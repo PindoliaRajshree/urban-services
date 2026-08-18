@@ -7,6 +7,7 @@ import 'package:urban_services/core/constants/storage_keys.dart';
 import 'package:urban_services/core/services/api_result.dart';
 import 'package:urban_services/core/services/api_service.dart';
 import 'package:urban_services/features/authentication/forgot_password/models/forgot_password_request.dart';
+import 'package:urban_services/features/authentication/forgot_password/models/resend_otp_request.dart';
 import 'package:urban_services/features/authentication/login/models/login_request.dart';
 import 'package:urban_services/features/authentication/login/models/login_response.dart';
 import 'package:urban_services/features/authentication/register/models/register_request.dart';
@@ -60,6 +61,17 @@ class AuthRepository {
       ApiConstants.forgotPassword,
       data: request.toJson(),
       fromJson: (json) => (json['message'] ?? 'Success').toString(),
+    );
+  }
+
+  /// Calls POST /resend-otp — resends the OTP for the email captured in
+  /// step 1 of the forgot-password flow.
+  Future<ApiResult<String>> resendOtp(ResendOtpRequest request) {
+    return _apiService.post<String>(
+      ApiConstants.resendOtp,
+      data: request.toJson(),
+      fromJson: (json) =>
+          (json['message'] ?? 'OTP sent successfully').toString(),
     );
   }
 }
