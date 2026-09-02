@@ -144,7 +144,14 @@ class LoginController extends GetxController {
 
         _clearForm();
 
-        Get.offAllNamed(RouteNames.addressScreen);
+        // Route by role: "set location" is a user-only onboarding step, so
+        // providers skip straight to their home dashboard while users go
+        // through the address/location screen first.
+        if (userRole.value.toLowerCase() == 'provider') {
+          Get.offAllNamed(RouteNames.homeMain);
+        } else {
+          Get.offAllNamed(RouteNames.addressScreen);
+        }
 
       case ApiFailure(message: final message):
         status.value = ApiStatus.error;

@@ -1,10 +1,11 @@
 // File: lib/features/profile/profile_controller.dart
 // Purpose: State management and logic for the Profile screen, including
-// logout via POST /logout.
+// logout via POST /logout. Logout fully wipes local storage and disposes
+// every GetX controller in memory so nothing from this account's session
+// carries over into the next login.
 
 import 'package:get/get.dart';
 import 'package:urban_services/core/constants/api_status.dart';
-import 'package:urban_services/core/constants/storage_keys.dart';
 import 'package:urban_services/core/services/api_result.dart';
 import 'package:urban_services/features/authentication/register/register_repository.dart';
 import 'package:urban_services/routes/route_names.dart';
@@ -47,18 +48,26 @@ class ProfileController extends GetxController {
     await _clearSession();
 
     if (Get.isDialogOpen ?? false) Get.back();
+
+    // Dispose every GetX controller currently held in memory — including
+    // ones registered with `permanent: true` (LoginController,
+    // ForgotPasswordController) — so no cached state from this account
+    // (role, address, profile data, form inputs, etc.) survives into the
+    // next login. Must run BEFORE the navigation below: screens re-create
+    // their controllers with Get.put(...) on build, and Get.put() reuses
+    // an already-registered instance instead of making a fresh one, so
+    // deleting first is what actually resets them.
+    Get.deleteAll(force: true);
+
     Get.offAllNamed(RouteNames.welcomeScreen);
   }
 
-  /// Removes locally stored auth/session data.
+  /// Wipes ALL locally stored data (not just auth/profile keys) so the
+  /// next login starts from a completely clean slate — any screen-local
+  /// cache written under a key this controller doesn't know about is
+  /// cleared too.
   Future<void> _clearSession() async {
-    final prefs = SharedPreferencesHelper.instance;
-    await prefs.remove(StorageKeys.authToken);
-    await prefs.remove(StorageKeys.userId);
-    await prefs.remove(StorageKeys.userName);
-    await prefs.remove(StorageKeys.userEmail);
-    await prefs.remove(StorageKeys.userMobile);
-    await prefs.remove(StorageKeys.userRole);
+    await SharedPreferencesHelper.instance.clear();
   }
 
   /// Closes the current active dialog.

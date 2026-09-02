@@ -55,8 +55,16 @@ dependencies:
   flutter_screenutil: ^5.9.3
 
   #G
+  geocoding: ^3.0.0
   geolocator: ^13.0.0
   get: ^4.7.3
+  google_maps_flutter: ^2.9.0
+  # Direct (not just transitive) deps so main.dart can force Hybrid
+  # Composition on Android — works around a known google_maps_flutter
+  # rendering bug where the map shows as a solid color block (e.g. a
+  # yellow box) instead of tiles on some devices/emulators.
+  google_maps_flutter_android: ^2.19.0
+  google_maps_flutter_platform_interface: ^2.16.0
   google_sign_in: ^6.2.2
 
   #I

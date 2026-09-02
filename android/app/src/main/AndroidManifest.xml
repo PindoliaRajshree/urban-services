@@ -29,6 +29,15 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!-- Google Maps SDK API key — used by the google_maps_flutter
+             plugin (Add Address screen's live map). Replace the value below
+             with a real key restricted to this app's package name/SHA-1
+             (see "Maps SDK for Android" in Google Cloud Console). The map
+             will not render until this is a valid key. -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyCqhp43e2-dckwF04XtGyFMeTQKxkjpfD4" />
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

@@ -135,7 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   // Complete Your Profile Section with Animation
                   CompleteProfileCard(
                     onFinish: () {
-                      // Navigate to profile completion or settings
+                      Get.toNamed(RouteNames.completeProviderProfile);
                     },
                   ),
 

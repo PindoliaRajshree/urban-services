@@ -187,7 +187,7 @@ class CustomSnackBar {
       margin: EdgeInsets.symmetric(horizontal: AppDimensions.padding15w),
       padding: EdgeInsets.symmetric(
         horizontal: AppDimensions.padding15w,
-        vertical: AppDimensions.padding12h,
+        vertical: AppDimensions.padding8h,
       ),
       snackPosition: position,
       snackStyle: SnackStyle.FLOATING,

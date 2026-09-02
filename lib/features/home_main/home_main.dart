@@ -43,7 +43,7 @@ class _HomeMainState extends State<HomeMain> {
       const Center(child: Text('Services')),
       const MyBookingsScreen(),
       // Dynamically load the dashboard based on role
-      loginController.userRole.value == 'Provider'
+      loginController.userRole.value.toLowerCase() == 'provider'
           ? const ProviderHomeScreen()
           : const HomeScreen(),
       const ChatListScreen(),

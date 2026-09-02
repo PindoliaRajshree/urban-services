@@ -1,5 +1,7 @@
 // File: lib/features/authentication/splash/splash_screen.dart
-// Purpose: Initial animated entry screen with transition to Welcome screen.
+// Purpose: Initial animated entry screen. Routes to Home directly when a
+// session is already stored (persistent login — the user stays logged in
+// until they manually log out), otherwise transitions to Welcome.
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,7 +9,10 @@ import 'package:get/get.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
+import 'package:urban_services/core/constants/storage_keys.dart';
+import 'package:urban_services/features/authentication/login/login_controller.dart';
 import 'package:urban_services/routes/route_names.dart';
+import 'package:urban_services/shared_preferences/sharedpreference_helper.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -62,10 +67,38 @@ class _SplashScreenState extends State<SplashScreen>
     // Start the animation sequence
     _controller.forward();
 
-    // Automated navigation to the Welcome screen after the animation concludes
-    Future.delayed(const Duration(seconds: 3), () {
+    // After the intro animation, route straight into the app if a session
+    // is already stored (persistent login), otherwise start at Welcome.
+    Future.delayed(const Duration(seconds: 3), _routeAfterSplash);
+  }
+
+  /// Checks for a stored auth token and, if present, restores the saved
+  /// role onto the shared LoginController and goes straight to Home —
+  /// keeping the user logged in until they manually log out. Otherwise
+  /// falls back to the Welcome screen.
+  Future<void> _routeAfterSplash() async {
+    final token = await SharedPreferencesHelper.instance.getValue<String>(
+      StorageKeys.authToken,
+    );
+
+    if (!mounted) return;
+
+    if (token != null && token.isNotEmpty) {
+      final savedRole = await SharedPreferencesHelper.instance
+          .getValue<String>(StorageKeys.userRole);
+
+      final loginController = Get.isRegistered<LoginController>()
+          ? Get.find<LoginController>()
+          : Get.put(LoginController(), permanent: true);
+      if (savedRole != null && savedRole.isNotEmpty) {
+        loginController.setRole(savedRole);
+      }
+
+      if (!mounted) return;
+      Get.offAllNamed(RouteNames.homeMain);
+    } else {
       Get.offAllNamed(RouteNames.welcomeScreen);
-    });
+    }
   }
 
   @override

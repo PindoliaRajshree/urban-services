@@ -245,7 +245,13 @@ class RegisterController extends GetxController {
 
         if (isGoogle) {
           // Google sign-up doubles as sign-in — take the user straight in.
-          Get.offAllNamed(RouteNames.addressScreen);
+          // "set location" is a user-only step, so providers skip it and go
+          // straight to their home dashboard.
+          if (_role == 'provider') {
+            Get.offAllNamed(RouteNames.homeMain);
+          } else {
+            Get.offAllNamed(RouteNames.addressScreen);
+          }
         } else {
           Get.offNamed(RouteNames.loginScreen);
         }

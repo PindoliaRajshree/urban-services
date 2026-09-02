@@ -1,13 +1,16 @@
 // File: lib/features/address/add_address_screen.dart
 // Purpose: Form screen for users to input and save a new service address.
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
-import 'package:urban_services/core/constants/app_images.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
 import 'package:urban_services/features/address/add_address_controller.dart';
+import 'package:urban_services/features/address/full_screen_map_picker.dart';
 import 'package:urban_services/widgets/address_form_field.dart';
 import 'package:urban_services/widgets/common_app_bar.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
@@ -34,41 +37,63 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
           child: Column(
             children: [
               // Standard AppBar with "Add New Address" title
-              const CommonAppBar(title: 'Add New Address', showMoreIcon: true),
+              const CommonAppBar(title: 'Add New Address', showMoreIcon: false),
 
               Expanded(
                 child: SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Quick Action: Use Current Location
+                      // Quick Action: Use Current Location — reverse
+                      // geocodes the device's position onto the map and
+                      // prefills Full Address / City / State / Pincode.
                       Padding(
                         padding: EdgeInsets.symmetric(
                           horizontal: AppDimensions.padding12w,
                         ),
-                        child: Row(
-                          children: [
-                            Image.asset(
-                              AppImages.placeMarker,
-                              height: AppDimensions.containerHeight15h,
-                              width: AppDimensions.containerWidth15w,
+                        child: Obx(
+                          () => GestureDetector(
+                            onTap: controller.isLocatingOnMap.value
+                                ? null
+                                : controller.useCurrentLocationOnMap,
+                            child: Row(
+                              children: [
+                                controller.isLocatingOnMap.value
+                                    ? SizedBox(
+                                        height:
+                                            AppDimensions.containerHeight15h,
+                                        width: AppDimensions.containerWidth15w,
+                                        child: const CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : Icon(
+                                        Icons.my_location,
+                                        color: AppColors.primary,
+                                        size: AppDimensions.containerHeight15h,
+                                      ),
+                                SizedBox(width: AppDimensions.padding8w),
+                                Text(
+                                  'Use Current Location',
+                                  style: customTextStyle(
+                                    AppTextSizes.stableTextSize,
+                                    AppColors.black,
+                                    FontWeight.w500,
+                                  ),
+                                ),
+                              ],
                             ),
-                            SizedBox(width: AppDimensions.padding8w),
-                            Text(
-                              'Use Current Location',
-                              style: customTextStyle(
-                                AppTextSizes.stableTextSize,
-                                AppColors.black,
-                                FontWeight.w500,
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
                       ),
 
                       SizedBox(height: AppDimensions.padding15h),
 
-                      // Illustrative Location Image
+                      // Live Google Map — tap anywhere to drop the pin
+                      // there, or use "Use Current Location" above/on the
+                      // map, or tap the expand icon for a full-screen,
+                      // easier-to-use picker. All three reverse-geocode
+                      // the picked point into the fields below.
                       Padding(
                         padding: EdgeInsets.symmetric(
                           horizontal: AppDimensions.padding12w,
@@ -77,11 +102,87 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                           borderRadius: BorderRadius.circular(
                             AppDimensions.radius18r,
                           ),
-                          child: Image.asset(
-                            AppImages.locationImage,
+                          child: SizedBox(
                             width: double.infinity,
-                            height: AppDimensions.containerHeight150h,
-                            fit: BoxFit.cover,
+                            height: AppDimensions.containerHeight280h,
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                Obx(
+                                  () => GoogleMap(
+                                    initialCameraPosition: CameraPosition(
+                                      target: controller.initialMapPosition,
+                                      zoom:
+                                          controller.selectedPosition.value ==
+                                              null
+                                          ? 4
+                                          : 16,
+                                    ),
+                                    onMapCreated: controller.onMapCreated,
+                                    onTap: controller.onMapTapped,
+                                    markers:
+                                        controller.selectedPosition.value ==
+                                            null
+                                        ? const {}
+                                        : {
+                                            Marker(
+                                              markerId: const MarkerId(
+                                                'selected-address',
+                                              ),
+                                              position: controller
+                                                  .selectedPosition
+                                                  .value!,
+                                            ),
+                                          },
+                                    myLocationButtonEnabled: false,
+                                    zoomControlsEnabled: false,
+                                    gestureRecognizers: {
+                                      Factory<EagerGestureRecognizer>(
+                                        () => EagerGestureRecognizer(),
+                                      ),
+                                    },
+                                  ),
+                                ),
+
+                                // Expand / fullscreen button.
+                                Positioned(
+                                  top: AppDimensions.padding10h,
+                                  right: AppDimensions.padding10w,
+                                  child: _MapIconButton(
+                                    icon: Icons.open_in_full,
+                                    onTap: () async {
+                                      final result = await Get.to<LatLng>(
+                                        () => FullScreenMapPicker(
+                                          initialPosition:
+                                              controller.selectedPosition.value,
+                                        ),
+                                      );
+                                      if (result != null) {
+                                        await controller.applyPickedLocation(
+                                          result,
+                                        );
+                                      }
+                                    },
+                                  ),
+                                ),
+
+                                // On-map "get current location" button.
+                                Positioned(
+                                  bottom: AppDimensions.padding10h,
+                                  right: AppDimensions.padding10w,
+                                  child: Obx(
+                                    () => _MapIconButton(
+                                      icon: Icons.my_location,
+                                      isLoading:
+                                          controller.isLocatingOnMap.value,
+                                      onTap: controller.isLocatingOnMap.value
+                                          ? null
+                                          : controller.useCurrentLocationOnMap,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -150,7 +251,47 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                         hintText: 'eg. Near Tonk Phatak',
                         controller: controller.landmarkController,
                         focusNode: controller.landmarkFocus,
-                        textInputAction: TextInputAction.done,
+                        textInputAction: TextInputAction.next,
+                      ),
+                      SizedBox(height: AppDimensions.padding15h),
+
+                      // City Input
+                      Obx(
+                        () => AddressFormField(
+                          label: 'City',
+                          hintText: 'eg. Jaipur',
+                          controller: controller.cityController,
+                          focusNode: controller.cityFocus,
+                          textInputAction: TextInputAction.next,
+                          errorText: controller.cityError.value,
+                        ),
+                      ),
+                      SizedBox(height: AppDimensions.padding15h),
+
+                      // State Input
+                      Obx(
+                        () => AddressFormField(
+                          label: 'State',
+                          hintText: 'eg. Rajasthan',
+                          controller: controller.stateController,
+                          focusNode: controller.stateFocus,
+                          textInputAction: TextInputAction.next,
+                          errorText: controller.stateError.value,
+                        ),
+                      ),
+                      SizedBox(height: AppDimensions.padding15h),
+
+                      // Pincode Input
+                      Obx(
+                        () => AddressFormField(
+                          label: 'Pincode',
+                          hintText: 'eg. 302015',
+                          controller: controller.pincodeController,
+                          focusNode: controller.pincodeFocus,
+                          keyboardType: TextInputType.number,
+                          textInputAction: TextInputAction.done,
+                          errorText: controller.pincodeError.value,
+                        ),
                       ),
 
                       SizedBox(height: AppDimensions.padding15h),
@@ -187,9 +328,12 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                       SizedBox(height: AppDimensions.padding30h),
 
                       // Primary Action: Save address and navigate
-                      PrimaryButton(
-                        text: 'Save',
-                        onPressed: controller.saveAddress,
+                      Obx(
+                        () => PrimaryButton(
+                          text: 'Save',
+                          isLoading: controller.isLoading,
+                          onPressed: controller.saveAddress,
+                        ),
                       ),
 
                       SizedBox(height: AppDimensions.padding30h),
@@ -204,3 +348,47 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
     );
   }
 }
+
+
+/// Small round icon button used for the overlay controls on top of the
+/// map (expand / current-location) — kept local to this screen since it
+/// isn't reused elsewhere.
+class _MapIconButton extends StatelessWidget {
+  const _MapIconButton({
+    required this.icon,
+    required this.onTap,
+    this.isLoading = false,
+  });
+
+  final IconData icon;
+  final VoidCallback? onTap;
+  final bool isLoading;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.white,
+      shape: const CircleBorder(),
+      elevation: 3,
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: onTap,
+        child: Padding(
+          padding: EdgeInsets.all(AppDimensions.padding8w),
+          child: isLoading
+              ? SizedBox(
+                  height: AppDimensions.containerHeight18h,
+                  width: AppDimensions.containerWidth18w,
+                  child: const CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Icon(
+                  icon,
+                  color: AppColors.primary,
+                  size: AppDimensions.containerHeight20h,
+                ),
+        ),
+      ),
+    );
+  }
+}
+
