@@ -8,6 +8,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
 import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
+import 'package:showcaseview/showcaseview.dart';
 import 'package:urban_services/core/themes/theme.dart';
 import 'package:urban_services/routes/route_names.dart';
 import 'package:urban_services/routes/route_pages.dart';
@@ -68,6 +69,11 @@ class _MyAppState extends State<MyApp> {
           title: 'Urban Services App',
           theme: theme,
           // builder: EasyLoading.init(),
+          // Wraps every screen so any of them can use Showcase/
+          // ShowCaseWidget.of(context) — e.g. the "complete your profile"
+          // spotlight on the Home screen's avatar.
+          builder: (context, child) =>
+              ShowCaseWidget(builder: (context) => child ?? const SizedBox.shrink()),
           getPages: getRoutes(),
           initialRoute: RouteNames.splashScreen,
         );

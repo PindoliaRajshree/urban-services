@@ -85,6 +85,7 @@ dependencies:
   #S
   shared_preferences: ^2.5.4
   shimmer: ^3.0.0
+  showcaseview: ^4.0.1
 
   #U
 

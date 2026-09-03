@@ -9,6 +9,7 @@ import 'package:urban_services/core/constants/app_images.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
 import 'package:urban_services/features/address/address_controller.dart';
 import 'package:urban_services/routes/route_names.dart';
+import 'package:urban_services/widgets/address_choice_dialog.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
 import 'package:urban_services/widgets/primary_button.dart';
 
@@ -135,14 +136,60 @@ class _AddressScreenState extends State<AddressScreen> {
                           ),
                           const Spacer(),
 
-                          // Enable Button: skips the dialog when permission is
-                          // already granted (goes straight to fetch + save);
-                          // shows the Location Accuracy dialog otherwise.
-                          Obx(
-                            () => GestureDetector(
-                              onTap: controller.isFetchingLocation.value
-                                  ? null
-                                  : controller.onUseCurrentLocationTap,
+                          // Selection control: shows the "Enable" pill only
+                          // while location permission hasn't been granted
+                          // yet (tapping opens the Location Accuracy
+                          // dialog). Once granted, it becomes a plain radio
+                          // button — tapping it goes straight to
+                          // fetch + save, no separate "Enable" step needed.
+                          Obx(() {
+                            if (controller.isFetchingLocation.value) {
+                              return SizedBox(
+                                height: AppDimensions.containerHeight18h,
+                                width: AppDimensions.containerWidth18w,
+                                child: const CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              );
+                            }
+
+                            if (controller.hasLocationPermission.value) {
+                              final isSelected =
+                                  controller.selectedSource.value ==
+                                  AddressSource.currentLocation;
+                              return GestureDetector(
+                                onTap: controller.onCurrentLocationTap,
+                                child: Container(
+                                  height: AppDimensions.containerHeight18h,
+                                  width: AppDimensions.containerWidth18w,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: AppColors.primary,
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  child: isSelected
+                                      ? Container(
+                                          height: AppDimensions
+                                              .containerHeight18h *
+                                              0.5,
+                                          width: AppDimensions
+                                              .containerWidth18w *
+                                              0.5,
+                                          decoration: const BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: AppColors.primary,
+                                          ),
+                                        )
+                                      : null,
+                                ),
+                              );
+                            }
+
+                            return GestureDetector(
+                              onTap: controller.onCurrentLocationTap,
                               child: Container(
                                 padding: EdgeInsets.symmetric(
                                   horizontal: AppDimensions.padding12w,
@@ -154,29 +201,17 @@ class _AddressScreenState extends State<AddressScreen> {
                                     AppDimensions.radius3r,
                                   ),
                                 ),
-                                child: controller.isFetchingLocation.value
-                                    ? SizedBox(
-                                        height: AppDimensions.containerHeight15h,
-                                        width: AppDimensions.containerWidth15w,
-                                        child: const CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                                AppColors.white,
-                                              ),
-                                        ),
-                                      )
-                                    : Text(
-                                        'Enable',
-                                        style: customTextStyle(
-                                          AppTextSizes.smallTextSize,
-                                          AppColors.white,
-                                          FontWeight.w600,
-                                        ),
-                                      ),
+                                child: Text(
+                                  'Enable',
+                                  style: customTextStyle(
+                                    AppTextSizes.smallTextSize,
+                                    AppColors.white,
+                                    FontWeight.w600,
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
+                            );
+                          }),
                         ],
                       ),
                     ),
@@ -230,17 +265,46 @@ class _AddressScreenState extends State<AddressScreen> {
                                   ),
                                 ),
                                 const Spacer(),
-                                Container(
-                                  height: AppDimensions.containerHeight15h,
-                                  width: AppDimensions.containerWidth15w,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: AppColors.text,
-                                      width: 1,
+                                Obx(() {
+                                  final enabled = controller.hasCardAddress;
+                                  final isSelected =
+                                      controller.isCardAddressSelected;
+                                  return GestureDetector(
+                                    onTap: enabled
+                                        ? controller.selectCardAddress
+                                        : null,
+                                    child: Container(
+                                      height: AppDimensions.containerHeight15h,
+                                      width: AppDimensions.containerWidth15w,
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: !enabled
+                                              ? AppColors.lightGrey2
+                                              : (isSelected
+                                                    ? AppColors.primary
+                                                    : AppColors.text),
+                                          width: 1,
+                                        ),
+                                      ),
+                                      child: (enabled && isSelected)
+                                          ? Container(
+                                              height: AppDimensions
+                                                      .containerHeight15h *
+                                                  0.5,
+                                              width: AppDimensions
+                                                      .containerWidth15w *
+                                                  0.5,
+                                              decoration: const BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color: AppColors.primary,
+                                              ),
+                                            )
+                                          : null,
                                     ),
-                                  ),
-                                ),
+                                  );
+                                }),
                               ],
                             ),
                           ),
@@ -259,8 +323,11 @@ class _AddressScreenState extends State<AddressScreen> {
                                 );
                               }
 
+                              final pending =
+                                  controller.pendingManualAddress.value;
                               final address = controller.address.value;
-                              if (address == null) {
+
+                              if (pending == null && address == null) {
                                 return Text(
                                   'No address saved yet. Add one below.',
                                   style: customTextStyle(
@@ -271,7 +338,18 @@ class _AddressScreenState extends State<AddressScreen> {
                                 );
                               }
 
-                              final cityLine = [address.city, address.state]
+                              // A staged manual entry always wins the
+                              // display — it's the most recent thing the
+                              // user did, even if an older saved address
+                              // still exists underneath it.
+                              final city = pending?.city ?? address?.city;
+                              final state = pending?.state ?? address?.state;
+                              final fullAddress =
+                                  pending?.fullAddress ??
+                                  address?.fullAddress ??
+                                  '';
+
+                              final cityLine = [city, state]
                                   .where(
                                     (part) =>
                                         part != null && part.trim().isNotEmpty,
@@ -281,6 +359,20 @@ class _AddressScreenState extends State<AddressScreen> {
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
+                                  // Flags an unconfirmed manual entry so
+                                  // it's clear Next still has to be tapped.
+                                  if (pending != null) ...[
+                                    Text(
+                                      'Not saved yet — tap Next to confirm',
+                                      style: customTextStyle(
+                                        AppTextSizes.smallTextSize,
+                                        AppColors.warning,
+                                        FontWeight.w600,
+                                      ),
+                                    ),
+                                    SizedBox(height: AppDimensions.padding8h),
+                                  ],
+
                                   // City/Area Row
                                   if (cityLine.isNotEmpty) ...[
                                     Text(
@@ -296,7 +388,7 @@ class _AddressScreenState extends State<AddressScreen> {
 
                                   // Full Address String
                                   Text(
-                                    address.fullAddress ?? '',
+                                    fullAddress,
                                     style: customTextStyle(
                                       AppTextSizes.stableTextSize,
                                       AppColors.darkGrey2,
@@ -315,9 +407,9 @@ class _AddressScreenState extends State<AddressScreen> {
                             alignment: Alignment.bottomRight,
                             child: Obx(
                               () => GestureDetector(
-                                onTap: () => Get.toNamed(
-                                  RouteNames.addAddressScreen,
-                                  arguments: controller.address.value,
+                                onTap: () => Get.dialog(
+                                  const AddressChoiceDialog(),
+                                  barrierDismissible: false,
                                 ),
                                 child: Container(
                                   padding: EdgeInsets.symmetric(
@@ -354,10 +446,30 @@ class _AddressScreenState extends State<AddressScreen> {
                     ),
                     SizedBox(height: AppDimensions.padding30h),
 
-                    // Primary Action: Navigate to Home
-                    PrimaryButton(
-                      text: 'Next',
-                      onPressed: () => Get.offAllNamed(RouteNames.homeMain),
+                    // Primary Action: commits whichever source is selected
+                    // (see AddressController.confirmAndProceed) and only
+                    // then navigates to Home. Blocked with the choice
+                    // dialog when nothing has been selected yet.
+                    Obx(
+                      () => PrimaryButton(
+                        text: 'Next',
+                        isLoading:
+                            controller.isFetchingLocation.value ||
+                            controller.isSavingManualEntry.value,
+                        onPressed: () async {
+                          if (controller.selectedSource.value == null) {
+                            Get.dialog(
+                              const AddressChoiceDialog(),
+                              barrierDismissible: false,
+                            );
+                            return;
+                          }
+                          final success = await controller.confirmAndProceed();
+                          if (success) {
+                            Get.offAllNamed(RouteNames.homeMain);
+                          }
+                        },
+                      ),
                     ),
 
                     SizedBox(height: AppDimensions.padding30h),

@@ -75,7 +75,17 @@ class AppImages {
   static const String pricing = '$_basePath/pricing.webp';
 
   // Misc
+  // Home screen promotional slider — ads2/3/4/5 are new as of Sep 2026;
+  // ads2's source file is named "adss_2.webp" (typo in the asset itself).
   static const String ads = '$_basePath/ads.webp';
+  static const String ads2 = '$_basePath/adss_2.webp';
+  static const String ads3 = '$_basePath/ads_3.webp';
+  static const String ads4 = '$_basePath/ads_4.webp';
+  static const String ads5 = '$_basePath/ads_5.webp';
+
+  /// All promotional banners shown in the home screen's slider, in display
+  /// order.
+  static const List<String> promotionalBanners = [ads, ads2, ads3, ads4, ads5];
   static const String addToCart = '$_basePath/add to cart.webp';
   static const String cleaning = '$_basePath/cleaning.webp';
   static const String image = '$_basePath/image.webp';
@@ -107,6 +117,7 @@ class AppImages {
   static const String paymentSuccess = '$_basePath/payment-success.webp';
   static const String upi = '$_basePath/upi.webp';
   static const String creditDebitCard = '$_basePath/CD.webp';
+  static const String notification = '$_basePath/notification.webp';
 
   // Tracking
   static const String liveTracking = '$_basePath/live-tracking.webp';

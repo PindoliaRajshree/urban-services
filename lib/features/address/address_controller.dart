@@ -3,6 +3,13 @@
 // fetching the user's saved address, permission-aware "use current
 // location" (skips the system dialog when permission is already granted),
 // and saving the detected location via the service-address API.
+//
+// Selection model: the saved address, "use current location", and a
+// manually-entered address (staged by AddAddressController.saveAddress via
+// [setManualEntry]) are three mutually-exclusive, radio-style choices (see
+// [AddressSource]). Choosing one only records the choice — nothing is
+// fetched or saved to the server until the user explicitly confirms with
+// Next ([AddressController.confirmAndProceed]).
 
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
@@ -20,7 +27,11 @@ import 'package:urban_services/shared_preferences/sharedpreference_helper.dart';
 import 'package:urban_services/widgets/custom_snackbar.dart';
 import 'package:urban_services/widgets/location_accuracy_dialog.dart';
 
-class AddressController extends GetxController {
+/// The mutually-exclusive ways a service address can be chosen on this
+/// screen.
+enum AddressSource { savedAddress, currentLocation, manualEntry }
+
+class AddressController extends GetxController with WidgetsBindingObserver {
   AddressController({AddressRepository? addressRepository})
     : _addressRepository = addressRepository ?? AddressRepository();
 
@@ -41,10 +52,64 @@ class AddressController extends GetxController {
   /// geocode -> save) separately from the initial page load.
   final isFetchingLocation = false.obs;
 
+  /// Whether location permission is currently granted. Drives whether the
+  /// "Use my Current Location" row shows an "Enable" pill or a plain
+  /// selectable radio button.
+  final hasLocationPermission = false.obs;
+
+  /// Which address source is currently selected (radio-button style) —
+  /// null means nothing has been chosen yet. Selecting a source never
+  /// saves anything by itself; see [confirmAndProceed].
+  final selectedSource = Rxn<AddressSource>();
+
+  /// A manually-entered address staged by the Add Address form
+  /// ([setManualEntry]) but not yet POSTed to the server — that only
+  /// happens when the user confirms with Next.
+  final pendingManualAddress = Rxn<ServiceAddressRequest>();
+
+  /// Tracks the POST triggered by confirming a staged manual entry,
+  /// separately from [isFetchingLocation].
+  final isSavingManualEntry = false.obs;
+
+  /// Whether the "CHOOSE YOUR ADDRESS" card has anything to select — either
+  /// an already-saved address or a staged manual entry.
+  bool get hasCardAddress => hasAddress || pendingManualAddress.value != null;
+
+  /// Whether the card's content (staged manual entry takes priority over
+  /// the saved address, matching what's actually displayed) is the
+  /// currently-selected source.
+  bool get isCardAddressSelected => pendingManualAddress.value != null
+      ? selectedSource.value == AddressSource.manualEntry
+      : selectedSource.value == AddressSource.savedAddress;
+
   @override
   void onInit() {
     super.onInit();
+    WidgetsBinding.instance.addObserver(this);
     fetchAddress();
+    _refreshLocationPermissionStatus();
+  }
+
+  @override
+  void onClose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.onClose();
+  }
+
+  /// Re-checks location permission when the app resumes (e.g. the user
+  /// granted it from system Settings after being sent there for a
+  /// permanently-denied prompt) so the row switches from "Enable" to the
+  /// radio button without needing a manual retry.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _refreshLocationPermissionStatus();
+    }
+  }
+
+  Future<void> _refreshLocationPermissionStatus() async {
+    hasLocationPermission.value =
+        (await Permission.location.status).isGranted;
   }
 
   /// Calls GET /user/get-service-address. A failure (including "no address
@@ -57,23 +122,48 @@ class AddressController extends GetxController {
     switch (result) {
       case ApiSuccess(data: final data):
         address.value = data;
+        selectedSource.value = AddressSource.savedAddress;
       case ApiFailure():
         address.value = null;
+        selectedSource.value = null;
     }
 
     status.value = ApiStatus.successful;
   }
 
-  /// Handles the "Use my Current Location" tap: if location permission is
-  /// already granted, skip straight to fetching + saving the location. If
-  /// not, show the Location Accuracy dialog (which triggers the actual
-  /// system permission prompt).
-  Future<void> onUseCurrentLocationTap() async {
+  /// Selects whatever is showing in the "CHOOSE YOUR ADDRESS" card — the
+  /// staged manual entry if there is one, otherwise the already-saved
+  /// address. No-op if neither exists yet.
+  void selectCardAddress() {
+    if (pendingManualAddress.value != null) {
+      selectedSource.value = AddressSource.manualEntry;
+    } else if (hasAddress) {
+      selectedSource.value = AddressSource.savedAddress;
+    }
+  }
+
+  /// Stages a manually-entered address (from the Add Address form) as the
+  /// selected source, without saving it yet — the actual POST happens when
+  /// the user confirms with Next (see [confirmAndProceed]).
+  void setManualEntry(ServiceAddressRequest request) {
+    pendingManualAddress.value = request;
+    selectedSource.value = AddressSource.manualEntry;
+  }
+
+  /// Handles a tap on "Use my Current Location" (the Enable pill, or the
+  /// radio once permission is already granted): if permission is already
+  /// granted, this just *selects* current location as the chosen source —
+  /// it does not fetch or save anything. If permission isn't granted yet,
+  /// it shows the Location Accuracy dialog first; selection happens once
+  /// that's granted (see [requestLocationPermission]). The actual fetch +
+  /// save only happens when the user confirms with Next.
+  Future<void> onCurrentLocationTap() async {
     if (isFetchingLocation.value) return;
 
     final permissionStatus = await Permission.location.status;
+    hasLocationPermission.value = permissionStatus.isGranted;
     if (permissionStatus.isGranted) {
-      await _fetchAndSaveCurrentLocation();
+      selectedSource.value = AddressSource.currentLocation;
     } else {
       Get.dialog(const LocationAccuracyDialog(), barrierDismissible: false);
     }
@@ -87,8 +177,9 @@ class AddressController extends GetxController {
 
     if (permissionStatus.isGranted) {
       debugPrint("Location permission granted");
+      hasLocationPermission.value = true;
+      selectedSource.value = AddressSource.currentLocation;
       Get.back(); // Close the custom dialog
-      await _fetchAndSaveCurrentLocation();
     } else if (permissionStatus.isDenied) {
       debugPrint("Location permission denied");
       // The user denied the permission but can be asked again in the future
@@ -103,9 +194,10 @@ class AddressController extends GetxController {
   }
 
   /// Gets the device's current position, reverse-geocodes it into an
-  /// address, and saves it via POST /user/service-address.
-  Future<void> _fetchAndSaveCurrentLocation() async {
-    if (isFetchingLocation.value) return;
+  /// address, and saves it via POST /user/service-address. Returns true on
+  /// success, false otherwise (an error toast is already shown by then).
+  Future<bool> _fetchAndSaveCurrentLocation() async {
+    if (isFetchingLocation.value) return false;
     isFetchingLocation.value = true;
 
     try {
@@ -115,7 +207,7 @@ class AddressController extends GetxController {
           title: "Location Off",
           message: "Please turn on location services and try again.",
         );
-        return;
+        return false;
       }
 
       final position = await Geolocator.getCurrentPosition(
@@ -153,7 +245,7 @@ class AddressController extends GetxController {
             title: "Error",
             message: "Couldn't determine your address from your location.",
           );
-          return;
+          return false;
         }
 
         final place = placemarks.first;
@@ -177,7 +269,7 @@ class AddressController extends GetxController {
           title: "Error",
           message: "You're not logged in. Please log in again.",
         );
-        return;
+        return false;
       }
 
       final request = ServiceAddressRequest(
@@ -196,8 +288,10 @@ class AddressController extends GetxController {
             message: data.message ?? "Current location saved as your address.",
           );
           await fetchAddress();
+          return true;
         case ApiFailure(message: final message):
           CustomSnackBar.showError(title: "Error", message: message);
+          return false;
       }
     } catch (e) {
       debugPrint("AddressController - current location error: $e");
@@ -205,8 +299,54 @@ class AddressController extends GetxController {
         title: "Error",
         message: "Couldn't get your current location. Please try again.",
       );
+      return false;
     } finally {
       isFetchingLocation.value = false;
+    }
+  }
+
+  /// Called when the user taps Next. Commits whichever source is selected
+  /// — for the saved address that's already done, for current location
+  /// this is the one point where a GPS fetch + save actually happens.
+  /// Returns true when it's safe to navigate to Home.
+  Future<bool> confirmAndProceed() async {
+    switch (selectedSource.value) {
+      case AddressSource.savedAddress:
+        return hasAddress;
+      case AddressSource.currentLocation:
+        return _fetchAndSaveCurrentLocation();
+      case AddressSource.manualEntry:
+        return _saveManualEntry();
+      case null:
+        return false;
+    }
+  }
+
+  /// POSTs the staged manual entry via /user/service-address. Returns true
+  /// on success, false otherwise (an error toast is already shown by
+  /// then).
+  Future<bool> _saveManualEntry() async {
+    final request = pendingManualAddress.value;
+    if (request == null || isSavingManualEntry.value) return false;
+
+    isSavingManualEntry.value = true;
+    try {
+      final result = await _addressRepository.saveServiceAddress(request);
+      switch (result) {
+        case ApiSuccess(data: final data):
+          CustomSnackBar.showSuccess(
+            title: "Success",
+            message: data.message ?? "Service address saved successfully.",
+          );
+          pendingManualAddress.value = null;
+          await fetchAddress();
+          return true;
+        case ApiFailure(message: final message):
+          CustomSnackBar.showError(title: "Error", message: message);
+          return false;
+      }
+    } finally {
+      isSavingManualEntry.value = false;
     }
   }
 

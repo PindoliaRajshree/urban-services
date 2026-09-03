@@ -1,7 +1,11 @@
 // File: lib/features/address/add_address_controller.dart
 // Purpose: State management and validation logic for the Add New Address
-// form, plus the POST /user/service-address call. User-only — providers
-// never reach this screen.
+// form. Save() stages the validated address onto the shared
+// AddressController (see AddressController.setManualEntry) and returns to
+// "Select Your Service Address" — that screen's Next button is the single
+// place that actually POSTs /user/service-address, whether the address
+// came from current location or here. User-only — providers never reach
+// this screen.
 
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
@@ -11,12 +15,10 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:urban_services/core/constants/api_status.dart';
 import 'package:urban_services/core/constants/storage_keys.dart';
-import 'package:urban_services/core/services/api_result.dart';
-import 'package:urban_services/features/address/address_repository.dart';
+import 'package:urban_services/features/address/address_controller.dart';
 import 'package:urban_services/features/address/models/service_address_request.dart';
 import 'package:urban_services/features/address/models/service_address_response.dart';
 import 'package:urban_services/features/address/services/google_geocoding_service.dart';
-import 'package:urban_services/routes/route_names.dart';
 import 'package:urban_services/shared_preferences/sharedpreference_helper.dart';
 import 'package:urban_services/widgets/custom_snackbar.dart';
 
@@ -24,11 +26,6 @@ import 'package:urban_services/widgets/custom_snackbar.dart';
 const LatLng _defaultMapCenter = LatLng(20.5937, 78.9629);
 
 class AddAddressController extends GetxController {
-  AddAddressController({AddressRepository? addressRepository})
-    : _addressRepository = addressRepository ?? AddressRepository();
-
-  final AddressRepository _addressRepository;
-
   @override
   void onInit() {
     super.onInit();
@@ -275,16 +272,22 @@ class AddAddressController extends GetxController {
     return isValid;
   }
 
-  /// Validates and saves the address via POST /user/service-address, then
-  /// redirects to the Home screen on success.
+  /// Validates the form and stages the address onto the shared
+  /// AddressController, then returns to "Select Your Service Address"
+  /// without saving anything yet — that screen's Next button is what
+  /// actually POSTs /user/service-address (see
+  /// AddressController.confirmAndProceed / setManualEntry).
   Future<void> saveAddress() async {
     if (isLoading) return;
     if (!validate()) return;
+
+    status.value = ApiStatus.loading;
 
     final userId = await SharedPreferencesHelper.instance.getValue<int>(
       StorageKeys.userId,
     );
     if (userId == null) {
+      status.value = ApiStatus.error;
       CustomSnackBar.showError(
         title: "Error",
         message: "You're not logged in. Please log in again.",
@@ -292,34 +295,24 @@ class AddAddressController extends GetxController {
       return;
     }
 
-    status.value = ApiStatus.loading;
-
     final request = ServiceAddressRequest(
       fullAddress: fullAddressController.text.trim(),
       city: cityController.text.trim(),
       state: stateController.text.trim(),
       pincode: pincodeController.text.trim(),
       userId: userId,
+      flatApartment: flatController.text.trim(),
+      floorBuilding: floorController.text.trim(),
+      buildingSocietyLandmark: buildingController.text.trim(),
+      landmark: landmarkController.text.trim(),
     );
 
-    final result = await _addressRepository.saveServiceAddress(request);
-    _handleResult(result);
-  }
+    status.value = ApiStatus.successful;
 
-  void _handleResult(ApiResult<ServiceAddressResponse> result) {
-    switch (result) {
-      case ApiSuccess(data: final data):
-        status.value = ApiStatus.successful;
-        CustomSnackBar.showSuccess(
-          title: "Success",
-          message: data.message ?? "Service address saved successfully.",
-        );
-        Get.offAllNamed(RouteNames.homeMain);
-
-      case ApiFailure(message: final message):
-        status.value = ApiStatus.error;
-        CustomSnackBar.showError(title: "Error", message: message);
+    if (Get.isRegistered<AddressController>()) {
+      Get.find<AddressController>().setManualEntry(request);
     }
+    Get.back();
   }
 
   @override

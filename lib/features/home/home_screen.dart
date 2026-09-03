@@ -3,13 +3,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:showcaseview/showcaseview.dart';
 import 'package:urban_services/routes/route_names.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
 import 'package:urban_services/widgets/category_item.dart';
-import 'package:urban_services/widgets/complete_profile_card.dart';
 import 'package:urban_services/widgets/custom_search_bar.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
 import 'package:urban_services/widgets/section_heading.dart';
@@ -25,6 +25,30 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   // Current index for the promotional slider
   int _currentSliderIndex = 0;
+
+  // Spotlights the profile avatar with a "complete your profile" callout.
+  final GlobalKey _profileShowcaseKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    // Runs every time this screen is built — there's no "seen it already"
+    // flag yet, so the callout shows on every visit to Home for now.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ShowCaseWidget.of(context).startShowCase([_profileShowcaseKey]);
+    });
+  }
+
+  /// Sends the user to the provider onboarding form — this is the
+  /// "become a provider" entry point, not a generic user-profile edit
+  /// screen. `disableDefaultTargetGestures: true` below means the
+  /// package's own tap handling (and its `disposeOnTap` logic) never
+  /// runs, so the showcase is dismissed explicitly here before navigating.
+  void _onProfileShowcaseTap() {
+    ShowCaseWidget.of(context).dismiss();
+    Get.toNamed(RouteNames.completeProviderProfile);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,27 +78,54 @@ class _HomeScreenState extends State<HomeScreen> {
                   // 3. User Profile and Location Header
                   Row(
                     children: [
-                      // User Avatar with Shadow
-                      Container(
-                        width: AppDimensions.containerWidth45w,
-                        height: AppDimensions.containerHeight45h,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: AppColors.primaryDark,
-                            width: 1,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.25),
-                              offset: const Offset(0, 1),
-                              blurRadius: 2.9,
-                              spreadRadius: 0,
+                      // User Avatar with Shadow — showcased with a
+                      // "complete your profile" spotlight + arrow, and now
+                      // actually tappable (it wasn't before).
+                      Showcase(
+                        key: _profileShowcaseKey,
+                        title: 'Complete Your Profile',
+                        description:
+                            'Tap your photo to finish setting up your provider details and start offering services.',
+                        targetShapeBorder: const CircleBorder(),
+                        tooltipBackgroundColor: AppColors.primaryDark,
+                        textColor: AppColors.white,
+                        titleTextStyle: customTextStyle(
+                          AppTextSizes.largeTextSize,
+                          AppColors.white,
+                          FontWeight.w700,
+                        ),
+                        descTextStyle: customTextStyle(
+                          AppTextSizes.smallTextSize,
+                          AppColors.white,
+                          FontWeight.w400,
+                        ),
+                        disableDefaultTargetGestures: true,
+                        onTargetClick: _onProfileShowcaseTap,
+                        disposeOnTap: true,
+                        child: GestureDetector(
+                          onTap: _onProfileShowcaseTap,
+                          child: Container(
+                            width: AppDimensions.containerWidth45w,
+                            height: AppDimensions.containerHeight45h,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppColors.primaryDark,
+                                width: 1,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.25),
+                                  offset: const Offset(0, 1),
+                                  blurRadius: 2.9,
+                                  spreadRadius: 0,
+                                ),
+                              ],
+                              image: const DecorationImage(
+                                image: AssetImage(AppImages.image),
+                                fit: BoxFit.cover,
+                              ),
                             ),
-                          ],
-                          image: const DecorationImage(
-                            image: AssetImage(AppImages.image),
-                            fit: BoxFit.cover,
                           ),
                         ),
                       ),
@@ -118,26 +169,32 @@ class _HomeScreenState extends State<HomeScreen> {
                         height: AppDimensions.containerHeight50h,
                         width: AppDimensions.containerWidth50w,
                       ),
-                      SizedBox(width: AppDimensions.padding15w),
-                      Image.asset(
-                        AppImages.addToCart,
-                        height: AppDimensions.containerHeight50h,
-                        width: AppDimensions.containerWidth50w,
-                      ),
-                      SizedBox(width: AppDimensions.padding15w),
+                      // SizedBox(width: AppDimensions.padding8w),
+                      // Image.asset(
+                      //   AppImages.addToCart,
+                      //   height: AppDimensions.containerHeight50h,
+                      //   width: AppDimensions.containerWidth50w,
+                      // ),
+                      // SizedBox(width: AppDimensions.padding15w),
                       GestureDetector(
                         onTap: () => Get.toNamed(RouteNames.notificationScreen),
-                        child: Icon(Icons.notifications_on_outlined,color: AppColors.primaryDark,size: AppDimensions.radius30r,),
+                        child: Image.asset(
+                          AppImages.notification,
+                          height: AppDimensions.containerHeight50h,
+                          width: AppDimensions.containerWidth50w,
+                        ),
                       ),
                     ],
                   ),
 
                   // Complete Your Profile Section with Animation
-                  CompleteProfileCard(
-                    onFinish: () {
-                      Get.toNamed(RouteNames.completeProviderProfile);
-                    },
-                  ),
+                  // CompleteProfileCard(
+                  //   onFinish: () {
+                  //     Get.toNamed(RouteNames.completeProviderProfile);
+                  //   },
+                  // ),
+
+                  SizedBox(height: AppDimensions.padding8h,),
 
                   // 4. Search Bar
                   const CustomSearchBar(hintText: 'Search'),
@@ -148,7 +205,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   SizedBox(
                     height: AppDimensions.containerHeight200h,
                     child: PageView.builder(
-                      itemCount: 5,
+                      itemCount: AppImages.promotionalBanners.length,
                       onPageChanged: (index) {
                         setState(() {
                           _currentSliderIndex = index;
@@ -177,7 +234,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               AppDimensions.radius12r,
                             ),
                             child: Image.asset(
-                              AppImages.ads,
+                              AppImages.promotionalBanners[index],
                               fit: BoxFit.cover,
                             ),
                           ),
@@ -189,8 +246,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   // Dots Indicator
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(5, (index) {
-                      final isSelected = _currentSliderIndex == index;
+                    children: List.generate(
+                      AppImages.promotionalBanners.length,
+                      (index) {
+                        final isSelected = _currentSliderIndex == index;
                       return Container(
                         width: AppDimensions.containerWidth7w,
                         height: AppDimensions.containerHeight7h,

@@ -4,13 +4,11 @@
 // can be called straight from controllers — no BuildContext required, which
 // matches how Get.snackbar(...) was already being used across the app.
 //
-// Design note: the Admin app's CustomSnackBar (lib/widgets/custom_snackbar.dart
-// there) uses a frosted glass card with a blurred radial icon halo. This one
-// keeps the same call-site shape (showSuccess/showError/showWarning/showInfo
-// + ContentType, so the two codebases read the same way) but takes a
-// different visual direction: a crisp floating pill with a colored left
-// accent bar, a solid icon badge, and a slim countdown bar along the bottom
-// that visibly drains as the toast's duration elapses.
+// Design note: matches the reference toast exactly — a solid colored pill
+// (AppColors.toastSuccess/toastDanger/toastWarning/toastInfo), a white
+// circular icon badge with the accent color as the glyph, white text, a
+// white close (X") button, no border and no progress bar, floating near the
+// top and pinned to the right of the screen (not centered/full-width).
 
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
@@ -121,73 +119,72 @@ class CustomSnackBar {
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
-          color: style.foreground,
+          color: AppColors.white,
           fontWeight: FontWeight.w700,
           fontSize: AppTextSizes.largeMediumTextSize,
           letterSpacing: 0.1,
         ),
       ),
       messageText: Padding(
-        padding: EdgeInsets.only(top: 3.h),
+        padding: EdgeInsets.only(top: 2.h),
         child: Text(
           message,
-          maxLines: 3,
+          maxLines: 2,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
-            color: style.foreground.withValues(alpha: 0.85),
+            color: AppColors.white,
             fontWeight: FontWeight.w500,
             fontSize: AppTextSizes.mediumTextSize,
-            height: 1.25,
+            height: 1.2,
           ),
         ),
       ),
+      // White circular badge with the accent color as the glyph — matches
+      // the reference's white check-in-a-circle exactly, rather than a
+      // solid colored badge with a white glyph.
       icon: Container(
-        width: 34.w,
-        height: 34.h,
+        width: 30.w,
+        height: 30.h,
         alignment: Alignment.center,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           shape: BoxShape.circle,
-          color: style.foreground.withValues(alpha: 0.14),
-          border: Border.all(
-            color: style.foreground.withValues(alpha: 0.32),
-            width: AppDimensions.containerWidth1w,
-          ),
+          color: AppColors.white,
         ),
-        child: Icon(style.icon, color: style.foreground, size: 18.r),
+        child: Icon(style.icon, color: style.background, size: 16.r),
       ),
       shouldIconPulse: false,
-      backgroundGradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          AppColors.white,
-          Color.alphaBlend(
-            style.foreground.withValues(alpha: 0.1),
-            AppColors.white,
-          ),
-        ],
+      // Explicit white close button — the reference toast has a visible
+      // "X" rather than relying only on swipe-to-dismiss.
+      mainButton: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          if (Get.isSnackbarOpen) Get.closeCurrentSnackbar();
+        },
+        child: Padding(
+          padding: EdgeInsets.all(AppDimensions.padding4h),
+          child: Icon(Icons.close_rounded, color: AppColors.white, size: 18.r),
+        ),
       ),
-      leftBarIndicatorColor: style.foreground,
+      backgroundColor: style.background,
       borderRadius: AppDimensions.radius16r,
-      borderColor: style.foreground.withValues(alpha: 0.24),
-      borderWidth: 1,
       boxShadows: [
         BoxShadow(
-          color: AppColors.black.withValues(alpha: 0.1),
-          blurRadius: 20,
-          spreadRadius: 1,
-          offset: const Offset(0, 8),
-        ),
-        BoxShadow(
-          color: style.foreground.withValues(alpha: 0.16),
-          blurRadius: 14,
-          offset: const Offset(0, 4),
+          color: AppColors.black.withValues(alpha: 0.15),
+          blurRadius: 16,
+          spreadRadius: 0,
+          offset: const Offset(0, 6),
         ),
       ],
-      margin: EdgeInsets.symmetric(horizontal: AppDimensions.padding15w),
+      // Pinned to the right rather than centered/full-width — a small
+      // margin from the right edge and a large one on the left, matching
+      // the reference exactly instead of spanning the screen.
+      margin: EdgeInsets.only(
+        left: 0.40.sw,
+        right: AppDimensions.padding15w,
+      ),
       padding: EdgeInsets.symmetric(
         horizontal: AppDimensions.padding15w,
-        vertical: AppDimensions.padding8h,
+        vertical: AppDimensions.padding10h,
       ),
       snackPosition: position,
       snackStyle: SnackStyle.FLOATING,
@@ -199,15 +196,6 @@ class CustomSnackBar {
       animationDuration: const Duration(milliseconds: 300),
       forwardAnimationCurve: Curves.easeOutCubic,
       reverseAnimationCurve: Curves.easeInCubic,
-      // Slim countdown bar that drains over the toast's lifetime — this is
-      // the bit that departs from the Admin app's look.
-      showProgressIndicator: true,
-      progressIndicatorBackgroundColor: style.foreground.withValues(
-        alpha: 0.12,
-      ),
-      progressIndicatorValueColor: AlwaysStoppedAnimation<Color>(
-        style.foreground,
-      ),
     );
   }
 
@@ -215,23 +203,23 @@ class CustomSnackBar {
     switch (contentType) {
       case ContentType.success:
         return const _SnackBarStyle(
-          foreground: AppColors.success,
-          icon: Icons.check_circle_rounded,
+          background: AppColors.toastSuccess,
+          icon: Icons.check_rounded,
         );
       case ContentType.failure:
         return const _SnackBarStyle(
-          foreground: AppColors.danger,
-          icon: Icons.cancel_rounded,
+          background: AppColors.toastDanger,
+          icon: Icons.priority_high_rounded,
         );
       case ContentType.warning:
         return const _SnackBarStyle(
-          foreground: AppColors.warning,
-          icon: Icons.warning_amber_rounded,
+          background: AppColors.toastWarning,
+          icon: Icons.warning_rounded,
         );
       case ContentType.help:
       default:
         return const _SnackBarStyle(
-          foreground: AppColors.info,
+          background: AppColors.toastInfo,
           icon: Icons.info_rounded,
         );
     }
@@ -239,8 +227,11 @@ class CustomSnackBar {
 }
 
 class _SnackBarStyle {
-  final Color foreground;
+  /// Solid pill background — also reused as the icon glyph color on the
+  /// white circular badge.
+  final Color background;
+
   final IconData icon;
 
-  const _SnackBarStyle({required this.foreground, required this.icon});
+  const _SnackBarStyle({required this.background, required this.icon});
 }
