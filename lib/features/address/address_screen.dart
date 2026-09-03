@@ -344,10 +344,42 @@ class _AddressScreenState extends State<AddressScreen> {
                               // still exists underneath it.
                               final city = pending?.city ?? address?.city;
                               final state = pending?.state ?? address?.state;
+                              final pincode =
+                                  pending?.pincode ?? address?.pincode;
                               final fullAddress =
                                   pending?.fullAddress ??
                                   address?.fullAddress ??
                                   '';
+                              final flatApartment =
+                                  pending?.flatApartment ??
+                                  address?.flatApartment;
+                              final floorBuilding =
+                                  pending?.floorBuilding ??
+                                  address?.floorBuilding;
+                              final buildingSocietyLandmark =
+                                  pending?.buildingSocietyLandmark ??
+                                  address?.buildingSocietyLandmark;
+                              final landmark =
+                                  pending?.landmark ?? address?.landmark;
+
+                              // Manual entries (staged, or an already-saved
+                              // address that has these detail fields filled
+                              // in) show the full address — flat/apartment,
+                              // floor/building, society/landmark, the
+                              // written-out address, landmark, and pincode.
+                              // A current-location address never has these
+                              // fields, so it keeps showing just the
+                              // geocoded full address, unchanged.
+                              final isManualEntry =
+                                  pending != null ||
+                                  [
+                                    flatApartment,
+                                    floorBuilding,
+                                    buildingSocietyLandmark,
+                                  ].any(
+                                    (part) =>
+                                        part != null && part.trim().isNotEmpty,
+                                  );
 
                               final cityLine = [city, state]
                                   .where(
@@ -355,6 +387,23 @@ class _AddressScreenState extends State<AddressScreen> {
                                         part != null && part.trim().isNotEmpty,
                                   )
                                   .join(', ');
+
+                              final detailLine = isManualEntry
+                                  ? [
+                                      flatApartment,
+                                      floorBuilding,
+                                      buildingSocietyLandmark,
+                                      fullAddress,
+                                      landmark,
+                                      pincode,
+                                    ]
+                                        .where(
+                                          (part) =>
+                                              part != null &&
+                                              part.trim().isNotEmpty,
+                                        )
+                                        .join(', ')
+                                  : fullAddress;
 
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -386,9 +435,12 @@ class _AddressScreenState extends State<AddressScreen> {
                                     SizedBox(height: AppDimensions.padding8h),
                                   ],
 
-                                  // Full Address String
+                                  // Full Address String — every
+                                  // detail field for a manual entry, just
+                                  // the geocoded address for current
+                                  // location (see isManualEntry above).
                                   Text(
-                                    fullAddress,
+                                    detailLine,
                                     style: customTextStyle(
                                       AppTextSizes.stableTextSize,
                                       AppColors.darkGrey2,
