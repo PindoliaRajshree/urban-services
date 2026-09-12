@@ -13,6 +13,7 @@ import 'package:urban_services/features/authentication/splash/welcome_screen.dar
 import 'package:urban_services/features/home_main/home_main.dart';
 import 'package:urban_services/features/address/address_screen.dart';
 import 'package:urban_services/features/address/add_address_screen.dart';
+import 'package:urban_services/features/home/complete_profile/user_complete_profile_screen.dart';
 import 'package:urban_services/features/home_provider/complete_profile/complete_profile_screen.dart';
 import 'package:urban_services/features/home_provider/provider_home_screen.dart';
 import 'package:urban_services/features/notification/notification_screen.dart';
@@ -49,6 +50,10 @@ List<GetPage> getRoutes() {
       page: () => const RegisterScreen(),
     ),
     GetPage(name: RouteNames.homeMain, page: () => const HomeMain()),
+    GetPage(
+      name: RouteNames.completeProfile,
+      page: () => const UserCompleteProfileScreen(),
+    ),
     GetPage(
       name: RouteNames.providerHomeScreen,
       page: () => const ProviderHomeScreen(),
@@ -120,9 +125,7 @@ List<GetPage> getRoutes() {
       name: RouteNames.bookingServiceScreen,
       page: () {
         final args = Get.arguments as Map<String, dynamic>? ?? {};
-        return BookingServiceScreen(
-          price: args['price'] as String? ?? '699',
-        );
+        return BookingServiceScreen(price: args['price'] as String? ?? '699');
       },
     ),
     GetPage(
@@ -131,8 +134,7 @@ List<GetPage> getRoutes() {
         final args = Get.arguments as Map<String, dynamic>? ?? {};
         return PaymentScreen(
           price: args['price'] as String? ?? '699',
-          dateTime:
-              args['dateTime'] as String? ?? '20 May 2024, 11:00 AM',
+          dateTime: args['dateTime'] as String? ?? '20 May 2024, 11:00 AM',
           address:
               args['address'] as String? ??
               '123, Green Park, Main Road, New Delhi-110016',
@@ -146,8 +148,7 @@ List<GetPage> getRoutes() {
         return PaymentSuccessScreen(
           bookingId: args['bookingId'] as String? ?? 'US123456789',
           serviceName: args['serviceName'] as String? ?? 'Deep Cleaning',
-          dateTime:
-              args['dateTime'] as String? ?? '20 May 2024, 11:00 AM',
+          dateTime: args['dateTime'] as String? ?? '20 May 2024, 11:00 AM',
           address:
               args['address'] as String? ??
               '123, Green Park, Main Road, New Delhi-110016',
@@ -161,8 +162,7 @@ List<GetPage> getRoutes() {
         return LiveTrackingScreen(
           bookingId: args['bookingId'] as String? ?? 'US123456789',
           serviceName: args['serviceName'] as String? ?? 'Deep Cleaning',
-          dateTime:
-              args['dateTime'] as String? ?? '20 May 2024, 11:00 AM',
+          dateTime: args['dateTime'] as String? ?? '20 May 2024, 11:00 AM',
         );
       },
     ),

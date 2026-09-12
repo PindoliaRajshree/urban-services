@@ -1,5 +1,5 @@
 // File: lib/widgets/step_indicator.dart
-// Purpose: A responsive 7-step progress tracker for the multi-section profile form.
+// Purpose: A responsive N-step progress tracker for the multi-section profile form.
 
 import 'package:flutter/material.dart';
 import 'package:urban_services/core/colors/colors.dart';

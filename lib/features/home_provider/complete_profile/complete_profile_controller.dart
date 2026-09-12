@@ -1,5 +1,7 @@
 // File: lib/features/home_provider/complete_profile/complete_profile_controller.dart
-// Purpose: State management for the 7-step provider profile completion form with dynamic progress tracking and inline validation.
+// Purpose: State management for the 3-step provider profile completion form
+// (Basic Information -> Service Details -> Bank Details) with per-step
+// validation and page navigation.
 
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
@@ -16,9 +18,20 @@ class CompleteProfileController extends GetxController {
   final ImagePicker _picker = ImagePicker();
 
   // --- Step Tracking ---
+  // Step 0 = Basic Information, Step 1 = Service Details, Step 2 = Bank Details
+  static const int totalSteps = 3;
   final currentStep = 0.obs;
+  final pageController = PageController();
 
-  // --- Basic Information (Step 0) ---
+  bool get isFirstStep => currentStep.value == 0;
+  bool get isLastStep => currentStep.value == totalSteps - 1;
+
+  // --- Per-step form keys (each page validates only its own fields) ---
+  final basicInfoFormKey = GlobalKey<FormState>();
+  final serviceDetailsFormKey = GlobalKey<FormState>();
+  final bankDetailsFormKey = GlobalKey<FormState>();
+
+  // --- Basic Information (Step 0): photo, name, mobile, email, gender, dob, documents ---
   final profileImage = Rxn<File>();
   final fullNameController = TextEditingController();
   final mobileController = TextEditingController();
@@ -26,32 +39,33 @@ class CompleteProfileController extends GetxController {
   final gender = RxnString();
   final dob = RxnString();
 
-  // --- Service Details (Step 1) ---
+  // Documents Verification (part of Basic Information)
+  final adhaarFront = Rxn<File>();
+  final adhaarBack = Rxn<File>();
+  final panCard = Rxn<File>();
+
+  // --- Service Details (Step 1): category, sub services, experience, description,
+  // pricing, service area, availability ---
   final serviceCategory = RxnString();
   final subServices = RxnString();
   final experience = RxnString();
   final descriptionController = TextEditingController();
 
-  // --- Pricing (Step 2) ---
+  // Pricing
   final startingPriceController = TextEditingController();
   final perHourRateController = TextEditingController();
   final perVisitRateController = TextEditingController();
   final customPricingController = TextEditingController();
 
-  // --- Service Area (Step 3) ---
+  // Service Area
   final cityController = TextEditingController();
   final areaController = TextEditingController();
   final selectedRadius = '5km'.obs;
 
-  // --- Availability (Step 4) ---
+  // Availability
   final workType = 'Full Time'.obs;
 
-  // --- Documents (Step 5) ---
-  final adhaarFront = Rxn<File>();
-  final adhaarBack = Rxn<File>();
-  final panCard = Rxn<File>();
-
-  // --- Bank Details (Step 6) ---
+  // --- Bank Details (Step 2) ---
   final accountHolderController = TextEditingController();
   final accountNumberController = TextEditingController();
   final ifscController = TextEditingController();
@@ -76,61 +90,37 @@ class CompleteProfileController extends GetxController {
   // --- OTP Controller for dialog ---
   final otpController = TextEditingController();
 
-  // --- Validation States ---
-  final formKey = GlobalKey<FormState>();
-
   @override
   void onInit() {
     super.onInit();
-    // Add listeners to all required fields to update progress in real-time
-    fullNameController.addListener(updateProgress);
-    mobileController.addListener(updateProgress);
-    descriptionController.addListener(updateProgress);
-    startingPriceController.addListener(updateProgress);
-    perHourRateController.addListener(updateProgress);
-    cityController.addListener(updateProgress);
-    areaController.addListener(updateProgress);
-    accountHolderController.addListener(updateProgress);
-    accountNumberController.addListener(updateProgress);
-    ifscController.addListener(updateProgress);
 
-    // Ever listeners for reactive variables to clear errors and update progress
+    // Clear inline errors as soon as the user provides a value.
     ever(profileImage, (val) {
       if (val != null) profileImageError.value = null;
-      updateProgress();
     });
     ever(gender, (val) {
       if (val != null) genderError.value = null;
-      updateProgress();
     });
     ever(dob, (val) {
       if (val != null) dobError.value = null;
-      updateProgress();
     });
     ever(serviceCategory, (val) {
       if (val != null) categoryError.value = null;
-      updateProgress();
     });
     ever(subServices, (val) {
       if (val != null) subServiceError.value = null;
-      updateProgress();
     });
     ever(experience, (val) {
       if (val != null) experienceError.value = null;
-      updateProgress();
     });
     ever(adhaarFront, (val) {
       if (val != null) adhaarFrontError.value = null;
-      updateProgress();
     });
     ever(adhaarBack, (val) {
       if (val != null) adhaarBackError.value = null;
-      updateProgress();
     });
-
     ever(panCard, (val) {
       if (val != null) panCardError.value = null;
-      updateProgress();
     });
 
     // Clear OTP error when typing
@@ -155,73 +145,50 @@ class CompleteProfileController extends GetxController {
     });
   }
 
-  /// Calculates the highest valid sequential step and updates currentStep.
-  void updateProgress() {
-    int progress = 0;
+  // --- Step Navigation ---
 
-    // Check Step 0: Basic Info
-    if (profileImage.value != null &&
-        fullNameController.text.trim().isNotEmpty &&
-        mobileController.text.trim().length == 10 &&
-        gender.value != null &&
-        dob.value != null) {
-      progress = 1;
-    } else {
-      currentStep.value = 0;
-      return;
+  /// Validates the current step and, if valid, advances to the next page.
+  void nextStep() {
+    if (!_validateStep(currentStep.value)) return;
+
+    if (currentStep.value < totalSteps - 1) {
+      currentStep.value++;
+      pageController.animateToPage(
+        currentStep.value,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
     }
+  }
 
-    // Check Step 1: Service Details
-    if (serviceCategory.value != null &&
-        subServices.value != null &&
-        experience.value != null &&
-        descriptionController.text.trim().isNotEmpty) {
-      progress = 2;
+  /// Goes back to the previous page, or leaves the screen if already on step 0.
+  void previousStep() {
+    if (currentStep.value > 0) {
+      currentStep.value--;
+      pageController.animateToPage(
+        currentStep.value,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
     } else {
-      currentStep.value = 1;
-      return;
+      Get.back();
     }
+  }
 
-    // Check Step 2: Pricing
-    if (startingPriceController.text.trim().isNotEmpty &&
-        perHourRateController.text.trim().isNotEmpty) {
-      progress = 3;
-    } else {
-      currentStep.value = 2;
-      return;
+  bool _validateStep(int step) {
+    switch (step) {
+      case 0:
+        final formValid = basicInfoFormKey.currentState?.validate() ?? false;
+        final customValid = validateBasicInfoFields();
+        return formValid && customValid;
+      case 1:
+        final formValid =
+            serviceDetailsFormKey.currentState?.validate() ?? false;
+        final customValid = validateServiceDetailsFields();
+        return formValid && customValid;
+      default:
+        return true;
     }
-
-    // Check Step 3: Service Area
-    if (cityController.text.trim().isNotEmpty &&
-        areaController.text.trim().isNotEmpty) {
-      progress = 4;
-    } else {
-      currentStep.value = 3;
-      return;
-    }
-
-    // Check Step 4: Availability
-    progress = 5;
-
-    // Check Step 5: Documents
-    if (adhaarFront.value != null && adhaarBack.value != null) {
-      progress = 6;
-    } else {
-      currentStep.value = 5;
-      return;
-    }
-
-    // Check Step 6: Bank Details
-    if (accountHolderController.text.trim().isNotEmpty &&
-        accountNumberController.text.trim().isNotEmpty &&
-        ifscController.text.trim().isNotEmpty) {
-      progress = 7;
-    } else {
-      currentStep.value = 6;
-      return;
-    }
-
-    currentStep.value = progress;
   }
 
   // --- Methods ---
@@ -297,13 +264,11 @@ class CompleteProfileController extends GetxController {
   /// Sets the service radius selection
   void setRadius(String radius) {
     selectedRadius.value = radius;
-    updateProgress();
   }
 
   /// Sets the work type selection
   void setWorkType(String type) {
     workType.value = type;
-    updateProgress();
   }
 
   /// Picks a document (image, pdf, doc) with 4MB limit
@@ -365,8 +330,9 @@ class CompleteProfileController extends GetxController {
     return null;
   }
 
-  /// Validates all mandatory fields and updates inline errors
-  bool validateCustomFields() {
+  /// Validates the non-TextFormField parts of Step 0 (Basic Information):
+  /// profile photo, gender, dob, and required documents.
+  bool validateBasicInfoFields() {
     bool isValid = true;
 
     if (profileImage.value == null) {
@@ -390,6 +356,28 @@ class CompleteProfileController extends GetxController {
       dobError.value = null;
     }
 
+    if (adhaarFront.value == null) {
+      adhaarFrontError.value = "Required";
+      isValid = false;
+    } else {
+      adhaarFrontError.value = null;
+    }
+
+    if (adhaarBack.value == null) {
+      adhaarBackError.value = "Required";
+      isValid = false;
+    } else {
+      adhaarBackError.value = null;
+    }
+
+    return isValid;
+  }
+
+  /// Validates the non-TextFormField parts of Step 1 (Service Details):
+  /// service category, sub services and experience dropdowns.
+  bool validateServiceDetailsFields() {
+    bool isValid = true;
+
     if (serviceCategory.value == null) {
       categoryError.value = "Required";
       isValid = false;
@@ -411,29 +399,14 @@ class CompleteProfileController extends GetxController {
       experienceError.value = null;
     }
 
-    if (adhaarFront.value == null) {
-      adhaarFrontError.value = "Required";
-      isValid = false;
-    } else {
-      adhaarFrontError.value = null;
-    }
-
-    if (adhaarBack.value == null) {
-      adhaarBackError.value = "Required";
-      isValid = false;
-    } else {
-      adhaarBackError.value = null;
-    }
-
     return isValid;
   }
 
-  /// Validates all mandatory fields and submits the profile
+  /// Validates the final (Bank Details) step and submits the profile.
   void submitProfile() {
-    bool isFormValid = formKey.currentState?.validate() ?? false;
-    bool areCustomFieldsValid = validateCustomFields();
+    final isFormValid = bankDetailsFormKey.currentState?.validate() ?? false;
 
-    if (isFormValid && areCustomFieldsValid) {
+    if (isFormValid) {
       debugPrint("Submitting Provider Profile...");
       Get.offAllNamed(RouteNames.homeMain);
     }
@@ -441,6 +414,7 @@ class CompleteProfileController extends GetxController {
 
   @override
   void onClose() {
+    pageController.dispose();
     fullNameController.dispose();
     mobileController.dispose();
     emailController.dispose();

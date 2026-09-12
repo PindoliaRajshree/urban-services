@@ -1,5 +1,7 @@
 // File: lib/features/home_provider/complete_profile/complete_profile_screen.dart
-// Purpose: Multi-step form for providers to complete their detailed professional profile.
+// Purpose: 3-step wizard (Basic Information -> Service Details -> Bank Details)
+// for providers to complete their professional profile. Each step lives on
+// its own page, navigated with Previous/Next/Submit buttons.
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -17,6 +19,7 @@ import 'package:urban_services/widgets/dashed_border_painter.dart';
 import 'package:urban_services/widgets/document_upload_card.dart';
 import 'package:urban_services/widgets/icon_header.dart';
 import 'package:urban_services/widgets/primary_button.dart';
+import 'package:urban_services/widgets/secondary_button.dart';
 import 'package:urban_services/widgets/step_indicator.dart';
 
 class CompleteProfileScreen extends StatefulWidget {
@@ -29,108 +32,125 @@ class CompleteProfileScreen extends StatefulWidget {
 class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   final controller = Get.put(CompleteProfileController());
 
+  static const List<String> _stepLabels = [
+    "Basic Info",
+    "Service Details",
+    "Bank Details",
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.screenBackground,
       body: SafeArea(
-        child: Form(
-          key: controller.formKey,
-          child: Column(
-            children: [
-              Padding(
+        child: Column(
+          children: [
+            Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: AppDimensions.padding20w,
+              ),
+              child: CommonAppBar(
+                title: 'Complete Your Profile',
+                showMoreIcon: false,
+                // Step 0 leaves the screen; later steps go back one page.
+                onBackPress: controller.previousStep,
+              ),
+            ),
+
+            // Step Indicator (3 steps)
+            Obx(
+              () => Padding(
                 padding: EdgeInsets.symmetric(
                   horizontal: AppDimensions.padding20w,
                 ),
-                child: const CommonAppBar(
-                  title: 'Complete Your Profile',
-                  showMoreIcon: true,
+                child: StepIndicator(
+                  currentStep: controller.currentStep.value,
+                  stepLabels: _stepLabels,
                 ),
               ),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: AppDimensions.padding20w,
-                  ),
-                  child: Column(
-                    children: [
-                      // 2. Step Indicator
-                      Obx(
-                        () => StepIndicator(
-                          currentStep: controller.currentStep.value,
-                          stepLabels: const [
-                            "Basic Info",
-                            "Service",
-                            "Pricing",
-                            "Area",
-                            "Availability",
-                            "Documents",
-                            "Bank Details",
-                          ],
-                        ),
-                      ),
+            ),
 
-                      // 3. Basic Information Section
-                      const IconHeader(
-                        icon: AppImages.person,
-                        title: 'Basic Information',
-                      ),
-                      _buildBasicInfoSection(),
-
-                      // 5. Service Details Section
-                      const IconHeader(
-                        icon: AppImages.service,
-                        title: 'Service Details',
-                      ),
-                      _buildServiceDetailsSection(),
-
-                      // 6. Pricing Section
-                      const IconHeader(
-                        icon: AppImages.pricing,
-                        title: 'Pricing',
-                      ),
-                      _buildPricingSection(),
-
-                      // 8. Service Area Section
-                      const IconHeader(
-                        icon: AppImages.locationOutlined,
-                        title: 'Service Area',
-                      ),
-                      _buildServiceAreaSection(),
-
-                      // 10. Availability Section
-                      const IconHeader(
-                        icon: AppImages.clockOutlined,
-                        title: 'Availability',
-                      ),
-                      _buildAvailabilitySection(),
-
-                      // 13. Documents Verification Section
-                      const IconHeader(
-                        icon: AppImages.clockOutlined,
-                        title: 'Documents Verification',
-                      ),
-                      _buildDocumentsSection(),
-
-                      // 16. Bank Details Section
-                      const IconHeader(
-                        icon: AppImages.clockOutlined,
-                        title: 'Bank Details',
-                      ),
-                      _buildBankSection(),
-
-                      SizedBox(height: AppDimensions.padding40h),
-                      PrimaryButton(
-                        text: "Submit Profile",
-                        onPressed: controller.submitProfile,
-                      ),
-                      SizedBox(height: AppDimensions.padding40h),
-                    ],
-                  ),
-                ),
+            // Each step is a separate, independently scrollable page.
+            Expanded(
+              child: PageView(
+                controller: controller.pageController,
+                physics: const NeverScrollableScrollPhysics(),
+                children: [
+                  _buildBasicInfoPage(),
+                  _buildServiceDetailsPage(),
+                  _buildBankDetailsPage(),
+                ],
               ),
-            ],
+            ),
+
+            // Footer navigation: Next only on step 1, Previous/Next in the
+            // middle, Previous/Submit on the last step.
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                AppDimensions.padding20w,
+                AppDimensions.padding15h,
+                AppDimensions.padding20w,
+                AppDimensions.padding15h,
+              ),
+              child: Obx(() => _buildFooterButtons()),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFooterButtons() {
+    if (controller.isFirstStep) {
+      return PrimaryButton(text: "Next", onPressed: controller.nextStep);
+    }
+
+    return Row(
+      children: [
+        Expanded(
+          child: SecondaryButton(
+            text: "Previous",
+            onPressed: controller.previousStep,
           ),
+        ),
+        SizedBox(width: AppDimensions.padding15w),
+        Expanded(
+          child: PrimaryButton(
+            text: controller.isLastStep ? "Submit Profile" : "Next",
+            onPressed: controller.isLastStep
+                ? controller.submitProfile
+                : controller.nextStep,
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ==========================================================================
+  // Step 0: Basic Information (photo, name, mobile, email, gender, dob,
+  // documents verification)
+  // ==========================================================================
+
+  Widget _buildBasicInfoPage() {
+    return SingleChildScrollView(
+      padding: EdgeInsets.symmetric(horizontal: AppDimensions.padding20w),
+      child: Form(
+        key: controller.basicInfoFormKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const IconHeader(
+              icon: AppImages.person,
+              title: 'Basic Information',
+            ),
+            _buildBasicInfoSection(),
+            const IconHeader(
+              icon: AppImages.file,
+              title: 'Documents Verification',
+            ),
+            _buildDocumentsSection(),
+            SizedBox(height: AppDimensions.padding20h),
+          ],
         ),
       ),
     );
@@ -432,6 +452,103 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     );
   }
 
+  Widget _buildDocumentsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Upload clear images of your documents",
+          style: customTextStyle(
+            AppTextSizes.smallTextSize,
+            AppColors.darkGrey,
+            FontWeight.w400,
+          ),
+        ),
+        SizedBox(height: AppDimensions.padding15h),
+        Obx(
+          () => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              DocumentUploadCard(
+                title: "Aadhaar",
+                subTitle: "Upload Front",
+                selectedFile: controller.adhaarFront.value,
+                onUpload: () => controller.pickDocument('aadhaarFront'),
+                onRemove: () => controller.removeDocument('aadhaarFront'),
+              ),
+              if (controller.adhaarFrontError.value != null)
+                _buildInlineError(controller.adhaarFrontError.value!),
+              SizedBox(height: AppDimensions.padding20h),
+              DocumentUploadCard(
+                title: "Aadhaar",
+                subTitle: "Upload Back",
+                selectedFile: controller.adhaarBack.value,
+                onUpload: () => controller.pickDocument('aadhaarBack'),
+                onRemove: () => controller.removeDocument('aadhaarBack'),
+              ),
+              if (controller.adhaarBackError.value != null)
+                _buildInlineError(controller.adhaarBackError.value!),
+            ],
+          ),
+        ),
+        SizedBox(height: AppDimensions.padding20h),
+        Obx(
+          () => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              DocumentUploadCard(
+                title: "PAN Card (Optional)",
+                subTitle: "Upload Card",
+                selectedFile: controller.panCard.value,
+                onUpload: () => controller.pickDocument('pan'),
+                onRemove: () => controller.removeDocument('pan'),
+              ),
+              if (controller.panCardError.value != null)
+                _buildInlineError(controller.panCardError.value!),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ==========================================================================
+  // Step 1: Service Details (category, sub services, experience, description,
+  // pricing, service area, availability)
+  // ==========================================================================
+
+  Widget _buildServiceDetailsPage() {
+    return SingleChildScrollView(
+      padding: EdgeInsets.symmetric(horizontal: AppDimensions.padding20w),
+      child: Form(
+        key: controller.serviceDetailsFormKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const IconHeader(
+              icon: AppImages.service,
+              title: 'Service Details',
+            ),
+            _buildServiceDetailsSection(),
+            const IconHeader(icon: AppImages.pricing, title: 'Pricing'),
+            _buildPricingSection(),
+            const IconHeader(
+              icon: AppImages.locationOutlined,
+              title: 'Service Area',
+            ),
+            _buildServiceAreaSection(),
+            const IconHeader(
+              icon: AppImages.clockOutlined,
+              title: 'Availability',
+            ),
+            _buildAvailabilitySection(),
+            SizedBox(height: AppDimensions.padding20h),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildServiceDetailsSection() {
     return Column(
       children: [
@@ -629,63 +746,27 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     );
   }
 
-  Widget _buildDocumentsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "Upload clear images of your documents",
-          style: customTextStyle(
-            AppTextSizes.smallTextSize,
-            AppColors.darkGrey,
-            FontWeight.w400,
-          ),
+  // ==========================================================================
+  // Step 2: Bank Details (account holder name, A/C no, IFSC code, UPI ID)
+  // ==========================================================================
+
+  Widget _buildBankDetailsPage() {
+    return SingleChildScrollView(
+      padding: EdgeInsets.symmetric(horizontal: AppDimensions.padding20w),
+      child: Form(
+        key: controller.bankDetailsFormKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const IconHeader(
+              icon: AppImages.creditDebitCard,
+              title: 'Bank Details',
+            ),
+            _buildBankSection(),
+            SizedBox(height: AppDimensions.padding20h),
+          ],
         ),
-        SizedBox(height: AppDimensions.padding15h),
-        Obx(
-          () => Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              DocumentUploadCard(
-                title: "Aadhaar",
-                subTitle: "Upload Front",
-                selectedFile: controller.adhaarFront.value,
-                onUpload: () => controller.pickDocument('aadhaarFront'),
-                onRemove: () => controller.removeDocument('aadhaarFront'),
-              ),
-              if (controller.adhaarFrontError.value != null)
-                _buildInlineError(controller.adhaarFrontError.value!),
-              SizedBox(height: AppDimensions.padding20h),
-              DocumentUploadCard(
-                title: "Aadhaar",
-                subTitle: "Upload Back",
-                selectedFile: controller.adhaarBack.value,
-                onUpload: () => controller.pickDocument('aadhaarBack'),
-                onRemove: () => controller.removeDocument('aadhaarBack'),
-              ),
-              if (controller.adhaarBackError.value != null)
-                _buildInlineError(controller.adhaarBackError.value!),
-            ],
-          ),
-        ),
-        SizedBox(height: AppDimensions.padding20h),
-        Obx(
-          () => Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              DocumentUploadCard(
-                title: "PAN Card (Optional)",
-                subTitle: "Upload Card",
-                selectedFile: controller.panCard.value,
-                onUpload: () => controller.pickDocument('pan'),
-                onRemove: () => controller.removeDocument('pan'),
-              ),
-              if (controller.panCardError.value != null)
-                _buildInlineError(controller.panCardError.value!),
-            ],
-          ),
-        ),
-      ],
+      ),
     );
   }
 
@@ -756,6 +837,8 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       ],
     );
   }
+
+  // ---------------- Shared helpers ----------------
 
   Widget _buildSelectionChip(String label, RxString groupValue) {
     return Obx(() {

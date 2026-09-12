@@ -40,14 +40,14 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  /// Sends the user to the provider onboarding form — this is the
-  /// "become a provider" entry point, not a generic user-profile edit
-  /// screen. `disableDefaultTargetGestures: true` below means the
-  /// package's own tap handling (and its `disposeOnTap` logic) never
-  /// runs, so the showcase is dismissed explicitly here before navigating.
+  /// Sends the user to the basic profile-completion screen (name, photo,
+  /// mobile, email, gender, DOB) — not the provider onboarding wizard.
+  /// `disableDefaultTargetGestures: true` below means the package's own tap
+  /// handling (and its `disposeOnTap` logic) never runs, so the showcase is
+  /// dismissed explicitly here before navigating.
   void _onProfileShowcaseTap() {
     ShowCaseWidget.of(context).dismiss();
-    Get.toNamed(RouteNames.completeProviderProfile);
+    Get.toNamed(RouteNames.completeProfile);
   }
 
   @override
@@ -85,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         key: _profileShowcaseKey,
                         title: 'Complete Your Profile',
                         description:
-                            'Tap your photo to finish setting up your provider details and start offering services.',
+                            'Tap your photo to complete your basic profile details.',
                         targetShapeBorder: const CircleBorder(),
                         tooltipBackgroundColor: AppColors.primaryDark,
                         textColor: AppColors.white,
