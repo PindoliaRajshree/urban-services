@@ -24,6 +24,10 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Urban Service needs camera access to capture your profile photo and Aadhaar/PAN documents.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Urban Service needs photo library access to upload your profile photo and Aadhaar/PAN documents.</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>

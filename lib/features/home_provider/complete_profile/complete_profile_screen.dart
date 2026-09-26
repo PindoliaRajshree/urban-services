@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
+import 'package:urban_services/core/constants/api_status.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
 import 'package:urban_services/features/home_provider/complete_profile/complete_profile_controller.dart';
 import 'package:urban_services/widgets/address_form_field.dart';
@@ -100,6 +101,68 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     );
   }
 
+  /// Shows a "Take Photo" / "Choose from Gallery" bottom sheet and, if the
+  /// user picks one, forwards the picked image to [field] on the controller
+  /// (profile photo, Aadhaar front/back, or PAN — see
+  /// `CompleteProfileController.pickPhotoFor`).
+  Future<void> _pickPhoto(String field) async {
+    final source = await Get.bottomSheet<ImageSource>(
+      Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: AppDimensions.padding20w,
+          vertical: AppDimensions.padding20h,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppDimensions.radius16r),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              "Upload Photo",
+              style: customTextStyle(
+                AppTextSizes.largeTextSize,
+                AppColors.darkBlueText,
+                FontWeight.w700,
+              ),
+            ),
+            SizedBox(height: AppDimensions.padding15h),
+            ListTile(
+              leading: Icon(Icons.camera_alt, color: AppColors.primaryDark),
+              title: Text(
+                "Take Photo",
+                style: customTextStyle(
+                  AppTextSizes.smallTextSize,
+                  AppColors.black,
+                  FontWeight.w400,
+                ),
+              ),
+              onTap: () => Get.back(result: ImageSource.camera),
+            ),
+            ListTile(
+              leading: Icon(Icons.photo_library, color: AppColors.primaryDark),
+              title: Text(
+                "Choose from Gallery",
+                style: customTextStyle(
+                  AppTextSizes.smallTextSize,
+                  AppColors.black,
+                  FontWeight.w400,
+                ),
+              ),
+              onTap: () => Get.back(result: ImageSource.gallery),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (source == null) return;
+    await controller.pickPhotoFor(field, source);
+  }
+
   Widget _buildFooterButtons() {
     if (controller.isFirstStep) {
       return PrimaryButton(text: "Next", onPressed: controller.nextStep);
@@ -117,6 +180,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         Expanded(
           child: PrimaryButton(
             text: controller.isLastStep ? "Submit Profile" : "Next",
+            isLoading: controller.isLastStep && controller.isSubmitting.value,
             onPressed: controller.isLastStep
                 ? controller.submitProfile
                 : controller.nextStep,
@@ -180,7 +244,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       GestureDetector(
-                        onTap: () => controller.pickImage(ImageSource.gallery),
+                        onTap: () => _pickPhoto('profile'),
                         child: CustomPaint(
                           painter: DashedBorderPainter(
                             color: controller.profileImageError.value != null
@@ -473,7 +537,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                 title: "Aadhaar",
                 subTitle: "Upload Front",
                 selectedFile: controller.adhaarFront.value,
-                onUpload: () => controller.pickDocument('aadhaarFront'),
+                onUpload: () => _pickPhoto('aadhaarFront'),
                 onRemove: () => controller.removeDocument('aadhaarFront'),
               ),
               if (controller.adhaarFrontError.value != null)
@@ -483,7 +547,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                 title: "Aadhaar",
                 subTitle: "Upload Back",
                 selectedFile: controller.adhaarBack.value,
-                onUpload: () => controller.pickDocument('aadhaarBack'),
+                onUpload: () => _pickPhoto('aadhaarBack'),
                 onRemove: () => controller.removeDocument('aadhaarBack'),
               ),
               if (controller.adhaarBackError.value != null)
@@ -500,7 +564,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                 title: "PAN Card (Optional)",
                 subTitle: "Upload Card",
                 selectedFile: controller.panCard.value,
-                onUpload: () => controller.pickDocument('pan'),
+                onUpload: () => _pickPhoto('pan'),
                 onRemove: () => controller.removeDocument('pan'),
               ),
               if (controller.panCardError.value != null)
@@ -556,12 +620,18 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
           () => Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CustomDropdown<String>(
+              CustomDropdown<int>(
                 label: "Service Category",
-                hint: "Service Category",
+                hint:
+                    controller.serviceTypeController.serviceTypesStatus.value ==
+                        ApiStatus.loading
+                    ? "Loading..."
+                    : "Service Category",
                 value: controller.serviceCategory.value,
-                items: ["Cleaning", "Electrician", "Plumber", "Laundry"]
-                    .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                items: controller.serviceTypeController.serviceTypes
+                    .map(
+                      (s) => DropdownMenuItem(value: s.id, child: Text(s.name)),
+                    )
                     .toList(),
                 onChanged: (v) => controller.serviceCategory.value = v,
               ),
@@ -575,12 +645,20 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
           () => Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CustomDropdown<String>(
+              CustomDropdown<int>(
                 label: "Sub Services",
-                hint: "Sub Services",
+                hint: controller.serviceCategory.value == null
+                    ? "Select a service first"
+                    : controller.serviceTypeController.subServiceTypesStatus
+                              .value ==
+                          ApiStatus.loading
+                    ? "Loading..."
+                    : "Sub Services",
                 value: controller.subServices.value,
-                items: ["Full Home", "Kitchen", "Bathroom"]
-                    .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                items: controller.serviceTypeController.subServiceTypes
+                    .map(
+                      (s) => DropdownMenuItem(value: s.id, child: Text(s.name)),
+                    )
                     .toList(),
                 onChanged: (v) => controller.subServices.value = v,
               ),

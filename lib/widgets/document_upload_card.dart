@@ -142,7 +142,7 @@ class DocumentUploadCard extends StatelessWidget {
           Padding(
             padding: EdgeInsets.only(bottom: AppDimensions.padding10h),
             child: Text(
-              "jpg, jpeg, png, pdf, doc, or docx files (max 4MB)",
+              "jpg, jpeg, or png (max 4MB)",
               textAlign: TextAlign.center,
               style: customTextStyle(
                 AppTextSizes.stableTextSize - 1, // 11

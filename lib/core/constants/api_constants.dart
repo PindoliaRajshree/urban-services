@@ -41,6 +41,25 @@ class ApiConstants {
   /// by DioClient), so no query parameters are needed.
   static const String getServiceAddress = 'user/get-service-address';
 
+  // ---- Provider: Service Types ----
+  /// Fetches the master list of service categories (Cleaning, Painting,
+  /// Electrician, ...) a provider can offer.
+  static const String serviceTypes = 'provider/provider/service-types';
+
+  /// Fetches the sub-services belonging to one service category. Requires a
+  /// `service_type_id` query parameter.
+  static const String subServiceTypes = 'provider/provider/sub-service-types';
+
+  /// Submits the 3-step provider profile-completion form (basic info,
+  /// service details, bank details) as multipart/form-data — the request
+  /// includes file uploads (profile photo, Aadhaar front/back, PAN card).
+  ///
+  /// Double `provider` prefix matches [serviceTypes]/[subServiceTypes] above
+  /// — the single-prefix path (`provider/provide-profile/update`) returned a
+  /// Laravel "route not found" 404 in testing.
+  static const String providerProfileUpdate =
+      'provider/provide-profile/update';
+
   // ---- Google Maps / Geocoding ----
   /// Your Google Maps Platform API key — currently the same key already set
   /// in android/app/src/main/AndroidManifest.xml

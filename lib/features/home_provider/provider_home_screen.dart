@@ -8,6 +8,7 @@ import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
+import 'package:urban_services/features/home_provider/complete_profile/service_type_controller.dart';
 import 'package:urban_services/features/home_provider/provider_home_controller.dart';
 import 'package:urban_services/routes/route_names.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
@@ -24,12 +25,24 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
   // Initialize dashboard logic controller
   final controller = Get.put(ProviderHomeController());
 
+  // Shared preload/cache for the profile-completion "Service Details" step —
+  // reused via Get.find if already registered so a revisit to Home doesn't
+  // reset the cache or re-trigger the fetch.
+  final serviceTypeController = Get.isRegistered<ServiceTypeController>()
+      ? Get.find<ServiceTypeController>()
+      : Get.put(ServiceTypeController());
+
   // Spotlights the profile avatar with a "complete your profile" callout.
   final GlobalKey _profileShowcaseKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
+    // Preload service categories here so they're already available by the
+    // time the provider reaches the Service Details step (no-op if already
+    // loaded).
+    serviceTypeController.fetchServiceTypes();
+
     // Runs every time this screen is built — there's no "seen it already"
     // flag yet, so the callout shows on every visit to Home for now.
     WidgetsBinding.instance.addPostFrameCallback((_) {

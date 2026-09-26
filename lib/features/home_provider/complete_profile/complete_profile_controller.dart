@@ -4,18 +4,32 @@
 // validation and page navigation.
 
 import 'dart:io';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:urban_services/core/services/api_result.dart';
 import 'package:urban_services/core/utils/validators.dart';
+import 'package:urban_services/features/home_provider/complete_profile/complete_profile_repository.dart';
+import 'package:urban_services/features/home_provider/complete_profile/models/profile_update_request.dart';
+import 'package:urban_services/features/home_provider/complete_profile/service_type_controller.dart';
 import 'package:urban_services/features/home_provider/complete_profile/verify_number_dialog.dart';
 import 'package:urban_services/routes/route_names.dart';
 import 'package:urban_services/widgets/custom_snackbar.dart';
 
 class CompleteProfileController extends GetxController {
+  CompleteProfileController({CompleteProfileRepository? repository})
+    : _repository = repository ?? CompleteProfileRepository();
+
+  final CompleteProfileRepository _repository;
   final ImagePicker _picker = ImagePicker();
+
+  // Shared with ProviderHomeScreen, which preloads service categories on
+  // Home so they're already available here. Falls back to fetching directly
+  // in onInit() below in case this screen is somehow reached first.
+  final serviceTypeController = Get.isRegistered<ServiceTypeController>()
+      ? Get.find<ServiceTypeController>()
+      : Get.put(ServiceTypeController());
 
   // --- Step Tracking ---
   // Step 0 = Basic Information, Step 1 = Service Details, Step 2 = Bank Details
@@ -46,8 +60,10 @@ class CompleteProfileController extends GetxController {
 
   // --- Service Details (Step 1): category, sub services, experience, description,
   // pricing, service area, availability ---
-  final serviceCategory = RxnString();
-  final subServices = RxnString();
+  // Hold the selected service-type / sub-service-type id (not a display
+  // string) so they map directly to what the backend expects.
+  final serviceCategory = RxnInt();
+  final subServices = RxnInt();
   final experience = RxnString();
   final descriptionController = TextEditingController();
 
@@ -90,9 +106,18 @@ class CompleteProfileController extends GetxController {
   // --- OTP Controller for dialog ---
   final otpController = TextEditingController();
 
+  // --- Submission state ---
+  final isSubmitting = false.obs;
+
   @override
   void onInit() {
     super.onInit();
+
+    // Fallback in case this screen is somehow reached without visiting Home
+    // first (fetchServiceTypes() is a no-op if already loaded there).
+    if (serviceTypeController.serviceTypes.isEmpty) {
+      serviceTypeController.fetchServiceTypes();
+    }
 
     // Clear inline errors as soon as the user provides a value.
     ever(profileImage, (val) {
@@ -105,7 +130,13 @@ class CompleteProfileController extends GetxController {
       if (val != null) dobError.value = null;
     });
     ever(serviceCategory, (val) {
-      if (val != null) categoryError.value = null;
+      if (val != null) {
+        categoryError.value = null;
+        // Sub-services belong to a category — reset the previous selection
+        // and (re)fetch, served instantly from cache if seen before.
+        subServices.value = null;
+        serviceTypeController.fetchSubServiceTypes(val);
+      }
     });
     ever(subServices, (val) {
       if (val != null) subServiceError.value = null;
@@ -193,14 +224,6 @@ class CompleteProfileController extends GetxController {
 
   // --- Methods ---
 
-  /// Picks an image from camera or gallery for profile
-  Future<void> pickImage(ImageSource source) async {
-    final XFile? pickedFile = await _picker.pickImage(source: source);
-    if (pickedFile != null) {
-      profileImage.value = File(pickedFile.path);
-    }
-  }
-
   void removeProfileImage() {
     profileImage.value = null;
   }
@@ -271,28 +294,39 @@ class CompleteProfileController extends GetxController {
     workType.value = type;
   }
 
-  /// Picks a document (image, pdf, doc) with 4MB limit
-  Future<void> pickDocument(String type) async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx'],
-    );
+  /// Picks an image (camera or gallery) for one of the four photo/document
+  /// fields on this form — profile photo, Aadhaar front/back, or PAN card —
+  /// identified by [field]. Aadhaar/PAN are capped at 4MB; the profile photo
+  /// has no size cap (matches the previous per-field behavior).
+  Future<void> pickPhotoFor(String field, ImageSource source) async {
+    final XFile? pickedFile = await _picker.pickImage(source: source);
+    if (pickedFile == null) return;
 
-    if (result != null) {
-      File file = File(result.files.single.path!);
-      int sizeInBytes = await file.length();
-      double sizeInMb = sizeInBytes / (1024 * 1024);
+    final file = File(pickedFile.path);
 
+    if (field != 'profile') {
+      final sizeInMb = await file.length() / (1024 * 1024);
       if (sizeInMb > 4) {
-        if (type == 'aadhaarFront') adhaarFrontError.value = "File size must be less than 4MB";
-        if (type == 'aadhaarBack') adhaarBackError.value = "File size must be less than 4MB";
-        if (type == 'pan') panCardError.value = "File size must be less than 4MB";
+        if (field == 'aadhaarFront') {
+          adhaarFrontError.value = "File size must be less than 4MB";
+        }
+        if (field == 'aadhaarBack') {
+          adhaarBackError.value = "File size must be less than 4MB";
+        }
+        if (field == 'pan') panCardError.value = "File size must be less than 4MB";
         return;
       }
+    }
 
-      if (type == 'aadhaarFront') adhaarFront.value = file;
-      if (type == 'aadhaarBack') adhaarBack.value = file;
-      if (type == 'pan') panCard.value = file;
+    switch (field) {
+      case 'profile':
+        profileImage.value = file;
+      case 'aadhaarFront':
+        adhaarFront.value = file;
+      case 'aadhaarBack':
+        adhaarBack.value = file;
+      case 'pan':
+        panCard.value = file;
     }
   }
 
@@ -402,13 +436,68 @@ class CompleteProfileController extends GetxController {
     return isValid;
   }
 
-  /// Validates the final (Bank Details) step and submits the profile.
-  void submitProfile() {
+  /// Validates the final (Bank Details) step and submits the whole profile
+  /// (all 3 steps) to provider/provide-profile/update.
+  Future<void> submitProfile() async {
     final isFormValid = bankDetailsFormKey.currentState?.validate() ?? false;
+    if (!isFormValid) return;
 
-    if (isFormValid) {
-      debugPrint("Submitting Provider Profile...");
-      Get.offAllNamed(RouteNames.homeMain);
+    // Earlier steps are validated on nextStep(), but re-check here since
+    // the required files/dropdowns aren't part of a Form's own validate().
+    if (!validateBasicInfoFields()) {
+      currentStep.value = 0;
+      pageController.jumpToPage(0);
+      return;
+    }
+    if (!validateServiceDetailsFields()) {
+      currentStep.value = 1;
+      pageController.jumpToPage(1);
+      return;
+    }
+
+    isSubmitting.value = true;
+    final request = ProfileUpdateRequest(
+      fullName: fullNameController.text.trim(),
+      mobileNumber: mobileController.text.trim(),
+      email: emailController.text.trim(),
+      gender: gender.value!,
+      dob: dob.value!,
+      serviceTypeId: serviceCategory.value!,
+      subServiceTypeId: subServices.value!,
+      experienceYears: experience.value!,
+      description: descriptionController.text.trim(),
+      startingPrice: startingPriceController.text.trim(),
+      perHourRate: perHourRateController.text.trim(),
+      perVisitRate: perVisitRateController.text.trim(),
+      customPricing: customPricingController.text.trim(),
+      city: cityController.text.trim(),
+      area: areaController.text.trim(),
+      serviceRadius: selectedRadius.value,
+      workType: workType.value,
+      accountHolderName: accountHolderController.text.trim(),
+      accountNumber: accountNumberController.text.trim(),
+      ifscCode: ifscController.text.trim(),
+      upiId: upiIdController.text.trim(),
+      profileImage: profileImage.value!,
+      aadhaarFront: adhaarFront.value!,
+      aadhaarBack: adhaarBack.value!,
+      panCard: panCard.value,
+    );
+
+    final result = await _repository.updateProfile(request);
+    isSubmitting.value = false;
+
+    switch (result) {
+      case ApiSuccess(data: final data):
+        debugPrint(
+          "Profile update success: message=${data.message}, data=${data.data}",
+        );
+        CustomSnackBar.showSuccess(
+          message: data.message ?? "Profile submitted successfully",
+        );
+        Get.offAllNamed(RouteNames.homeMain);
+      case ApiFailure(message: final message):
+        CustomSnackBar.showError(message: message);
     }
   }
 

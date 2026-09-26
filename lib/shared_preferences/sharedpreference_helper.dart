@@ -34,14 +34,14 @@ class SharedPreferencesHelper {
     // Fallback: try JSON encode any other value (Maps, Lists, objects with toJson())
     try {
       final encoded = jsonEncode(value);
-      return p.setString(key, encoded);
+      return await p.setString(key, encoded);
     } catch (_) {
       // If encoding fails, attempt to call `toJson` dynamically then encode
       try {
         final dyn = (value as dynamic);
         final obj = dyn.toJson();
         final encoded = jsonEncode(obj);
-        return p.setString(key, encoded);
+        return await p.setString(key, encoded);
       } catch (_) {
         return Future.value(false);
       }
