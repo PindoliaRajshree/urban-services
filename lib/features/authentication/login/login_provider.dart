@@ -8,6 +8,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:urban_services/core/constants/api_status.dart';
 import 'package:urban_services/core/network/api_result.dart';
 import 'package:urban_services/core/session/session_provider.dart';
+import 'package:urban_services/core/session/user_role.dart';
 import 'package:urban_services/core/utils/validators.dart';
 import 'package:urban_services/features/authentication/login/models/login_request.dart';
 import 'package:urban_services/features/authentication/login/models/login_response.dart';
@@ -93,6 +94,9 @@ class LoginNotifier extends Notifier<LoginState> {
   Future<void> _handleResult(ApiResult<LoginResponse> result) async {
     switch (result) {
       case ApiSuccess(data: final data):
+        // Read before saving: saveLogin resets selectedRole to the stored
+        // role.
+        final pickedRole = ref.read(sessionProvider).selectedRole;
         final session = ref.read(sessionProvider.notifier);
         final saved = await session.saveLogin(data);
         if (!ref.mounted) return;
@@ -108,10 +112,18 @@ class LoginNotifier extends Notifier<LoginState> {
 
         state = const LoginState(status: ApiStatus.successful);
 
-        CustomSnackBar.showSuccess(
-          title: "Success",
-          message: data.message ?? "Login successful",
+        final mismatch = roleMismatchMessage(
+          pickedRole,
+          ref.read(sessionProvider).role,
         );
+        if (mismatch != null) {
+          CustomSnackBar.showInfo(title: "Logged in", message: mismatch);
+        } else {
+          CustomSnackBar.showSuccess(
+            title: "Success",
+            message: data.message ?? "Login successful",
+          );
+        }
 
         // Route by role: "set location" is a user-only onboarding step, so
         // providers skip straight to their home dashboard while users go

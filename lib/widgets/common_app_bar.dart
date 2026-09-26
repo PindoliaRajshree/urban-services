@@ -24,6 +24,10 @@ class CommonAppBar extends StatelessWidget {
   /// Callback for the vertical more icon tap
   final VoidCallback? onMorePressed;
 
+  /// Whether to show the back button. False on tab roots (Bookings,
+  /// Profile), where there is nothing to go back to.
+  final bool showBackButton;
+
   const CommonAppBar({
     super.key,
     required this.title,
@@ -31,6 +35,7 @@ class CommonAppBar extends StatelessWidget {
     this.onBackPress,
     this.showMoreIcon = false,
     this.onMorePressed,
+    this.showBackButton = true,
   });
 
   @override
@@ -41,18 +46,19 @@ class CommonAppBar extends StatelessWidget {
         alignment: Alignment.center,
         children: [
           // Left: Standardized Back button from assets
-          Align(
-            alignment: Alignment.centerLeft,
-            child: GestureDetector(
-              onTap: onBackPress ?? () => Navigator.of(context).maybePop(),
-              child: Image.asset(
-                AppImages.back,
-                height: AppDimensions.containerHeight24h,
-                width: AppDimensions.containerWidth24w,
-                color: AppColors.text,
+          if (showBackButton)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: GestureDetector(
+                onTap: onBackPress ?? () => Navigator.of(context).maybePop(),
+                child: Image.asset(
+                  AppImages.back,
+                  height: AppDimensions.containerHeight24h,
+                  width: AppDimensions.containerWidth24w,
+                  color: AppColors.text,
+                ),
               ),
             ),
-          ),
 
           // Center: Standardized Title text
           Text(

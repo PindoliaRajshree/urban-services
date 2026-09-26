@@ -9,6 +9,7 @@ import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
+import 'package:urban_services/core/session/session_provider.dart';
 import 'package:urban_services/features/home_provider/complete_profile/service_type_provider.dart';
 import 'package:urban_services/features/home_provider/provider_home_provider.dart';
 import 'package:urban_services/routes/route_names.dart';
@@ -54,6 +55,7 @@ class _ProviderHomeScreenState extends ConsumerState<ProviderHomeScreen> {
   @override
   Widget build(BuildContext context) {
     final isSmall = MediaQuery.of(context).size.height < 720;
+    final firstName = ref.watch(sessionProvider.select((s) => s.firstName));
 
     return Scaffold(
       backgroundColor: AppColors.screenBackground,
@@ -133,37 +135,19 @@ class _ProviderHomeScreenState extends ConsumerState<ProviderHomeScreen> {
                         ),
                       ),
                       SizedBox(width: AppDimensions.padding10w),
-                      // Greeting and Location
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Hi, Anamika',
-                            style: customTextStyle(
-                              AppTextSizes.smallTextSize, // 10
-                              AppColors.text,
-                              FontWeight.w600,
-                            ),
+                      // Greeting. No location line: providers have no
+                      // saved address yet (the provider profile API will
+                      // supply their city).
+                      Flexible(
+                        child: Text(
+                          'Hi, ${firstName ?? 'there'}',
+                          overflow: TextOverflow.ellipsis,
+                          style: customTextStyle(
+                            AppTextSizes.smallTextSize, // 10
+                            AppColors.text,
+                            FontWeight.w600,
                           ),
-                          Row(
-                            children: [
-                              Image.asset(
-                                AppImages.placeMarker,
-                                height: AppDimensions.containerHeight15h,
-                                width: AppDimensions.containerWidth15w,
-                              ),
-                              SizedBox(width: AppDimensions.padding4w),
-                              Text(
-                                'Indore, MP',
-                                style: customTextStyle(
-                                  AppTextSizes.smallTextSize, // 10
-                                  AppColors.text,
-                                  FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                        ),
                       ),
                       const Spacer(),
                       // Action Icons

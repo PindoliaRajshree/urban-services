@@ -29,8 +29,8 @@ class CategoryItem extends StatelessWidget {
         children: [
           // Category Icon Container
           Container(
-            width:
-                AppDimensions.containerWidth74w, // Fixed size for category items
+            width: AppDimensions
+                .containerWidth74w, // Fixed size for category items
             height: AppDimensions.containerHeight74h,
             padding: EdgeInsets.all(AppDimensions.padding10w),
             decoration: BoxDecoration(

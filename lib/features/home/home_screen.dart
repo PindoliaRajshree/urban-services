@@ -2,6 +2,7 @@
 // Purpose: The primary dashboard for users to explore services, categories, and top-rated providers.
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:showcaseview/showcaseview.dart';
 import 'package:urban_services/routes/route_args.dart';
@@ -10,20 +11,22 @@ import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
+import 'package:urban_services/core/session/session_provider.dart';
+import 'package:urban_services/features/address/address_provider.dart';
 import 'package:urban_services/widgets/category_item.dart';
 import 'package:urban_services/widgets/custom_search_bar.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
 import 'package:urban_services/widgets/section_heading.dart';
 import 'package:urban_services/widgets/top_rated_card.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   // Current index for the promotional slider
   int _currentSliderIndex = 0;
 
@@ -51,8 +54,22 @@ class _HomeScreenState extends State<HomeScreen> {
     context.push(RouteNames.completeProfile);
   }
 
+  /// Opens the address screen to change the saved address; it pops back
+  /// here after saving.
+  void _openAddress() => context.push(
+    RouteNames.addressScreen,
+    extra: const AddressArgs(manage: true),
+  );
+
   @override
   Widget build(BuildContext context) {
+    final firstName = ref.watch(sessionProvider.select((s) => s.firstName));
+    final address = ref.watch(addressProvider.select((s) => s.address));
+    final location = [
+      address?.city,
+      address?.state,
+    ].where((part) => part != null && part.trim().isNotEmpty).join(', ');
+
     return Scaffold(
       backgroundColor: AppColors.screenBackground,
       body: Stack(
@@ -131,44 +148,57 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       SizedBox(width: AppDimensions.padding10w),
-                      // Greeting and Location
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Hi, Anamika',
-                            style: customTextStyle(
-                              AppTextSizes.smallTextSize, // 10
-                              AppColors.text,
-                              FontWeight.w600,
+                      // Greeting and saved location (tap to change it)
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Hi, ${firstName ?? 'there'}',
+                              overflow: TextOverflow.ellipsis,
+                              style: customTextStyle(
+                                AppTextSizes.smallTextSize, // 10
+                                AppColors.text,
+                                FontWeight.w600,
+                              ),
                             ),
-                          ),
-                          Row(
-                            children: [
-                              Image.asset(
-                                AppImages.placeMarker,
-                                height: AppDimensions.containerHeight15h,
-                                width: AppDimensions.containerWidth15w,
+                            GestureDetector(
+                              onTap: _openAddress,
+                              child: Row(
+                                children: [
+                                  Image.asset(
+                                    AppImages.placeMarker,
+                                    height: AppDimensions.containerHeight15h,
+                                    width: AppDimensions.containerWidth15w,
+                                  ),
+                                  SizedBox(width: AppDimensions.padding4w),
+                                  Flexible(
+                                    child: Text(
+                                      location.isNotEmpty
+                                          ? location
+                                          : 'Add your address',
+                                      overflow: TextOverflow.ellipsis,
+                                      style: customTextStyle(
+                                        AppTextSizes.smallTextSize, // 10
+                                        AppColors.text,
+                                        FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                              SizedBox(width: AppDimensions.padding4w),
-                              Text(
-                                'Indore, MP',
-                                style: customTextStyle(
-                                  AppTextSizes.smallTextSize, // 10
-                                  AppColors.text,
-                                  FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                            ),
+                          ],
+                        ),
                       ),
-                      const Spacer(),
                       // Action Icons
-                      Image.asset(
-                        AppImages.homeLocation,
-                        height: AppDimensions.containerHeight50h,
-                        width: AppDimensions.containerWidth50w,
+                      GestureDetector(
+                        onTap: _openAddress,
+                        child: Image.asset(
+                          AppImages.homeLocation,
+                          height: AppDimensions.containerHeight50h,
+                          width: AppDimensions.containerWidth50w,
+                        ),
                       ),
                       // SizedBox(width: AppDimensions.padding8w),
                       // Image.asset(

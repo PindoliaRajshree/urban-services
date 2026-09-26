@@ -145,7 +145,11 @@ class BookingCard extends StatelessWidget {
                 // Row 2: DateTime
                 Text(
                   dateTime,
-                  style: customTextStyle(10, AppColors.darkGrey, FontWeight.w400),
+                  style: customTextStyle(
+                    10,
+                    AppColors.darkGrey,
+                    FontWeight.w400,
+                  ),
                 ),
                 SizedBox(height: AppDimensions.padding12h),
 

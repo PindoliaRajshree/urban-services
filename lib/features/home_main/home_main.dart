@@ -35,30 +35,41 @@ class HomeMain extends ConsumerWidget {
     final currentIndex = ref.watch(mainTabIndexProvider);
     final bool isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
 
-    return Scaffold(
-      backgroundColor: AppColors.screenBackground,
-      resizeToAvoidBottomInset:
-          false, // Prevents resizing which could break bottom bar
-      body: SafeArea(
-        child: Stack(
-          children: [
-            // Current Screen Content based on selection
-            Positioned.fill(
-              child: SafeArea(
-                bottom: false,
-                child: _getScreens(role)[currentIndex],
+    // Android back from any other tab returns to Home first; back from Home
+    // exits the app.
+    return PopScope(
+      canPop: currentIndex == MainTabIndexNotifier.homeIndex,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        ref
+            .read(mainTabIndexProvider.notifier)
+            .changeIndex(MainTabIndexNotifier.homeIndex);
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.screenBackground,
+        resizeToAvoidBottomInset:
+            false, // Prevents resizing which could break bottom bar
+        body: SafeArea(
+          child: Stack(
+            children: [
+              // Current Screen Content based on selection
+              Positioned.fill(
+                child: SafeArea(
+                  bottom: false,
+                  child: _getScreens(role)[currentIndex],
+                ),
               ),
-            ),
 
-            // Standardized Custom Bottom Bar with integrated floating button
-            if (!isKeyboardVisible)
-              const Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: CustomBottomBar(),
-              ),
-          ],
+              // Standardized Custom Bottom Bar with integrated floating button
+              if (!isKeyboardVisible)
+                const Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: CustomBottomBar(),
+                ),
+            ],
+          ),
         ),
       ),
     );

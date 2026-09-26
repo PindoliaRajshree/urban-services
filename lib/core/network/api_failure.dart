@@ -42,34 +42,35 @@ class ApiFailure implements Exception {
   /// validation, auth, and other 4xx errors are not — retrying just sends
   /// the same bad request again.
   bool get isRetryable => switch (type) {
-        ApiFailureType.network ||
-        ApiFailureType.timeout ||
-        ApiFailureType.server ||
-        ApiFailureType.rateLimited =>
-          true,
-        _ => false,
-      };
+    ApiFailureType.network ||
+    ApiFailureType.timeout ||
+    ApiFailureType.server ||
+    ApiFailureType.rateLimited => true,
+    _ => false,
+  };
 
   bool get requiresLogin => type == ApiFailureType.unauthorized;
 
   factory ApiFailure.network() => const ApiFailure(
-        type: ApiFailureType.network,
-        message: 'No internet connection. Please check your network and try again.',
-      );
+    type: ApiFailureType.network,
+    message: 'No internet connection. Please check your network and try again.',
+  );
 
   factory ApiFailure.timeout() => const ApiFailure(
-        type: ApiFailureType.timeout,
-        message: 'The request timed out. Please try again.',
-      );
+    type: ApiFailureType.timeout,
+    message: 'The request timed out. Please try again.',
+  );
 
-  factory ApiFailure.cancelled() =>
-      const ApiFailure(type: ApiFailureType.cancelled, message: 'Request was cancelled.');
+  factory ApiFailure.cancelled() => const ApiFailure(
+    type: ApiFailureType.cancelled,
+    message: 'Request was cancelled.',
+  );
 
   factory ApiFailure.unauthorized({String? message}) => ApiFailure(
-        type: ApiFailureType.unauthorized,
-        statusCode: 401,
-        message: message ?? 'Your session has expired. Please log in again.',
-      );
+    type: ApiFailureType.unauthorized,
+    statusCode: 401,
+    message: message ?? 'Your session has expired. Please log in again.',
+  );
 
   /// Classifies an HTTP status code into an [ApiFailureType] with a
   /// sensible default message. Pass [message]/[fieldErrors] when the server
@@ -99,22 +100,27 @@ class ApiFailure implements Exception {
   }
 
   factory ApiFailure.unknown(Object error) => ApiFailure(
-        type: ApiFailureType.unknown,
-        message: 'Something went wrong.',
-        cause: error,
-      );
+    type: ApiFailureType.unknown,
+    message: 'Something went wrong.',
+    cause: error,
+  );
 
-  static String _defaultMessageFor(ApiFailureType type, int statusCode) => switch (type) {
-        ApiFailureType.unauthorized => 'Your session has expired. Please log in again.',
+  static String _defaultMessageFor(ApiFailureType type, int statusCode) =>
+      switch (type) {
+        ApiFailureType.unauthorized =>
+          'Your session has expired. Please log in again.',
         ApiFailureType.forbidden => "You don't have permission to do that.",
         ApiFailureType.notFound => 'That could not be found.',
         ApiFailureType.conflict => 'This was already changed by someone else.',
         ApiFailureType.validation => 'Please check the highlighted fields.',
-        ApiFailureType.rateLimited => 'Too many requests. Please try again shortly.',
-        ApiFailureType.server => 'Something went wrong on our end. Please try again shortly.',
+        ApiFailureType.rateLimited =>
+          'Too many requests. Please try again shortly.',
+        ApiFailureType.server =>
+          'Something went wrong on our end. Please try again shortly.',
         _ => 'Unexpected response from the server ($statusCode).',
       };
 
   @override
-  String toString() => 'ApiFailure(type: $type, statusCode: $statusCode, message: $message)';
+  String toString() =>
+      'ApiFailure(type: $type, statusCode: $statusCode, message: $message)';
 }

@@ -16,7 +16,12 @@ import 'package:urban_services/widgets/location_accuracy_dialog.dart';
 import 'package:urban_services/widgets/primary_button.dart';
 
 class AddressScreen extends ConsumerStatefulWidget {
-  const AddressScreen({super.key});
+  const AddressScreen({super.key, this.manage = false});
+
+  /// Opened to change the address (from Profile or Home) rather than
+  /// during onboarding: shows a back button, and pops after saving
+  /// instead of going to Home.
+  final bool manage;
 
   @override
   ConsumerState<AddressScreen> createState() => _AddressScreenState();
@@ -101,6 +106,21 @@ class _AddressScreenState extends ConsumerState<AddressScreen>
                         fit: BoxFit.contain,
                       ),
                     ),
+
+                    if (widget.manage)
+                      Positioned(
+                        top: AppDimensions.padding15h,
+                        left: AppDimensions.padding20w,
+                        child: GestureDetector(
+                          onTap: () => context.pop(),
+                          child: Image.asset(
+                            AppImages.back,
+                            height: AppDimensions.containerHeight24h,
+                            width: AppDimensions.containerWidth24w,
+                            color: AppColors.text,
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -555,11 +575,12 @@ class _AddressScreenState extends ConsumerState<AddressScreen>
                     SizedBox(height: AppDimensions.padding30h),
 
                     // Primary Action: commits whichever source is selected
-                    // (see AddressController.confirmAndProceed) and only
-                    // then navigates to Home. Blocked with the choice
-                    // dialog when nothing has been selected yet.
+                    // (see AddressNotifier.confirmAndProceed) and only
+                    // then navigates to Home (or back, in manage mode).
+                    // Blocked with the choice dialog when nothing has been
+                    // selected yet.
                     PrimaryButton(
-                      text: 'Next',
+                      text: widget.manage ? 'Save' : 'Next',
                       isLoading:
                           state.isFetchingLocation || state.isSavingManualEntry,
                       onPressed: () async {
@@ -570,7 +591,10 @@ class _AddressScreenState extends ConsumerState<AddressScreen>
                         final success = await ref
                             .read(addressProvider.notifier)
                             .confirmAndProceed();
-                        if (success && context.mounted) {
+                        if (!success || !context.mounted) return;
+                        if (widget.manage) {
+                          context.pop();
+                        } else {
                           context.go(RouteNames.homeMain);
                         }
                       },

@@ -55,46 +55,55 @@ void main() {
       expect((result as ApiSuccess<String>).data, 'ok');
     });
 
-    test('200 with status: false becomes an ApiError with the server message',
-        () async {
-      final dio = _dio(
-        _FakeAdapter(
-          (_) => _json({'status': false, 'message': 'No address'}, 200),
-        ),
-      );
-      final result = await safeApiCall(() => dio.get('x'), (json) => json);
-      expect(result, isA<ApiError<Map<String, dynamic>>>());
-      expect((result as ApiError).failure.message, 'No address');
-    });
+    test(
+      '200 with status: false becomes an ApiError with the server message',
+      () async {
+        final dio = _dio(
+          _FakeAdapter(
+            (_) => _json({'status': false, 'message': 'No address'}, 200),
+          ),
+        );
+        final result = await safeApiCall(() => dio.get('x'), (json) => json);
+        expect(result, isA<ApiError<Map<String, dynamic>>>());
+        expect((result as ApiError).failure.message, 'No address');
+      },
+    );
 
-    test('422 maps to validation with field errors and a readable message',
-        () async {
-      final dio = _dio(
-        _FakeAdapter(
-          (_) => _json({
-            'status': false,
-            'message': {
-              'email': ['The email has already been taken.'],
-            },
-          }, 422),
-        ),
-      );
-      final result = await safeApiCall(() => dio.post('x'), (json) => json);
-      final failure = (result as ApiError).failure;
-      expect(failure.type, ApiFailureType.validation);
-      expect(failure.statusCode, 422);
-      expect(failure.message, 'The email has already been taken.');
-      expect(failure.fieldErrors?['email'], ['The email has already been taken.']);
-    });
+    test(
+      '422 maps to validation with field errors and a readable message',
+      () async {
+        final dio = _dio(
+          _FakeAdapter(
+            (_) => _json({
+              'status': false,
+              'message': {
+                'email': ['The email has already been taken.'],
+              },
+            }, 422),
+          ),
+        );
+        final result = await safeApiCall(() => dio.post('x'), (json) => json);
+        final failure = (result as ApiError).failure;
+        expect(failure.type, ApiFailureType.validation);
+        expect(failure.statusCode, 422);
+        expect(failure.message, 'The email has already been taken.');
+        expect(failure.fieldErrors?['email'], [
+          'The email has already been taken.',
+        ]);
+      },
+    );
 
-    test('a parser exception becomes an ApiError instead of throwing', () async {
-      final dio = _dio(_FakeAdapter((_) => _json({'status': true}, 200)));
-      final result = await safeApiCall(
-        () => dio.get('x'),
-        (json) => json['missing'] as String,
-      );
-      expect((result as ApiError).failure.type, ApiFailureType.unknown);
-    });
+    test(
+      'a parser exception becomes an ApiError instead of throwing',
+      () async {
+        final dio = _dio(_FakeAdapter((_) => _json({'status': true}, 200)));
+        final result = await safeApiCall(
+          () => dio.get('x'),
+          (json) => json['missing'] as String,
+        );
+        expect((result as ApiError).failure.type, ApiFailureType.unknown);
+      },
+    );
   });
 
   group('AuthInterceptor', () {
@@ -104,7 +113,9 @@ void main() {
 
     setUp(() {
       expiredCalls = 0;
-      adapter = _FakeAdapter((_) => _json({'message': 'Unauthenticated.'}, 401));
+      adapter = _FakeAdapter(
+        (_) => _json({'message': 'Unauthenticated.'}, 401),
+      );
       dio = _dio(adapter);
       dio.interceptors.add(
         AuthInterceptor(
@@ -135,41 +146,45 @@ void main() {
       }
     });
 
-    test('401 on a skipAuth request (login) does not end the session',
-        () async {
-      final result = await safeApiCall(
-        () => dio.post(
-          'login',
-          options: Options(extra: {AuthInterceptor.skipAuthKey: true}),
-        ),
-        (json) => json,
-      );
-      expect(expiredCalls, 0);
-      expect((result as ApiError).failure.statusCode, 401);
-    });
+    test(
+      '401 on a skipAuth request (login) does not end the session',
+      () async {
+        final result = await safeApiCall(
+          () => dio.post(
+            'login',
+            options: Options(extra: {AuthInterceptor.skipAuthKey: true}),
+          ),
+          (json) => json,
+        );
+        expect(expiredCalls, 0);
+        expect((result as ApiError).failure.statusCode, 401);
+      },
+    );
   });
 
   group('ApiLoggerInterceptor', () {
-    test('logs request, response with duration, and redacts API keys',
-        () async {
-      final lines = <String>[];
-      final original = debugPrint;
-      debugPrint = (message, {wrapWidth}) => lines.add(message ?? '');
-      addTearDown(() => debugPrint = original);
+    test(
+      'logs request, response with duration, and redacts API keys',
+      () async {
+        final lines = <String>[];
+        final original = debugPrint;
+        debugPrint = (message, {wrapWidth}) => lines.add(message ?? '');
+        addTearDown(() => debugPrint = original);
 
-      final dio = _dio(
-        _FakeAdapter((_) => _json({'status': true, 'data': []}, 200)),
-      )..interceptors.add(ApiLoggerInterceptor());
+        final dio = _dio(
+          _FakeAdapter((_) => _json({'status': true, 'data': []}, 200)),
+        )..interceptors.add(ApiLoggerInterceptor());
 
-      await dio.get('items', queryParameters: {'key': 'secret', 'page': 1});
-      final log = lines.join('\n');
+        await dio.get('items', queryParameters: {'key': 'secret', 'page': 1});
+        final log = lines.join('\n');
 
-      expect(log, contains('→ ['));
-      expect(log, contains('GET https://api.test/items?key=***&page=1'));
-      expect(log, contains('cURL: curl -X GET'));
-      expect(log, contains('← ['));
-      expect(log, matches(RegExp(r'200 GET .* \(\d+ ms\)')));
-      expect(log, isNot(contains('secret')));
-    });
+        expect(log, contains('→ ['));
+        expect(log, contains('GET https://api.test/items?key=***&page=1'));
+        expect(log, contains('cURL: curl -X GET'));
+        expect(log, contains('← ['));
+        expect(log, matches(RegExp(r'200 GET .* \(\d+ ms\)')));
+        expect(log, isNot(contains('secret')));
+      },
+    );
   });
 }

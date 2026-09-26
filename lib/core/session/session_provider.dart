@@ -38,6 +38,12 @@ class SessionState {
 
   bool get isAuthenticated => token != null && token!.isNotEmpty;
 
+  /// First word of [name] for greetings, or null when there's no name.
+  String? get firstName {
+    final trimmed = name?.trim() ?? '';
+    return trimmed.isEmpty ? null : trimmed.split(RegExp(r'\s+')).first;
+  }
+
   /// The role the UI should act on.
   UserRole get effectiveRole => role ?? selectedRole;
 

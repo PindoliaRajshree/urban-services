@@ -1,11 +1,13 @@
 // File: lib/routes/app_router.dart
 // Purpose: go_router configuration — replaces GetX's getPages/initialRoute.
 //
-// Redirect rule (the only guard): once the session ends — manual logout or
-// a 401 from the backend (see AuthInterceptor) — any protected screen
-// sends the user to Welcome. Everything else (splash → home/welcome,
-// post-login role routing) is still decided by the screens themselves,
-// exactly as before the migration.
+// Redirect rules:
+// - Auth: once the session ends — manual logout or a 401 from the backend
+//   (see AuthInterceptor) — any protected screen sends the user to Welcome.
+// - Role: provider-only and user-only screens send the other role to
+//   HomeMain.
+// Everything else (splash → home/welcome, post-login role routing) is
+// decided by the screens themselves.
 
 import 'package:flutter/foundation.dart';
 
@@ -53,6 +55,44 @@ const _publicRoutes = {
   RouteNames.resetPasswordScreen,
 };
 
+/// Screens only providers may open.
+const _providerOnlyRoutes = {
+  RouteNames.completeProviderProfile,
+  RouteNames.providerHomeScreen,
+};
+
+/// Screens only users (customers) may open: address setup and the booking
+/// flow.
+const _userOnlyRoutes = {
+  RouteNames.completeProfile,
+  RouteNames.addressScreen,
+  RouteNames.addAddressScreen,
+  RouteNames.mapPicker,
+  RouteNames.serviceCategoryScreen,
+  RouteNames.serviceDetailsScreen,
+  RouteNames.bookingServiceScreen,
+  RouteNames.paymentScreen,
+  RouteNames.paymentSuccessScreen,
+  RouteNames.liveTrackingScreen,
+};
+
+/// The redirect rules (see the file header): where to send a navigation to
+/// [location], or null to allow it.
+@visibleForTesting
+String? appRedirect(
+  String location, {
+  required bool isAuthenticated,
+  required bool isProvider,
+}) {
+  if (!isAuthenticated) {
+    return _publicRoutes.contains(location) ? null : RouteNames.welcomeScreen;
+  }
+  final blocked = isProvider
+      ? _userOnlyRoutes.contains(location)
+      : _providerOnlyRoutes.contains(location);
+  return blocked ? RouteNames.homeMain : null;
+}
+
 final routerProvider = Provider<GoRouter>((ref) {
   // Re-run redirect only when logged-in/out flips, not on every session
   // field change.
@@ -71,9 +111,11 @@ final routerProvider = Provider<GoRouter>((ref) {
     refreshListenable: authListenable,
     redirect: (context, state) {
       final isAuthenticated = authListenable.value;
-      final isPublic = _publicRoutes.contains(state.matchedLocation);
-      if (!isAuthenticated && !isPublic) return RouteNames.welcomeScreen;
-      return null;
+      return appRedirect(
+        state.matchedLocation,
+        isAuthenticated: isAuthenticated,
+        isProvider: ref.read(sessionProvider).effectiveRole.isProvider,
+      );
     },
     routes: [
       GoRoute(
@@ -119,7 +161,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: RouteNames.addressScreen,
-        builder: (_, _) => const AddressScreen(),
+        builder: (_, state) =>
+            AddressScreen(manage: _extra(state, const AddressArgs()).manage),
       ),
       GoRoute(
         path: RouteNames.addAddressScreen,

@@ -36,7 +36,8 @@ class NotificationCard extends StatelessWidget {
       case NotificationType.update:
         return AppImages.serviceUpdate;
       case NotificationType.cancelled:
-        return AppImages.bookingNotify; // Using bookingNotify for cancelled as well or check if there's a better one
+        return AppImages
+            .bookingNotify; // Using bookingNotify for cancelled as well or check if there's a better one
     }
   }
 
@@ -75,7 +76,7 @@ class NotificationCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: AppDimensions.padding5h,),
+                SizedBox(height: AppDimensions.padding5h),
                 // Row 1: Heading and Time Ago
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,

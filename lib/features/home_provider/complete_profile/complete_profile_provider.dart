@@ -121,6 +121,19 @@ class ProviderProfileState {
   final bool isSubmitting;
 
   bool get isFirstStep => currentStep == 0;
+
+  /// Whether the user has picked or selected anything on the form (text
+  /// fields live in the screen's controllers and are checked there).
+  bool get hasSelections =>
+      profileImage != null ||
+      gender != null ||
+      dob != null ||
+      adhaarFront != null ||
+      adhaarBack != null ||
+      panCard != null ||
+      serviceCategory != null ||
+      subServices != null ||
+      experience != null;
   bool get isLastStep => currentStep == ProviderProfileNotifier.totalSteps - 1;
 
   ProviderProfileState copyWith({
@@ -267,30 +280,37 @@ class ProviderProfileNotifier extends Notifier<ProviderProfileState> {
 
   /// Picks an image (camera or gallery) for one of the four photo/document
   /// fields on this form — profile photo, Aadhaar front/back, or PAN card —
-  /// identified by [field]. Aadhaar/PAN are capped at 4MB; the profile photo
-  /// has no size cap (matches the previous per-field behavior).
+  /// identified by [field]. Images are downscaled and recompressed on pick
+  /// (documents keep a higher resolution so they stay legible), then
+  /// capped at 4MB.
   Future<void> pickPhotoFor(String field, ImageSource source) async {
-    final XFile? pickedFile = await _picker.pickImage(source: source);
+    final double maxSide = field == 'profile' ? 1024 : 2000;
+    final XFile? pickedFile = await _picker.pickImage(
+      source: source,
+      maxWidth: maxSide,
+      maxHeight: maxSide,
+      imageQuality: 80,
+    );
     if (pickedFile == null) return;
 
     final file = File(pickedFile.path);
 
-    if (field != 'profile') {
-      final sizeInMb = await file.length() / (1024 * 1024);
-      if (!ref.mounted) return;
-      if (sizeInMb > 4) {
-        const error = "File size must be less than 4MB";
-        if (field == 'aadhaarFront') {
-          state = state.copyWith(adhaarFrontError: () => error);
-        }
-        if (field == 'aadhaarBack') {
-          state = state.copyWith(adhaarBackError: () => error);
-        }
-        if (field == 'pan') state = state.copyWith(panCardError: () => error);
-        return;
-      }
-    }
+    final sizeInMb = await file.length() / (1024 * 1024);
     if (!ref.mounted) return;
+    if (sizeInMb > 4) {
+      const error = "File size must be less than 4MB";
+      switch (field) {
+        case 'profile':
+          state = state.copyWith(profileImageError: () => error);
+        case 'aadhaarFront':
+          state = state.copyWith(adhaarFrontError: () => error);
+        case 'aadhaarBack':
+          state = state.copyWith(adhaarBackError: () => error);
+        case 'pan':
+          state = state.copyWith(panCardError: () => error);
+      }
+      return;
+    }
 
     switch (field) {
       case 'profile':

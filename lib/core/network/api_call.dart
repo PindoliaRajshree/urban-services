@@ -26,31 +26,37 @@ Future<ApiResult<T>> safeApiCall<T>(
     final response = await request();
     final data = response.data;
     if (data is! Map<String, dynamic>) {
-      return ApiResult.failure(ApiFailure(
-        type: ApiFailureType.unknown,
-        message: 'Unexpected response format from the server.',
-        statusCode: response.statusCode,
-      ));
+      return ApiResult.failure(
+        ApiFailure(
+          type: ApiFailureType.unknown,
+          message: 'Unexpected response format from the server.',
+          statusCode: response.statusCode,
+        ),
+      );
     }
 
     final isSuccess = data['status'] == true || data['status'] == 'success';
     if (!isSuccess) {
-      return ApiResult.failure(ApiFailure(
-        type: ApiFailureType.unknown,
-        message: extractServerMessage(data) ?? 'Unknown error from server.',
-        statusCode: response.statusCode,
-      ));
+      return ApiResult.failure(
+        ApiFailure(
+          type: ApiFailureType.unknown,
+          message: extractServerMessage(data) ?? 'Unknown error from server.',
+          statusCode: response.statusCode,
+        ),
+      );
     }
 
     try {
       return ApiResult.success(parse(data));
     } catch (e) {
-      return ApiResult.failure(ApiFailure(
-        type: ApiFailureType.unknown,
-        message: "Could not read the server's response.",
-        statusCode: response.statusCode,
-        cause: e,
-      ));
+      return ApiResult.failure(
+        ApiFailure(
+          type: ApiFailureType.unknown,
+          message: "Could not read the server's response.",
+          statusCode: response.statusCode,
+          cause: e,
+        ),
+      );
     }
   } on DioException catch (e) {
     return ApiResult.failure(mapDioException(e));

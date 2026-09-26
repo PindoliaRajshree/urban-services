@@ -98,7 +98,10 @@ class AuthInterceptor extends Interceptor {
       return null;
     } finally {
       // Let the next expiry (e.g. after re-login) start a fresh attempt.
-      Future<void>.delayed(const Duration(seconds: 1), () => _refreshing = null);
+      Future<void>.delayed(
+        const Duration(seconds: 1),
+        () => _refreshing = null,
+      );
     }
   }
 }

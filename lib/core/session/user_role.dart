@@ -15,4 +15,15 @@ enum UserRole {
   String get apiValue => name;
 
   bool get isProvider => this == provider;
+
+  /// "User" / "Provider", for messages.
+  String get label => isProvider ? 'Provider' : 'User';
+}
+
+/// The message shown when the account's role (from the backend) differs
+/// from the role picked on the Welcome screen, or null when they match.
+String? roleMismatchMessage(UserRole picked, UserRole? actual) {
+  if (actual == null || actual == picked) return null;
+  return "This account is registered as a ${actual.label}, so you're "
+      "continuing as a ${actual.label}.";
 }

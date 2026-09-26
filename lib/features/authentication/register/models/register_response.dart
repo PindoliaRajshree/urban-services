@@ -60,7 +60,9 @@ class RegisterResponse {
       mobile: (user?['mobile'] ?? data['mobile'])?.toString(),
       role: (user?['role'] ?? data['role'])?.toString(),
       loginType: (user?['login_type'] ?? data['login_type'])?.toString(),
-      status: int.tryParse((user?['status'] ?? data['status'])?.toString() ?? ''),
+      status: int.tryParse(
+        (user?['status'] ?? data['status'])?.toString() ?? '',
+      ),
     );
   }
 }

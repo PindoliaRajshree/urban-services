@@ -121,8 +121,7 @@ class LiveTrackingScreen extends StatelessWidget {
                               SizedBox(width: AppDimensions.padding12w),
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       providerName,
@@ -132,24 +131,22 @@ class LiveTrackingScreen extends StatelessWidget {
                                         FontWeight.w600,
                                       ),
                                     ),
-                                    SizedBox(
-                                      height: AppDimensions.padding4h,
-                                    ),
+                                    SizedBox(height: AppDimensions.padding4h),
                                     Row(
                                       children: [
                                         Image.asset(
                                           AppImages.ratingStar,
                                           width:
                                               AppDimensions.containerWidth14w,
-                                          height: AppDimensions
-                                              .containerHeight14h,
+                                          height:
+                                              AppDimensions.containerHeight14h,
                                         ),
                                         Image.asset(
                                           AppImages.ratingStar,
                                           width:
                                               AppDimensions.containerWidth14w,
-                                          height: AppDimensions
-                                              .containerHeight14h,
+                                          height:
+                                              AppDimensions.containerHeight14h,
                                         ),
                                         SizedBox(
                                           width: AppDimensions.padding4w,
@@ -164,9 +161,7 @@ class LiveTrackingScreen extends StatelessWidget {
                                         ),
                                       ],
                                     ),
-                                    SizedBox(
-                                      height: AppDimensions.padding4h,
-                                    ),
+                                    SizedBox(height: AppDimensions.padding4h),
                                     Text(
                                       serviceName,
                                       style: customTextStyle(
@@ -197,9 +192,7 @@ class LiveTrackingScreen extends StatelessWidget {
                           // Booking Details Card
                           Container(
                             width: double.infinity,
-                            padding: EdgeInsets.all(
-                              AppDimensions.padding15w,
-                            ),
+                            padding: EdgeInsets.all(AppDimensions.padding15w),
                             decoration: BoxDecoration(
                               color: AppColors.white,
                               borderRadius: BorderRadius.circular(
@@ -207,9 +200,7 @@ class LiveTrackingScreen extends StatelessWidget {
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withValues(
-                                    alpha: 0.15,
-                                  ),
+                                  color: Colors.black.withValues(alpha: 0.15),
                                   offset: const Offset(0, 1),
                                   blurRadius: 2,
                                   spreadRadius: 0,
@@ -220,10 +211,7 @@ class LiveTrackingScreen extends StatelessWidget {
                               children: [
                                 _bookingDetailRow('Booking ID', bookingId),
                                 _bookingDetailRow('Service', serviceName),
-                                _bookingDetailRow(
-                                  'Date & Time',
-                                  dateTime,
-                                ),
+                                _bookingDetailRow('Date & Time', dateTime),
                               ],
                             ),
                           ),

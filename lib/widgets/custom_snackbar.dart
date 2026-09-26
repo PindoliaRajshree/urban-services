@@ -197,16 +197,17 @@ class _ToastState extends State<_Toast> with SingleTickerProviderStateMixin {
     vsync: this,
     duration: const Duration(milliseconds: 300),
   );
-  late final Animation<Offset> _slide = Tween<Offset>(
-    begin: Offset(0, widget.position == SnackPosition.top ? -1.5 : 1.5),
-    end: Offset.zero,
-  ).animate(
-    CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOutCubic,
-      reverseCurve: Curves.easeInCubic,
-    ),
-  );
+  late final Animation<Offset> _slide =
+      Tween<Offset>(
+        begin: Offset(0, widget.position == SnackPosition.top ? -1.5 : 1.5),
+        end: Offset.zero,
+      ).animate(
+        CurvedAnimation(
+          parent: _controller,
+          curve: Curves.easeOutCubic,
+          reverseCurve: Curves.easeInCubic,
+        ),
+      );
   Timer? _timer;
   bool _closing = false;
 

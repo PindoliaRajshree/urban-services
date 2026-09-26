@@ -8,6 +8,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:urban_services/core/constants/api_status.dart';
 import 'package:urban_services/core/network/api_result.dart';
 import 'package:urban_services/core/session/session_provider.dart';
+import 'package:urban_services/core/session/user_role.dart';
 import 'package:urban_services/core/utils/validators.dart';
 import 'package:urban_services/features/authentication/register/models/register_request.dart';
 import 'package:urban_services/features/authentication/register/models/register_response.dart';
@@ -268,6 +269,8 @@ class RegisterNotifier extends Notifier<RegisterState> {
         }
 
         // Google sign-up doubles as sign-in, so store the full session.
+        // Read the picked role first: saving resets it to the stored role.
+        final pickedRole = ref.read(sessionProvider).selectedRole;
         final saved = await ref
             .read(sessionProvider.notifier)
             .saveRegister(data);
@@ -284,10 +287,18 @@ class RegisterNotifier extends Notifier<RegisterState> {
         }
 
         state = const RegisterState(status: ApiStatus.successful);
-        CustomSnackBar.showSuccess(
-          title: "Success",
-          message: data.message ?? "Registered successfully",
+        final mismatch = roleMismatchMessage(
+          pickedRole,
+          ref.read(sessionProvider).role,
         );
+        if (mismatch != null) {
+          CustomSnackBar.showInfo(title: "Signed in", message: mismatch);
+        } else {
+          CustomSnackBar.showSuccess(
+            title: "Success",
+            message: data.message ?? "Registered successfully",
+          );
+        }
 
         // "set location" is a user-only step, so providers skip it and go
         // straight to their home dashboard.

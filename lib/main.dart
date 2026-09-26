@@ -69,8 +69,9 @@ class MyApp extends ConsumerWidget {
           // Wraps every screen so any of them can use Showcase/
           // ShowCaseWidget.of(context) — e.g. the "complete your profile"
           // spotlight on the Home screen's avatar.
-          builder: (context, child) =>
-              ShowCaseWidget(builder: (context) => child ?? const SizedBox.shrink()),
+          builder: (context, child) => ShowCaseWidget(
+            builder: (context) => child ?? const SizedBox.shrink(),
+          ),
         );
       },
     );

@@ -18,6 +18,7 @@ import 'package:urban_services/features/home_provider/complete_profile/models/su
 import 'package:urban_services/features/home_provider/complete_profile/service_type_provider.dart';
 import 'package:urban_services/widgets/address_form_field.dart';
 import 'package:urban_services/widgets/common_app_bar.dart';
+import 'package:urban_services/widgets/confirm_dialog.dart';
 import 'package:urban_services/widgets/custom_dropdown.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
 import 'package:urban_services/widgets/dashed_border_painter.dart';
@@ -92,25 +93,27 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
     });
   }
 
+  List<TextEditingController> get _textControllers => [
+    _fullNameController,
+    _mobileController,
+    _emailController,
+    _descriptionController,
+    _startingPriceController,
+    _perHourRateController,
+    _perVisitRateController,
+    _customPricingController,
+    _cityController,
+    _areaController,
+    _accountHolderController,
+    _accountNumberController,
+    _ifscController,
+    _upiIdController,
+  ];
+
   @override
   void dispose() {
     _pageController.dispose();
-    for (final c in [
-      _fullNameController,
-      _mobileController,
-      _emailController,
-      _descriptionController,
-      _startingPriceController,
-      _perHourRateController,
-      _perVisitRateController,
-      _customPricingController,
-      _cityController,
-      _areaController,
-      _accountHolderController,
-      _accountNumberController,
-      _ifscController,
-      _upiIdController,
-    ]) {
+    for (final c in _textControllers) {
       c.dispose();
     }
     super.dispose();
@@ -134,15 +137,34 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
     if (step < ProviderProfileNotifier.totalSteps - 1) _animateToStep(step + 1);
   }
 
-  /// Goes back to the previous page, or leaves the screen if already on step 0.
-  void _previousStep() {
-    final step = ref.read(providerProfileProvider).currentStep;
-    if (step > 0) {
-      _animateToStep(step - 1);
-    } else {
-      context.pop();
+  /// Goes back to the previous page. On step 0 it leaves the screen, after
+  /// confirming if anything has been entered. Shared by the app-bar back,
+  /// the "Previous" button and the Android back button (see PopScope).
+  Future<void> _previousStep() async {
+    final profile = ref.read(providerProfileProvider);
+    if (profile.isSubmitting) return;
+    if (profile.currentStep > 0) {
+      _animateToStep(profile.currentStep - 1);
+      return;
     }
+
+    if (_hasChanges) {
+      final discard = await ConfirmDialog.show(
+        context,
+        title: 'Discard profile details?',
+        message: "What you've entered will be lost.",
+        confirmLabel: 'Discard',
+        isDestructive: true,
+      );
+      if (!discard || !mounted) return;
+    }
+    context.pop();
   }
+
+  /// Whether leaving now would lose anything the user entered.
+  bool get _hasChanges =>
+      ref.read(providerProfileProvider).hasSelections ||
+      _textControllers.any((c) => c.text.trim().isNotEmpty);
 
   bool _validateStep(int step) {
     switch (step) {
@@ -209,59 +231,67 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.screenBackground,
-      body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: AppDimensions.padding20w,
+    // Android back behaves like the app-bar back: one step at a time, with
+    // a discard confirmation when leaving from step 0.
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _previousStep();
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.screenBackground,
+        body: SafeArea(
+          child: Column(
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppDimensions.padding20w,
+                ),
+                child: CommonAppBar(
+                  title: 'Complete Your Profile',
+                  showMoreIcon: false,
+                  // Step 0 leaves the screen; later steps go back one page.
+                  onBackPress: _previousStep,
+                ),
               ),
-              child: CommonAppBar(
-                title: 'Complete Your Profile',
-                showMoreIcon: false,
-                // Step 0 leaves the screen; later steps go back one page.
-                onBackPress: _previousStep,
-              ),
-            ),
 
-            // Step Indicator (3 steps)
-            Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: AppDimensions.padding20w,
+              // Step Indicator (3 steps)
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppDimensions.padding20w,
+                ),
+                child: StepIndicator(
+                  currentStep: _state.currentStep,
+                  stepLabels: _stepLabels,
+                ),
               ),
-              child: StepIndicator(
-                currentStep: _state.currentStep,
-                stepLabels: _stepLabels,
-              ),
-            ),
 
-            // Each step is a separate, independently scrollable page.
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                physics: const NeverScrollableScrollPhysics(),
-                children: [
-                  _buildBasicInfoPage(),
-                  _buildServiceDetailsPage(),
-                  _buildBankDetailsPage(),
-                ],
+              // Each step is a separate, independently scrollable page.
+              Expanded(
+                child: PageView(
+                  controller: _pageController,
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: [
+                    _buildBasicInfoPage(),
+                    _buildServiceDetailsPage(),
+                    _buildBankDetailsPage(),
+                  ],
+                ),
               ),
-            ),
 
-            // Footer navigation: Next only on step 1, Previous/Next in the
-            // middle, Previous/Submit on the last step.
-            Padding(
-              padding: EdgeInsets.fromLTRB(
-                AppDimensions.padding20w,
-                AppDimensions.padding15h,
-                AppDimensions.padding20w,
-                AppDimensions.padding15h,
+              // Footer navigation: Next only on step 1, Previous/Next in the
+              // middle, Previous/Submit on the last step.
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                  AppDimensions.padding20w,
+                  AppDimensions.padding15h,
+                  AppDimensions.padding20w,
+                  AppDimensions.padding15h,
+                ),
+                child: _buildFooterButtons(),
               ),
-              child: _buildFooterButtons(),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

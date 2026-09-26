@@ -63,7 +63,14 @@ class UserCompleteProfileNotifier extends Notifier<UserCompleteProfileState> {
 
   /// Picks an image from camera or gallery for profile
   Future<void> pickImage(ImageSource source) async {
-    final XFile? pickedFile = await _picker.pickImage(source: source);
+    // Downscale and recompress: a full-resolution camera photo is several
+    // MB and slow to upload.
+    final XFile? pickedFile = await _picker.pickImage(
+      source: source,
+      maxWidth: 1024,
+      maxHeight: 1024,
+      imageQuality: 80,
+    );
     if (pickedFile != null && ref.mounted) {
       // Clear the inline error as soon as the user provides a value.
       state = state.copyWith(

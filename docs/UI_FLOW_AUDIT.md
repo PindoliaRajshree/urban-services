@@ -79,40 +79,27 @@ Any 401 from the API ─► session cleared ─► Welcome   (new)
   - Only show the showcase while it's false, plus a "seen" flag.
   - Consider a router redirect to the completion screen.
 
-### H3. The back arrow on tab screens does nothing, and the Android back button exits the app
-- **Where:** `CommonAppBar` in `features/profile/profile_screen.dart:39,250` and `features/my_bookings/my_bookings_screen.dart:132`.
-- **Now:** after the migration the arrow calls `maybePop`, so it no longer shows a blank screen, but it still does nothing.
-- **Still broken:** `HomeMain` has no `PopScope`, so Android back exits the app from any tab.
-- **Fix:**
-  - Hide the arrow on tab roots (`showBackButton: false`).
-  - Add a `PopScope` to `HomeMain` that goes back to the Home tab first.
+### H3. ✅ Fixed — the back arrow on tab screens did nothing, and Android back exited the app
+- **Now:**
+  - `CommonAppBar` has `showBackButton`, which is off on the Bookings and Profile tabs.
+  - `HomeMain` has a `PopScope`: back from any other tab goes to Home, and back from Home exits.
 
-### H4. The role picked on Welcome is silently replaced, and no screen is restricted by role
-- **Where:** `login_provider.dart` routes on the role the server returns.
-- **What happens:** someone who tapped "Continue as Provider" with a user account lands in the user flow with no message.
-- **Missing checks in `routes/app_router.dart`:**
-  - A user can open `/completeProviderProfile`.
-  - A provider can open `/address` and the booking screens.
-- **Fix:**
-  - Show a message when the two roles differ.
-  - Add role checks to the router's `redirect` (for example, provider-only and user-only route sets).
+### H4. ✅ Fixed — the role picked on Welcome was silently replaced, and no screen was restricted by role
+- **Now:**
+  - Login and Google sign-up show "This account is registered as a …" when the account's role differs from the one picked (`roleMismatchMessage` in `core/session/user_role.dart`).
+  - `routes/app_router.dart` has provider-only and user-only route sets. The other role is redirected to HomeMain (`appRedirect`, covered by `test/core/routing_test.dart`).
 
 ### H5. ✅ Fixed — login and Google sign-up continued even when the response had no token
 - **Now:** `saveLogin` / `saveRegister` return `false` when there's no token, and the callers show an error instead of navigating.
 
-### H6. Provider profile submission — ✅ partly fixed
-- **✅ Fixed:**
-  - The upload data (FormData) is now built inside `safeApiCall`, so an unreadable file no longer leaves the button stuck on loading.
-  - The upload now waits up to 2 minutes.
-  - A second tap while submitting is ignored.
-- **Still open:**
-  - The profile photo has no size limit or compression (`complete_profile_provider.dart` `pickPhotoFor`).
-  - Documents are sent at full camera resolution.
+### H6. ✅ Fixed — provider profile submission
+- The upload data (FormData) is now built inside `safeApiCall`, so an unreadable file no longer leaves the button stuck on loading.
+- The upload waits up to 2 minutes, and a second tap while submitting is ignored.
+- Picked images are downscaled and recompressed (profile photo: 1024px; documents: 2000px; quality 80). All four are capped at 4 MB. The user profile photo is downscaled too.
 
-### H7. Leaving the provider wizard loses everything (provider)
-- **Where:** `features/home_provider/complete_profile/complete_profile_screen.dart`.
-- **Problem:** the app-bar back goes back one step, but the Android back button closes the whole wizard. There's no "discard changes?" prompt and no saved draft.
-- **Fix:** add a `PopScope` that calls `_previousStep`, plus a confirmation on step 0.
+### H7. ✅ Fixed — leaving the provider wizard lost everything (provider)
+- **Now:** a `PopScope` makes Android back go one step at a time. Leaving from step 0 with anything entered asks "Discard profile details?" (new shared `widgets/confirm_dialog.dart`).
+- **Still open:** there's no saved draft.
 
 ### H8. The saved address ignores the map pin and the "default" checkbox (user)
 - **Where:** `features/address/models/service_address_request.dart` has no latitude, longitude or "is default" fields, although the response has them.
@@ -120,17 +107,18 @@ Any 401 from the API ─► session cleared ─► Welcome   (new)
 - **Also:** `user_id` is sent from the app. The backend must take it from the token (or at least check it).
 - **Fix:** add the fields to the request, and drop `user_id` once the backend reads it from the token.
 
-### H9. Home and Profile always show placeholder people
-- **Where:**
-  - "Hi, Anamika" / "Indore, MP": `home_screen.dart:139,155` and `provider_home_screen.dart:141,157`.
-  - "Ram Kumar Yadav", a rating and "Deep Cleaning": `profile_screen.dart:72,283`.
-- **Problem:** users see a provider-style rating and category.
-- **Fix:** read the name from `sessionProvider` and the city from `addressProvider` or the profile API.
+### H9. ✅ Fixed — Home and Profile always showed placeholder people
+- **Now:**
+  - Both home screens greet the user by first name from `sessionProvider`.
+  - User Home shows the saved city and state from `addressProvider`, or "Add your address".
+  - Provider Home has no location line until the provider profile API gives a city.
+  - Profile shows the real name plus the email or mobile. The fake rating, category and call/chat icons are gone.
 
-### H10. Every Profile menu item does nothing, so the address can't be changed
-- **Where:** `profile_screen.dart:162` onwards (`onTap: () {}` on every item).
-- **Problem:** once past the Address screen, a user can't change their address. The location on Home can't be tapped either.
-- **Fix:** link "Saved Address" to `/address` (a "manage" mode that pops instead of going to Home), and hide menu items that aren't built yet.
+### H10. ✅ Partly fixed — every Profile menu item did nothing, so the address couldn't be changed
+- **Now:**
+  - "Saved Address" (users only), the Home location line and the location icon open `/address` in manage mode (`AddressArgs(manage: true)`). That mode has a back button and a "Save" button, and pops back after saving.
+  - "Profile" opens the completion screen for the user's role.
+- **Still open:** Payment Methods, Help & Support, Refer & Earn, About Us and Settings still do nothing.
 
 ### H11. The booking flow always uses fake data (user)
 - **Where:**
@@ -188,7 +176,7 @@ Any 401 from the API ─► session cleared ─► Welcome   (new)
 - **M16 Duplicated code.**
   - ✅ The OTP dialog is now one shared widget.
   - The avatar/greeting/showcase header is still duplicated in the two home screens.
-  - The Profile screen is written twice (small vs large layout).
+  - ✅ The Profile screen is now built once (small screens wrap it in a `ListView`).
   - The basic-info notifier logic is duplicated between user and provider.
 - **M17 Snackbar messages can hide backend detail.** Validation errors now show the first field error. Consider showing `ApiFailure.fieldErrors` on the fields themselves.
 
@@ -225,9 +213,12 @@ Any 401 from the API ─► session cleared ─► Welcome   (new)
 
 ## Suggested fix order
 
-✅ Done: session saving (C1, C2, H5), and config and iOS setup (C4, C5). The Maps key still needs to be rotated.
+✅ Done:
+- Session saving (C1, C2, H5), and config and iOS setup (C4, C5). The Maps key still needs to be rotated.
+- Navigation (H3, H4, H7), photo size (H6), and real name and city (H9, most of H10).
 
-1. **Store profile status and use it in routing** (H1, H2, M7): add a completion flag to the session and a router redirect.
-2. **Navigation polish** (H3, H4, H7, M3, M4): `PopScope`, role checks in `redirect`, and `StatefulShellRoute`.
-3. **Real data on Home, Profile and Booking** (H9, H10, H11).
-4. **Validation, error states and shared widgets** (M6, M8, M12–M16).
+1. **Store profile status and use it in routing** (H1, H2, M7): add a completion flag to the session and a router redirect. Waiting on the API.
+2. **Saved address fields** (H8): waiting on the backend.
+3. **Tab state and stack** (M3, M4): `StatefulShellRoute`. This also stops Home re-fetching the saved address on every tab switch.
+4. **Booking with real data** (H11): waiting on the API.
+5. **Validation, error states and shared widgets** (M6, M8, M12–M16).

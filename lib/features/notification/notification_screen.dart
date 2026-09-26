@@ -34,11 +34,7 @@ class NotificationScreen extends StatelessWidget {
                     children: [
                       Text(
                         'Notifications',
-                        style: customTextStyle(
-                          24,
-                          darkBlue,
-                          FontWeight.w600,
-                        ),
+                        style: customTextStyle(24, darkBlue, FontWeight.w600),
                       ),
                       RichText(
                         text: TextSpan(
@@ -90,7 +86,8 @@ class NotificationScreen extends StatelessWidget {
                       const NotificationCard(
                         type: NotificationType.booking,
                         heading: 'New Booking Request',
-                        description: 'You have a new booking request for Home Cleaning',
+                        description:
+                            'You have a new booking request for Home Cleaning',
                         timeAgo: 'Just Now',
                       ),
                       const NotificationCard(

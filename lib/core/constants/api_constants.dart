@@ -57,8 +57,7 @@ class ApiConstants {
   /// Double `provider` prefix matches [serviceTypes]/[subServiceTypes] above
   /// — the single-prefix path (`provider/provide-profile/update`) returned a
   /// Laravel "route not found" 404 in testing.
-  static const String providerProfileUpdate =
-      'provider/provide-profile/update';
+  static const String providerProfileUpdate = 'provider/provide-profile/update';
 
   // ---- Google Maps / Geocoding ----
   /// Google Maps Platform API key, injected at build time with

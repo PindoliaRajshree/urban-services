@@ -41,7 +41,9 @@ class ApiLoggerInterceptor extends Interceptor {
       ..writeln('┌── → [$id] ${options.method} ${_url(options.uri)}')
       ..writeln('│ Headers: ${_pretty(_safeHeaders(options.headers))}');
     if (options.queryParameters.isNotEmpty) {
-      buffer.writeln('│ Query: ${_pretty(_redactMap(options.queryParameters))}');
+      buffer.writeln(
+        '│ Query: ${_pretty(_redactMap(options.queryParameters))}',
+      );
     }
     if (options.data != null) {
       buffer.writeln('│ Body: ${_body(options.data)}');
@@ -70,9 +72,11 @@ class ApiLoggerInterceptor extends Interceptor {
   void onError(DioException err, ErrorInterceptorHandler handler) {
     final options = err.requestOptions;
     final buffer = StringBuffer()
-      ..writeln('┌── ✖ [${options.extra[_idKey]}] ${err.type.name} '
-          '${err.response?.statusCode ?? '-'} ${options.method} '
-          '${_url(options.uri)} (${_elapsed(options)})');
+      ..writeln(
+        '┌── ✖ [${options.extra[_idKey]}] ${err.type.name} '
+        '${err.response?.statusCode ?? '-'} ${options.method} '
+        '${_url(options.uri)} (${_elapsed(options)})',
+      );
     if (err.message != null) buffer.writeln('│ Message: ${err.message}');
     if (err.response?.data != null) {
       buffer.writeln('│ Error body: ${_pretty(err.response!.data)}');
@@ -106,18 +110,18 @@ class ApiLoggerInterceptor extends Interceptor {
   }
 
   Map<String, dynamic> _redactMap(Map<String, dynamic> map) => {
-        for (final e in map.entries)
-          e.key: redactQueryKeys.contains(e.key) ? '***' : e.value,
-      };
+    for (final e in map.entries)
+      e.key: redactQueryKeys.contains(e.key) ? '***' : e.value,
+  };
 
   /// Shortens the bearer token so the log shows *which* token was sent
   /// without dumping the whole secret.
   Map<String, dynamic> _safeHeaders(Map<String, dynamic> headers) => {
-        for (final e in headers.entries)
-          e.key: e.key.toLowerCase() == 'authorization'
-              ? _shortToken(e.value.toString())
-              : e.value,
-      };
+    for (final e in headers.entries)
+      e.key: e.key.toLowerCase() == 'authorization'
+          ? _shortToken(e.value.toString())
+          : e.value,
+  };
 
   String _shortToken(String value) =>
       value.length > 24 ? '${value.substring(0, 20)}…' : value;
@@ -183,8 +187,9 @@ class ApiLoggerInterceptor extends Interceptor {
         continue;
       }
       for (var i = 0; i < line.length; i += _chunkSize) {
-        final end =
-            (i + _chunkSize < line.length) ? i + _chunkSize : line.length;
+        final end = (i + _chunkSize < line.length)
+            ? i + _chunkSize
+            : line.length;
         debugPrint('$tag ${i == 0 ? '' : '│ … '}${line.substring(i, end)}');
       }
     }

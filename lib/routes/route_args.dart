@@ -11,6 +11,14 @@ const _defaultAddress = '123, Green Park, Main Road, New Delhi-110016';
 const _defaultBookingId = 'US123456789';
 const _defaultServiceName = 'Deep Cleaning';
 
+class AddressArgs {
+  const AddressArgs({this.manage = false});
+
+  /// True when opened to change the address (from Profile or Home) rather
+  /// than during onboarding: the screen pops back instead of going Home.
+  final bool manage;
+}
+
 class ChatArgs {
   const ChatArgs({
     this.name = 'Devon Lane',
