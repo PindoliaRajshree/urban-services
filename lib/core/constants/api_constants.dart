@@ -61,17 +61,16 @@ class ApiConstants {
       'provider/provide-profile/update';
 
   // ---- Google Maps / Geocoding ----
-  /// Your Google Maps Platform API key — currently the same key already set
-  /// in android/app/src/main/AndroidManifest.xml
-  /// (com.google.android.geo.API_KEY meta-data, which enables the map
-  /// widget) and now mirrored in ios/Runner/AppDelegate.swift
-  /// (GMSServices.provideAPIKey). This constant lets the app additionally
-  /// call Google's Geocoding API directly over HTTP for more accurate
-  /// reverse geocoding than the on-device geocoder. Make sure the
-  /// "Geocoding API" is enabled for this key in Google Cloud Console
-  /// (APIs & Services > Library) — it's a separate toggle from "Maps SDK
-  /// for Android/iOS".
-  static const String googleMapsApiKey = 'AIzaSyCqhp43e2-dckwF04XtGyFMeTQKxkjpfD4';
+  /// Google Maps Platform API key, injected at build time with
+  /// `--dart-define-from-file=dart_defines.json` (gitignored; copy
+  /// dart_defines.example.json). The map widget gets the same key from
+  /// android/local.properties and ios/Flutter/Secrets.xcconfig — see
+  /// README "Local secrets". This constant is used to call Google's
+  /// Geocoding API directly for more accurate reverse geocoding than the
+  /// on-device geocoder; when it's empty, GoogleGeocodingService falls back
+  /// to the on-device geocoder. The "Geocoding API" must be enabled for
+  /// this key in Google Cloud Console.
+  static const String googleMapsApiKey = String.fromEnvironment('MAPS_API_KEY');
 
   /// SHA-1 fingerprint (no colons) of the certificate this app is signed
   /// with, sent as the `X-Android-Cert` header on Geocoding API calls.

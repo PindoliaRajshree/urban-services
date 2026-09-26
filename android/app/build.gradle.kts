@@ -23,6 +23,14 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
+// Local secrets (e.g. MAPS_API_KEY) — loaded from android/local.properties,
+// which is gitignored. See README "Local secrets".
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(FileInputStream(localPropertiesFile))
+}
+
 android {
     namespace = "com.service.urban_service"
     compileSdk = flutter.compileSdkVersion
@@ -46,6 +54,8 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        manifestPlaceholders["mapsApiKey"] =
+            localProperties.getProperty("MAPS_API_KEY", "")
     }
 
     signingConfigs {

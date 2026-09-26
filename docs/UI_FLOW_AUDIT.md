@@ -27,44 +27,35 @@ Any 401 from the API ─► session cleared ─► Welcome   (new)
 
 ## 🔴 Critical
 
-### C1. Registration never saves the user ID, so saving an address fails (user)
-- **Where:**
-  - `core/session/session_provider.dart` — `saveRegister` saves only the token and role.
-  - `features/address/address_provider.dart` (`_fetchAndSaveCurrentLocation`) and `add_address_provider.dart` (`saveAddress`) both need `session.userId`.
-- **What happens:**
-  1. The user signs up with Google.
-  2. The app sends them to the Address screen.
-  3. Saving an address fails with "You're not logged in. Please log in again."
-- **Fix:** have `saveRegister` store the same fields as `saveLogin` (`RegisterResponse` already parses `userId`, name, email and mobile). Better still, stop sending `user_id` from the app and let the backend take it from the token (see H8).
+### C1. ✅ Fixed — registration never saved the user ID, so saving an address failed (user)
+- **Before:** Google sign-up saved only the token and role, so saving an address failed with "You're not logged in".
+- **Now:** `saveLogin` and `saveRegister` in `core/session/session_provider.dart` share one `_saveSession` that stores the token, user ID, name, email, mobile and role.
+- **Still open:** stop sending `user_id` from the app and let the backend take it from the token (see H8).
 
-### C2. A manual sign-up leaves the user logged in without ever logging in
-- **Where:** `features/authentication/register/register_provider.dart` `_handleResult`. It saves the token and then goes to Login.
-- **What happens:**
-  1. The user signs up manually.
-  2. They kill the app on the Login screen.
-  3. On the next launch, Splash finds the token and opens Home, with no user ID or name saved (so C1 applies too).
-- **Fix:** either don't store the token after a manual sign-up, or treat sign-up as a login (store the full session and route by role).
+### C2. ✅ Fixed — a manual sign-up left the user logged in without ever logging in
+- **Before:** a manual sign-up stored the token and then went to Login, so a restart opened Home with a half-empty session.
+- **Now:** `register_provider.dart` stores nothing after a manual sign-up. The user logs in on the Login screen.
 
 ### C3. ✅ Fixed — an expired login was never detected
 - **Before:** an expired token left the user on Home while every API call failed.
 - **Now:** `core/network/auth_interceptor.dart` clears the session on a 401 (exactly once, even if several requests fail together), and the router sends the user to Welcome.
 - **Not affected:** login, register, forgot-password and logout calls, which are marked `skipAuth`.
 
-### C4. The Google Maps API key is committed in three places
-- **Where:**
-  - `core/constants/api_constants.dart:74`
-  - `android/app/src/main/AndroidManifest.xml:39`
-  - `ios/Runner/AppDelegate.swift:18`
-- **Problem:** the same key is also used for the Geocoding web API straight from the app, and an app restriction can't really protect a web-API key.
-- **Fix:**
-  - Rotate the key and restrict it by API.
-  - Inject it at build time (`--dart-define`, `local.properties`, xcconfig).
-  - Ideally, reverse-geocode through the backend.
+### C4. ✅ Partly fixed — the Google Maps API key was committed in three places
+- **Now:** the key is read at build time from gitignored files (see README "Local secrets"):
+  - `dart_defines.json`, via `--dart-define-from-file`
+  - `android/local.properties`, via a manifest placeholder
+  - `ios/Flutter/Secrets.xcconfig`, via the Info.plist `MapsApiKey` entry
+- **Still open:**
+  - The old key is still in git history. Rotate it and restrict it by API.
+  - The same key is used for the Geocoding web API straight from the app, and an app restriction can't really protect a web-API key. Ideally, reverse-geocode through the backend.
 
-### C5. Location permission can never be granted on iOS
-- **Where:** `ios/Runner/Info.plist` has no `NSLocationWhenInUseUsageDescription`, and there's no Podfile with `PERMISSION_LOCATION=1` for `permission_handler`.
-- **Impact:** every permission request returns denied, and the App Store will reject the build.
-- **Fix:** add the Info.plist entry and the Podfile macro.
+### C5. ✅ Fixed — location permission could never be granted on iOS
+- **Now:**
+  - `Info.plist` has `NSLocationWhenInUseUsageDescription`.
+  - `ios/Podfile` sets `PERMISSION_LOCATION=1` for `permission_handler`.
+  - The iOS deployment target is now 14.0, which `google_maps_flutter` needs.
+- **Not yet checked on a device.** Needs a Mac: run `pod install`, then run the app.
 
 ---
 
@@ -106,10 +97,8 @@ Any 401 from the API ─► session cleared ─► Welcome   (new)
   - Show a message when the two roles differ.
   - Add role checks to the router's `redirect` (for example, provider-only and user-only route sets).
 
-### H5. Login and Google sign-up continue even when the response has no token
-- **Where:** `session_provider.dart` `saveLogin` / `saveRegister` skip saving an empty token, but the callers still show "success" and navigate.
-- **Also:** after the redirect on the next API call, the user lands on Welcome with no explanation.
-- **Fix:** treat a missing token as an error.
+### H5. ✅ Fixed — login and Google sign-up continued even when the response had no token
+- **Now:** `saveLogin` / `saveRegister` return `false` when there's no token, and the callers show an error instead of navigating.
 
 ### H6. Provider profile submission — ✅ partly fixed
 - **✅ Fixed:**
@@ -236,9 +225,9 @@ Any 401 from the API ─► session cleared ─► Welcome   (new)
 
 ## Suggested fix order
 
-1. **Save the session consistently** (C1, C2, H5): one path in `SessionNotifier` for login and both sign-up types.
-2. **Config and iOS setup** (C4, C5).
-3. **Store profile status and use it in routing** (H1, H2, M7): add a completion flag to the session and a router redirect.
-4. **Navigation polish** (H3, H4, H7, M3, M4): `PopScope`, role checks in `redirect`, and `StatefulShellRoute`.
-5. **Real data on Home, Profile and Booking** (H9, H10, H11).
-6. **Validation, error states and shared widgets** (M6, M8, M12–M16).
+✅ Done: session saving (C1, C2, H5), and config and iOS setup (C4, C5). The Maps key still needs to be rotated.
+
+1. **Store profile status and use it in routing** (H1, H2, M7): add a completion flag to the session and a router redirect.
+2. **Navigation polish** (H3, H4, H7, M3, M4): `PopScope`, role checks in `redirect`, and `StatefulShellRoute`.
+3. **Real data on Home, Profile and Booking** (H9, H10, H11).
+4. **Validation, error states and shared widgets** (M6, M8, M12–M16).

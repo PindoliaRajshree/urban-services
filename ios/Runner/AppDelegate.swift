@@ -9,13 +9,15 @@ import UIKit
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     // Google Maps SDK API key — used by the google_maps_flutter plugin (Add
-    // Address screen's live map). Currently set to the same key used on
-    // Android (AndroidManifest.xml) and for the Geocoding API
-    // (api_constants.dart). If that key is restricted to "Android apps" in
-    // Google Cloud Console, it will NOT work here — iOS needs either an
-    // unrestricted key or one separately restricted to this app's bundle ID
-    // (com.service.urbanService) under "Maps SDK for iOS".
-    GMSServices.provideAPIKey("AIzaSyCqhp43e2-dckwF04XtGyFMeTQKxkjpfD4")
+    // Address screen's live map). Read from Info.plist's MapsApiKey, which
+    // is filled from MAPS_API_KEY in Flutter/Secrets.xcconfig (gitignored;
+    // see README "Local secrets"). If the key is restricted to "Android
+    // apps" in Google Cloud Console it will NOT work here — iOS needs a key
+    // restricted to this app's bundle ID under "Maps SDK for iOS".
+    if let mapsApiKey = Bundle.main.object(forInfoDictionaryKey: "MapsApiKey") as? String,
+       !mapsApiKey.isEmpty {
+      GMSServices.provideAPIKey(mapsApiKey)
+    }
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 

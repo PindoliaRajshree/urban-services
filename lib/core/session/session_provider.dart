@@ -77,44 +77,58 @@ class SessionNotifier extends Notifier<SessionState> {
     state = state.copyWith(selectedRole: role);
   }
 
-  /// Persists the /login response (same keys the GetX LoginController
-  /// wrote) and marks the session authenticated.
-  Future<void> saveLogin(LoginResponse data) async {
+  /// Persists the /login response and marks the session authenticated.
+  /// Returns false (and saves nothing) when the response has no token.
+  Future<bool> saveLogin(LoginResponse data) async {
     final token = data.token;
-    if (token != null && token.isNotEmpty) {
-      await _prefs.setValue(StorageKeys.authToken, token);
-    }
+    if (token == null || token.isEmpty) return false;
 
     final user = data.user;
-    if (user?.id != null) await _prefs.setValue(StorageKeys.userId, user!.id!);
-    if (user?.name != null) {
-      await _prefs.setValue(StorageKeys.userName, user!.name!);
-    }
-    if (user?.email != null) {
-      await _prefs.setValue(StorageKeys.userEmail, user!.email!);
-    }
-    if (user?.mobile != null) {
-      await _prefs.setValue(StorageKeys.userMobile, user!.mobile!);
-    }
-    if (user?.role != null) {
-      await _prefs.setValue(StorageKeys.userRole, user!.role!);
-    }
-
-    state = build();
+    await _saveSession(
+      token: token,
+      userId: user?.id,
+      name: user?.name,
+      email: user?.email,
+      mobile: user?.mobile,
+      role: user?.role,
+    );
+    return true;
   }
 
-  /// Persists the /register response. Intentionally the same keys the GetX
-  /// RegisterController wrote (token + role only) — see the audit report
-  /// (docs/UI_FLOW_AUDIT.md, C1/C2) for why that is a bug.
-  Future<void> saveRegister(RegisterResponse data) async {
+  /// Persists the /register response (Google sign-up, which doubles as a
+  /// login) with the same fields as [saveLogin]. Returns false (and saves
+  /// nothing) when the response has no token.
+  Future<bool> saveRegister(RegisterResponse data) async {
     final token = data.token;
-    if (token != null && token.isNotEmpty) {
-      await _prefs.setValue(StorageKeys.authToken, token);
-    }
-    await _prefs.setValue(
-      StorageKeys.userRole,
-      data.role ?? state.selectedRole.apiValue,
+    if (token == null || token.isEmpty) return false;
+
+    await _saveSession(
+      token: token,
+      userId: int.tryParse(data.userId ?? ''),
+      name: data.name,
+      email: data.email,
+      mobile: data.mobile,
+      role: data.role ?? state.selectedRole.apiValue,
     );
+    return true;
+  }
+
+  /// The single write path for an authenticated session.
+  Future<void> _saveSession({
+    required String token,
+    int? userId,
+    String? name,
+    String? email,
+    String? mobile,
+    String? role,
+  }) async {
+    await _prefs.setValue(StorageKeys.authToken, token);
+    if (userId != null) await _prefs.setValue(StorageKeys.userId, userId);
+    if (name != null) await _prefs.setValue(StorageKeys.userName, name);
+    if (email != null) await _prefs.setValue(StorageKeys.userEmail, email);
+    if (mobile != null) await _prefs.setValue(StorageKeys.userMobile, mobile);
+    if (role != null) await _prefs.setValue(StorageKeys.userRole, role);
+
     state = build();
   }
 

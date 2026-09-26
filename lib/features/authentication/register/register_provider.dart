@@ -253,31 +253,48 @@ class RegisterNotifier extends Notifier<RegisterState> {
   }) async {
     switch (result) {
       case ApiSuccess(data: final data):
-        // Read before saving: saveRegister doesn't change selectedRole, but
-        // keep the same source the GetX controller used for routing.
-        final role = _role;
-        await ref.read(sessionProvider.notifier).saveRegister(data);
+        final router = ref.read(routerProvider);
+
+        if (!isGoogle) {
+          // Manual sign-up doesn't log the user in: nothing is stored, and
+          // they sign in on the Login screen with the new credentials.
+          state = const RegisterState(status: ApiStatus.successful);
+          CustomSnackBar.showSuccess(
+            title: "Success",
+            message: data.message ?? "Registered successfully",
+          );
+          router.pushReplacement(RouteNames.loginScreen);
+          return;
+        }
+
+        // Google sign-up doubles as sign-in, so store the full session.
+        final saved = await ref
+            .read(sessionProvider.notifier)
+            .saveRegister(data);
         if (!ref.mounted) return;
 
-        state = const RegisterState(status: ApiStatus.successful);
+        if (!saved) {
+          state = state.copyWith(status: ApiStatus.error);
+          CustomSnackBar.showError(
+            title: "Registration Failed",
+            message:
+                "Sign-up succeeded but no session was returned. Please log in.",
+          );
+          return;
+        }
 
+        state = const RegisterState(status: ApiStatus.successful);
         CustomSnackBar.showSuccess(
           title: "Success",
           message: data.message ?? "Registered successfully",
         );
 
-        final router = ref.read(routerProvider);
-        if (isGoogle) {
-          // Google sign-up doubles as sign-in — take the user straight in.
-          // "set location" is a user-only step, so providers skip it and go
-          // straight to their home dashboard.
-          if (role == 'provider') {
-            router.go(RouteNames.homeMain);
-          } else {
-            router.go(RouteNames.addressScreen);
-          }
+        // "set location" is a user-only step, so providers skip it and go
+        // straight to their home dashboard.
+        if (ref.read(sessionProvider).effectiveRole.isProvider) {
+          router.go(RouteNames.homeMain);
         } else {
-          router.pushReplacement(RouteNames.loginScreen);
+          router.go(RouteNames.addressScreen);
         }
 
       case ApiError(failure: final failure):

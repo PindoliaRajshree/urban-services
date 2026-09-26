@@ -94,8 +94,17 @@ class LoginNotifier extends Notifier<LoginState> {
     switch (result) {
       case ApiSuccess(data: final data):
         final session = ref.read(sessionProvider.notifier);
-        await session.saveLogin(data);
+        final saved = await session.saveLogin(data);
         if (!ref.mounted) return;
+
+        if (!saved) {
+          state = state.copyWith(status: ApiStatus.error);
+          CustomSnackBar.showError(
+            title: "Login Failed",
+            message: "No session token was received. Please try again.",
+          );
+          return;
+        }
 
         state = const LoginState(status: ApiStatus.successful);
 
