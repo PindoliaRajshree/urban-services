@@ -3,11 +3,12 @@
 // Chat tab. Reuses the same CustomSearchBar as the Home screen.
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
+import 'package:urban_services/routes/route_args.dart';
 import 'package:urban_services/routes/route_names.dart';
 import 'package:urban_services/widgets/chat_search_user_card.dart';
 import 'package:urban_services/widgets/custom_search_bar.dart';
@@ -30,11 +31,7 @@ class _ChatSearchScreenState extends State<ChatSearchScreen> {
       'avatar': AppImages.serviceProvider,
       'status': 'Online',
     },
-    {
-      'name': 'Anamika Sharma',
-      'avatar': AppImages.image,
-      'status': 'Online',
-    },
+    {'name': 'Anamika Sharma', 'avatar': AppImages.image, 'status': 'Online'},
     {
       'name': 'Rahul Verma',
       'avatar': AppImages.person,
@@ -72,16 +69,18 @@ class _ChatSearchScreenState extends State<ChatSearchScreen> {
     });
   }
 
+  static const _defaultChat = ChatArgs();
+
   void _openChat(Map<String, String> user) {
     // Dismiss the keyboard before navigating away.
     FocusManager.instance.primaryFocus?.unfocus();
-    Get.toNamed(
+    context.push(
       RouteNames.chatScreen,
-      arguments: {
-        'name': user['name'],
-        'avatar': user['avatar'],
-        'status': user['status'],
-      },
+      extra: ChatArgs(
+        name: user['name'] ?? _defaultChat.name,
+        avatar: user['avatar'] ?? _defaultChat.avatar,
+        status: user['status'] ?? _defaultChat.status,
+      ),
     );
   }
 
@@ -115,7 +114,7 @@ class _ChatSearchScreenState extends State<ChatSearchScreen> {
                 child: Row(
                   children: [
                     GestureDetector(
-                      onTap: () => Get.back(),
+                      onTap: () => context.pop(),
                       child: Image.asset(
                         AppImages.back,
                         width: AppDimensions.containerWidth20w,

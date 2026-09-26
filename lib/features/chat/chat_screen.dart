@@ -2,7 +2,7 @@
 // Purpose: One-to-one chat conversation screen between the user and a service provider.
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
@@ -78,7 +78,7 @@ class _ChatScreenState extends State<ChatScreen> {
               child: Row(
                 children: [
                   GestureDetector(
-                    onTap: () => Get.back(),
+                    onTap: () => context.pop(),
                     child: Image.asset(
                       AppImages.back,
                       width: AppDimensions.containerWidth20w,
@@ -223,10 +223,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 decoration: BoxDecoration(
                   color: AppColors.white,
                   border: Border(
-                    top: BorderSide(
-                      color: AppColors.chatInputBorder,
-                      width: 1,
-                    ),
+                    top: BorderSide(color: AppColors.chatInputBorder, width: 1),
                   ),
                 ),
                 padding: EdgeInsets.symmetric(
@@ -250,7 +247,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       child: Container(
                         padding: EdgeInsets.symmetric(
                           horizontal: AppDimensions.padding12w,
-                          vertical: AppDimensions.padding6h
+                          vertical: AppDimensions.padding6h,
                         ),
                         decoration: BoxDecoration(
                           color: AppColors.chatInputBg,

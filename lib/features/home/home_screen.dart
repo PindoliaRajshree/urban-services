@@ -2,8 +2,9 @@
 // Purpose: The primary dashboard for users to explore services, categories, and top-rated providers.
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 import 'package:showcaseview/showcaseview.dart';
+import 'package:urban_services/routes/route_args.dart';
 import 'package:urban_services/routes/route_names.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
@@ -47,7 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
   /// dismissed explicitly here before navigating.
   void _onProfileShowcaseTap() {
     ShowCaseWidget.of(context).dismiss();
-    Get.toNamed(RouteNames.completeProfile);
+    context.push(RouteNames.completeProfile);
   }
 
   @override
@@ -177,7 +178,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       // ),
                       // SizedBox(width: AppDimensions.padding15w),
                       GestureDetector(
-                        onTap: () => Get.toNamed(RouteNames.notificationScreen),
+                        onTap: () =>
+                            context.push(RouteNames.notificationScreen),
                         child: Image.asset(
                           AppImages.notification,
                           height: AppDimensions.containerHeight50h,
@@ -190,11 +192,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   // Complete Your Profile Section with Animation
                   // CompleteProfileCard(
                   //   onFinish: () {
-                  //     Get.toNamed(RouteNames.completeProviderProfile);
+                  //     context.push(RouteNames.completeProviderProfile);
                   //   },
                   // ),
-
-                  SizedBox(height: AppDimensions.padding8h,),
+                  SizedBox(height: AppDimensions.padding8h),
 
                   // 4. Search Bar
                   const CustomSearchBar(hintText: 'Search'),
@@ -250,19 +251,20 @@ class _HomeScreenState extends State<HomeScreen> {
                       AppImages.promotionalBanners.length,
                       (index) {
                         final isSelected = _currentSliderIndex == index;
-                      return Container(
-                        width: AppDimensions.containerWidth7w,
-                        height: AppDimensions.containerHeight7h,
-                        margin: EdgeInsets.symmetric(
-                          horizontal: AppDimensions.padding4w,
-                        ),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: !isSelected ? AppColors.lightGrey2 : null,
-                          gradient: isSelected ? AppColors.gradient : null,
-                        ),
-                      );
-                    }),
+                        return Container(
+                          width: AppDimensions.containerWidth7w,
+                          height: AppDimensions.containerHeight7h,
+                          margin: EdgeInsets.symmetric(
+                            horizontal: AppDimensions.padding4w,
+                          ),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: !isSelected ? AppColors.lightGrey2 : null,
+                            gradient: isSelected ? AppColors.gradient : null,
+                          ),
+                        );
+                      },
+                    ),
                   ),
 
                   SizedBox(height: AppDimensions.padding10h),
@@ -279,48 +281,48 @@ class _HomeScreenState extends State<HomeScreen> {
                         CategoryItem(
                           icon: AppImages.cleaningService,
                           title: 'Cleaning',
-                          onTap: () => Get.toNamed(
+                          onTap: () => context.push(
                             RouteNames.serviceCategoryScreen,
-                            arguments: {
-                              'categoryTitle': 'Cleaning Service',
-                              'serviceCount': '30+ Services',
-                            },
+                            extra: ServiceCategoryArgs(
+                              categoryTitle: 'Cleaning Service',
+                              serviceCount: '30+ Services',
+                            ),
                           ),
                         ),
                         SizedBox(width: AppDimensions.padding15w),
                         CategoryItem(
                           icon: AppImages.electrician,
                           title: 'Electrician',
-                          onTap: () => Get.toNamed(
+                          onTap: () => context.push(
                             RouteNames.serviceCategoryScreen,
-                            arguments: {
-                              'categoryTitle': 'Electrician Service',
-                              'serviceCount': '30+ Services',
-                            },
+                            extra: ServiceCategoryArgs(
+                              categoryTitle: 'Electrician Service',
+                              serviceCount: '30+ Services',
+                            ),
                           ),
                         ),
                         SizedBox(width: AppDimensions.padding15w),
                         CategoryItem(
                           icon: AppImages.plumber,
                           title: 'Plumber',
-                          onTap: () => Get.toNamed(
+                          onTap: () => context.push(
                             RouteNames.serviceCategoryScreen,
-                            arguments: {
-                              'categoryTitle': 'Plumber Service',
-                              'serviceCount': '30+ Services',
-                            },
+                            extra: ServiceCategoryArgs(
+                              categoryTitle: 'Plumber Service',
+                              serviceCount: '30+ Services',
+                            ),
                           ),
                         ),
                         SizedBox(width: AppDimensions.padding15w),
                         CategoryItem(
                           icon: AppImages.laundry,
                           title: 'Laundry',
-                          onTap: () => Get.toNamed(
+                          onTap: () => context.push(
                             RouteNames.serviceCategoryScreen,
-                            arguments: {
-                              'categoryTitle': 'Laundry Service',
-                              'serviceCount': '30+ Services',
-                            },
+                            extra: ServiceCategoryArgs(
+                              categoryTitle: 'Laundry Service',
+                              serviceCount: '30+ Services',
+                            ),
                           ),
                         ),
                       ],

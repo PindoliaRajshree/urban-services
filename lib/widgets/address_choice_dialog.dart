@@ -6,23 +6,28 @@
 // both paths always stay available.
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
-import 'package:urban_services/features/address/address_controller.dart';
+import 'package:urban_services/features/address/address_provider.dart';
 import 'package:urban_services/routes/route_names.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
 import 'package:urban_services/widgets/primary_button.dart';
 import 'package:urban_services/widgets/secondary_button.dart';
 
-class AddressChoiceDialog extends StatelessWidget {
-  const AddressChoiceDialog({super.key});
+class AddressChoiceDialog extends ConsumerWidget {
+  const AddressChoiceDialog({super.key, required this.onUseCurrentLocation});
+
+  /// Runs the address screen's "Use my Current Location" handling (which
+  /// may open the Location Accuracy dialog) after this dialog closes.
+  final VoidCallback onUseCurrentLocation;
 
   @override
-  Widget build(BuildContext context) {
-    final controller = Get.find<AddressController>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(addressProvider);
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -70,16 +75,14 @@ class AddressChoiceDialog extends StatelessWidget {
             // Option 1: Use current location (mirrors the loading state of
             // the "Use my Current Location" row on the address screen so
             // there's no dead tap while a fetch is already in flight).
-            Obx(
-              () => SecondaryButton(
-                text: 'Use My Current Location',
-                iconPath: AppImages.placeMarker,
-                isLoading: controller.isFetchingLocation.value,
-                onPressed: () {
-                  Get.back(); // Close this dialog first.
-                  controller.onCurrentLocationTap();
-                },
-              ),
+            SecondaryButton(
+              text: 'Use My Current Location',
+              iconPath: AppImages.placeMarker,
+              isLoading: state.isFetchingLocation,
+              onPressed: () {
+                Navigator.of(context).pop(); // Close this dialog first.
+                onUseCurrentLocation();
+              },
             ),
             SizedBox(height: AppDimensions.padding15h),
 
@@ -89,11 +92,9 @@ class AddressChoiceDialog extends StatelessWidget {
             PrimaryButton(
               text: 'Enter Address Manually',
               onPressed: () {
-                Get.back(); // Close this dialog first.
-                Get.toNamed(
-                  RouteNames.addAddressScreen,
-                  arguments: controller.address.value,
-                );
+                final router = GoRouter.of(context);
+                Navigator.of(context).pop(); // Close this dialog first.
+                router.push(RouteNames.addAddressScreen, extra: state.address);
               },
             ),
           ],

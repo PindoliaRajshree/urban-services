@@ -2,10 +2,11 @@
 // Purpose: Displays the list of ongoing chats between the user and service providers.
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
+import 'package:urban_services/routes/route_args.dart';
 import 'package:urban_services/routes/route_names.dart';
 import 'package:urban_services/widgets/chat_card.dart';
 import 'package:urban_services/widgets/custom_search_bar.dart';
@@ -13,14 +14,15 @@ import 'package:urban_services/widgets/custom_search_bar.dart';
 class ChatListScreen extends StatelessWidget {
   const ChatListScreen({super.key});
 
-  void _openChat({
+  void _openChat(
+    BuildContext context, {
     required String name,
     required String avatar,
     required String status,
   }) {
-    Get.toNamed(
+    context.push(
       RouteNames.chatScreen,
-      arguments: {'name': name, 'avatar': avatar, 'status': status},
+      extra: ChatArgs(name: name, avatar: avatar, status: status),
     );
   }
 
@@ -40,7 +42,7 @@ class ChatListScreen extends StatelessWidget {
               ),
               child: CustomSearchBar(
                 hintText: 'Search for Services...',
-                onTap: () => Get.toNamed(RouteNames.chatSearchScreen),
+                onTap: () => context.push(RouteNames.chatSearchScreen),
               ),
             ),
 
@@ -91,6 +93,7 @@ class ChatListScreen extends StatelessWidget {
                             unreadCount: 3,
                             isOnline: true,
                             onTap: () => _openChat(
+                              context,
                               name: 'Devon Lane',
                               avatar: AppImages.serviceProvider,
                               status: 'Online',
@@ -104,6 +107,7 @@ class ChatListScreen extends StatelessWidget {
                             unreadCount: 0,
                             isOnline: true,
                             onTap: () => _openChat(
+                              context,
                               name: 'Anamika Sharma',
                               avatar: AppImages.image,
                               status: 'Online',
@@ -116,6 +120,7 @@ class ChatListScreen extends StatelessWidget {
                             timeAgo: '1 hour ago',
                             unreadCount: 1,
                             onTap: () => _openChat(
+                              context,
                               name: 'Rahul Verma',
                               avatar: AppImages.person,
                               status: 'Last seen 1 hour ago',
@@ -128,6 +133,7 @@ class ChatListScreen extends StatelessWidget {
                             timeAgo: '3 hours ago',
                             unreadCount: 0,
                             onTap: () => _openChat(
+                              context,
                               name: 'Priya Singh',
                               avatar: AppImages.serviceProvider,
                               status: 'Last seen 3 hours ago',
@@ -141,6 +147,7 @@ class ChatListScreen extends StatelessWidget {
                             unreadCount: 12,
                             isOnline: true,
                             onTap: () => _openChat(
+                              context,
                               name: 'Devon Lane',
                               avatar: AppImages.image,
                               status: 'Online',
@@ -153,6 +160,7 @@ class ChatListScreen extends StatelessWidget {
                             timeAgo: '2 days ago',
                             unreadCount: 0,
                             onTap: () => _openChat(
+                              context,
                               name: 'Karan Mehta',
                               avatar: AppImages.person,
                               status: 'Last seen 2 days ago',

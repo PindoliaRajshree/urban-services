@@ -1,144 +1,168 @@
-// File: lib/features/address/address_controller.dart
+// File: lib/features/address/address_provider.dart
 // Purpose: Business logic for the "Select Your Service Address" screen —
 // fetching the user's saved address, permission-aware "use current
 // location" (skips the system dialog when permission is already granted),
 // and saving the detected location via the service-address API.
 //
 // Selection model: the saved address, "use current location", and a
-// manually-entered address (staged by AddAddressController.saveAddress via
-// [setManualEntry]) are three mutually-exclusive, radio-style choices (see
-// [AddressSource]). Choosing one only records the choice — nothing is
-// fetched or saved to the server until the user explicitly confirms with
-// Next ([AddressController.confirmAndProceed]).
+// manually-entered address (staged by AddAddressNotifier.saveAddress via
+// [AddressNotifier.setManualEntry]) are three mutually-exclusive,
+// radio-style choices (see [AddressSource]). Choosing one only records the
+// choice — nothing is fetched or saved to the server until the user
+// explicitly confirms with Next ([AddressNotifier.confirmAndProceed]).
 
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:urban_services/core/constants/api_status.dart';
-import 'package:urban_services/core/constants/storage_keys.dart';
-import 'package:urban_services/core/services/api_result.dart';
+import 'package:urban_services/core/network/api_result.dart';
+import 'package:urban_services/core/session/session_provider.dart';
 import 'package:urban_services/features/address/address_repository.dart';
 import 'package:urban_services/features/address/models/service_address_request.dart';
 import 'package:urban_services/features/address/models/service_address_response.dart';
 import 'package:urban_services/features/address/services/google_geocoding_service.dart';
-import 'package:urban_services/shared_preferences/sharedpreference_helper.dart';
 import 'package:urban_services/widgets/custom_snackbar.dart';
-import 'package:urban_services/widgets/location_accuracy_dialog.dart';
 
 /// The mutually-exclusive ways a service address can be chosen on this
 /// screen.
 enum AddressSource { savedAddress, currentLocation, manualEntry }
 
-class AddressController extends GetxController with WidgetsBindingObserver {
-  AddressController({AddressRepository? addressRepository})
-    : _addressRepository = addressRepository ?? AddressRepository();
-
-  final AddressRepository _addressRepository;
+class AddressState {
+  const AddressState({
+    this.status = ApiStatus.initial,
+    this.address,
+    this.isFetchingLocation = false,
+    this.hasLocationPermission = false,
+    this.selectedSource,
+    this.pendingManualAddress,
+    this.isSavingManualEntry = false,
+  });
 
   /// Tracks the initial GET /user/get-service-address call.
-  final status = ApiStatus.initial.obs;
-
-  bool get isLoadingAddress => status.value == ApiStatus.loading;
+  final ApiStatus status;
 
   /// The user's previously saved service address, or null if they haven't
   /// saved one yet.
-  final address = Rxn<ServiceAddressResponse>();
-
-  bool get hasAddress => address.value != null;
+  final ServiceAddressResponse? address;
 
   /// Tracks the "Use my Current Location" flow (get position -> reverse
   /// geocode -> save) separately from the initial page load.
-  final isFetchingLocation = false.obs;
+  final bool isFetchingLocation;
 
   /// Whether location permission is currently granted. Drives whether the
   /// "Use my Current Location" row shows an "Enable" pill or a plain
   /// selectable radio button.
-  final hasLocationPermission = false.obs;
+  final bool hasLocationPermission;
 
   /// Which address source is currently selected (radio-button style) —
   /// null means nothing has been chosen yet. Selecting a source never
-  /// saves anything by itself; see [confirmAndProceed].
-  final selectedSource = Rxn<AddressSource>();
+  /// saves anything by itself; see [AddressNotifier.confirmAndProceed].
+  final AddressSource? selectedSource;
 
   /// A manually-entered address staged by the Add Address form
-  /// ([setManualEntry]) but not yet POSTed to the server — that only
-  /// happens when the user confirms with Next.
-  final pendingManualAddress = Rxn<ServiceAddressRequest>();
+  /// ([AddressNotifier.setManualEntry]) but not yet POSTed to the server —
+  /// that only happens when the user confirms with Next.
+  final ServiceAddressRequest? pendingManualAddress;
 
   /// Tracks the POST triggered by confirming a staged manual entry,
   /// separately from [isFetchingLocation].
-  final isSavingManualEntry = false.obs;
+  final bool isSavingManualEntry;
+
+  bool get isLoadingAddress => status == ApiStatus.loading;
+
+  bool get hasAddress => address != null;
 
   /// Whether the "CHOOSE YOUR ADDRESS" card has anything to select — either
   /// an already-saved address or a staged manual entry.
-  bool get hasCardAddress => hasAddress || pendingManualAddress.value != null;
+  bool get hasCardAddress => hasAddress || pendingManualAddress != null;
 
   /// Whether the card's content (staged manual entry takes priority over
   /// the saved address, matching what's actually displayed) is the
   /// currently-selected source.
-  bool get isCardAddressSelected => pendingManualAddress.value != null
-      ? selectedSource.value == AddressSource.manualEntry
-      : selectedSource.value == AddressSource.savedAddress;
+  bool get isCardAddressSelected => pendingManualAddress != null
+      ? selectedSource == AddressSource.manualEntry
+      : selectedSource == AddressSource.savedAddress;
+
+  AddressState copyWith({
+    ApiStatus? status,
+    ServiceAddressResponse? Function()? address,
+    bool? isFetchingLocation,
+    bool? hasLocationPermission,
+    AddressSource? Function()? selectedSource,
+    ServiceAddressRequest? Function()? pendingManualAddress,
+    bool? isSavingManualEntry,
+  }) => AddressState(
+    status: status ?? this.status,
+    address: address != null ? address() : this.address,
+    isFetchingLocation: isFetchingLocation ?? this.isFetchingLocation,
+    hasLocationPermission: hasLocationPermission ?? this.hasLocationPermission,
+    selectedSource: selectedSource != null
+        ? selectedSource()
+        : this.selectedSource,
+    pendingManualAddress: pendingManualAddress != null
+        ? pendingManualAddress()
+        : this.pendingManualAddress,
+    isSavingManualEntry: isSavingManualEntry ?? this.isSavingManualEntry,
+  );
+}
+
+class AddressNotifier extends Notifier<AddressState> {
+  AddressRepository get _addressRepository =>
+      ref.read(addressRepositoryProvider);
 
   @override
-  void onInit() {
-    super.onInit();
-    WidgetsBinding.instance.addObserver(this);
-    fetchAddress();
-    _refreshLocationPermissionStatus();
+  AddressState build() {
+    Future.microtask(() {
+      fetchAddress();
+      refreshLocationPermissionStatus();
+    });
+    return const AddressState();
   }
 
-  @override
-  void onClose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.onClose();
-  }
-
-  /// Re-checks location permission when the app resumes (e.g. the user
-  /// granted it from system Settings after being sent there for a
-  /// permanently-denied prompt) so the row switches from "Enable" to the
-  /// radio button without needing a manual retry.
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      _refreshLocationPermissionStatus();
-    }
-  }
-
-  Future<void> _refreshLocationPermissionStatus() async {
-    hasLocationPermission.value =
-        (await Permission.location.status).isGranted;
+  /// Re-checks location permission. Also called by AddressScreen when the
+  /// app resumes (e.g. the user granted it from system Settings after being
+  /// sent there for a permanently-denied prompt) so the row switches from
+  /// "Enable" to the radio button without needing a manual retry.
+  Future<void> refreshLocationPermissionStatus() async {
+    final granted = (await Permission.location.status).isGranted;
+    if (!ref.mounted) return;
+    state = state.copyWith(hasLocationPermission: granted);
   }
 
   /// Calls GET /user/get-service-address. A failure (including "no address
-  /// saved yet") just leaves [address] null — that's an expected state on
+  /// saved yet") just leaves `address` null — that's an expected state on
   /// a fresh account, not something to show as an error.
   Future<void> fetchAddress() async {
-    status.value = ApiStatus.loading;
+    state = state.copyWith(status: ApiStatus.loading);
     final result = await _addressRepository.getServiceAddress();
+    if (!ref.mounted) return;
 
     switch (result) {
       case ApiSuccess(data: final data):
-        address.value = data;
-        selectedSource.value = AddressSource.savedAddress;
-      case ApiFailure():
-        address.value = null;
-        selectedSource.value = null;
+        state = state.copyWith(
+          address: () => data,
+          selectedSource: () => AddressSource.savedAddress,
+          status: ApiStatus.successful,
+        );
+      case ApiError():
+        state = state.copyWith(
+          address: () => null,
+          selectedSource: () => null,
+          status: ApiStatus.successful,
+        );
     }
-
-    status.value = ApiStatus.successful;
   }
 
   /// Selects whatever is showing in the "CHOOSE YOUR ADDRESS" card — the
   /// staged manual entry if there is one, otherwise the already-saved
   /// address. No-op if neither exists yet.
   void selectCardAddress() {
-    if (pendingManualAddress.value != null) {
-      selectedSource.value = AddressSource.manualEntry;
-    } else if (hasAddress) {
-      selectedSource.value = AddressSource.savedAddress;
+    if (state.pendingManualAddress != null) {
+      state = state.copyWith(selectedSource: () => AddressSource.manualEntry);
+    } else if (state.hasAddress) {
+      state = state.copyWith(selectedSource: () => AddressSource.savedAddress);
     }
   }
 
@@ -146,59 +170,70 @@ class AddressController extends GetxController with WidgetsBindingObserver {
   /// selected source, without saving it yet — the actual POST happens when
   /// the user confirms with Next (see [confirmAndProceed]).
   void setManualEntry(ServiceAddressRequest request) {
-    pendingManualAddress.value = request;
-    selectedSource.value = AddressSource.manualEntry;
+    state = state.copyWith(
+      pendingManualAddress: () => request,
+      selectedSource: () => AddressSource.manualEntry,
+    );
   }
 
   /// Handles a tap on "Use my Current Location" (the Enable pill, or the
   /// radio once permission is already granted): if permission is already
   /// granted, this just *selects* current location as the chosen source —
-  /// it does not fetch or save anything. If permission isn't granted yet,
-  /// it shows the Location Accuracy dialog first; selection happens once
-  /// that's granted (see [requestLocationPermission]). The actual fetch +
-  /// save only happens when the user confirms with Next.
-  Future<void> onCurrentLocationTap() async {
-    if (isFetchingLocation.value) return;
+  /// it does not fetch or save anything — and returns true. If permission
+  /// isn't granted yet it returns false, and the screen shows the Location
+  /// Accuracy dialog; selection happens once that's granted (see
+  /// [requestLocationPermission]). The actual fetch + save only happens
+  /// when the user confirms with Next.
+  Future<bool> onCurrentLocationTap() async {
+    if (state.isFetchingLocation) return true;
 
     final permissionStatus = await Permission.location.status;
-    hasLocationPermission.value = permissionStatus.isGranted;
+    if (!ref.mounted) return true;
+    state = state.copyWith(hasLocationPermission: permissionStatus.isGranted);
     if (permissionStatus.isGranted) {
-      selectedSource.value = AddressSource.currentLocation;
-    } else {
-      Get.dialog(const LocationAccuracyDialog(), barrierDismissible: false);
+      state = state.copyWith(
+        selectedSource: () => AddressSource.currentLocation,
+      );
+      return true;
     }
+    return false;
   }
 
   /// Logic to request location permission from the system.
   /// Handles different states: Granted, Denied, and Permanently Denied.
-  Future<void> requestLocationPermission() async {
+  /// Returns true when the Location Accuracy dialog should close.
+  Future<bool> requestLocationPermission() async {
     // Permission.location requests both FINE and COARSE location on Android
     final permissionStatus = await Permission.location.request();
 
     if (permissionStatus.isGranted) {
       debugPrint("Location permission granted");
-      hasLocationPermission.value = true;
-      selectedSource.value = AddressSource.currentLocation;
-      Get.back(); // Close the custom dialog
+      if (ref.mounted) {
+        state = state.copyWith(
+          hasLocationPermission: true,
+          selectedSource: () => AddressSource.currentLocation,
+        );
+      }
+      return true;
     } else if (permissionStatus.isDenied) {
       debugPrint("Location permission denied");
       // The user denied the permission but can be asked again in the future
+      return false;
     } else if (permissionStatus.isPermanentlyDenied) {
       debugPrint("Location permission permanently denied");
       // User opted to not be asked again, redirecting to system settings is standard UX
       await openAppSettings();
-      Get.back(); // Close the custom dialog
-    } else {
-      Get.back(); // Default fallback to close dialog
+      return true;
     }
+    return true; // Default fallback to close dialog
   }
 
   /// Gets the device's current position, reverse-geocodes it into an
   /// address, and saves it via POST /user/service-address. Returns true on
   /// success, false otherwise (an error toast is already shown by then).
   Future<bool> _fetchAndSaveCurrentLocation() async {
-    if (isFetchingLocation.value) return false;
-    isFetchingLocation.value = true;
+    if (state.isFetchingLocation) return false;
+    state = state.copyWith(isFetchingLocation: true);
 
     try {
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
@@ -219,21 +254,20 @@ class AddressController extends GetxController with WidgetsBindingObserver {
       // Prefer Google's Geocoding API (server-side, much more accurate)
       // and only fall back to the on-device geocoder if it isn't
       // configured yet or the call fails for any reason.
-      final googleResult = await GoogleGeocodingService.instance
-          .reverseGeocode(
-            latitude: position.latitude,
-            longitude: position.longitude,
-          );
+      final googleResult = await GoogleGeocodingService.instance.reverseGeocode(
+        latitude: position.latitude,
+        longitude: position.longitude,
+      );
 
       String fullAddress;
       String city;
-      String state;
+      String addressState;
       String pincode;
 
       if (googleResult != null && googleResult.formattedAddress.isNotEmpty) {
         fullAddress = googleResult.formattedAddress;
         city = googleResult.city;
-        state = googleResult.state;
+        addressState = googleResult.state;
         pincode = googleResult.pincode;
       } else {
         final placemarks = await placemarkFromCoordinates(
@@ -257,13 +291,12 @@ class AddressController extends GetxController with WidgetsBindingObserver {
         ].where((part) => part != null && part.trim().isNotEmpty).join(', ');
 
         city = place.locality ?? '';
-        state = place.administrativeArea ?? '';
+        addressState = place.administrativeArea ?? '';
         pincode = place.postalCode ?? '';
       }
 
-      final userId = await SharedPreferencesHelper.instance.getValue<int>(
-        StorageKeys.userId,
-      );
+      if (!ref.mounted) return false;
+      final userId = ref.read(sessionProvider).userId;
       if (userId == null) {
         CustomSnackBar.showError(
           title: "Error",
@@ -273,9 +306,11 @@ class AddressController extends GetxController with WidgetsBindingObserver {
       }
 
       final request = ServiceAddressRequest(
-        fullAddress: fullAddress.isNotEmpty ? fullAddress : '$city, $state',
+        fullAddress: fullAddress.isNotEmpty
+            ? fullAddress
+            : '$city, $addressState',
         city: city,
-        state: state,
+        state: addressState,
         pincode: pincode,
         userId: userId,
       );
@@ -287,21 +322,21 @@ class AddressController extends GetxController with WidgetsBindingObserver {
             title: "Success",
             message: data.message ?? "Current location saved as your address.",
           );
-          await fetchAddress();
+          if (ref.mounted) await fetchAddress();
           return true;
-        case ApiFailure(message: final message):
-          CustomSnackBar.showError(title: "Error", message: message);
+        case ApiError(failure: final failure):
+          CustomSnackBar.showError(title: "Error", message: failure.message);
           return false;
       }
     } catch (e) {
-      debugPrint("AddressController - current location error: $e");
+      debugPrint("AddressNotifier - current location error: $e");
       CustomSnackBar.showError(
         title: "Error",
         message: "Couldn't get your current location. Please try again.",
       );
       return false;
     } finally {
-      isFetchingLocation.value = false;
+      if (ref.mounted) state = state.copyWith(isFetchingLocation: false);
     }
   }
 
@@ -310,9 +345,9 @@ class AddressController extends GetxController with WidgetsBindingObserver {
   /// this is the one point where a GPS fetch + save actually happens.
   /// Returns true when it's safe to navigate to Home.
   Future<bool> confirmAndProceed() async {
-    switch (selectedSource.value) {
+    switch (state.selectedSource) {
       case AddressSource.savedAddress:
-        return hasAddress;
+        return state.hasAddress;
       case AddressSource.currentLocation:
         return _fetchAndSaveCurrentLocation();
       case AddressSource.manualEntry:
@@ -326,10 +361,10 @@ class AddressController extends GetxController with WidgetsBindingObserver {
   /// on success, false otherwise (an error toast is already shown by
   /// then).
   Future<bool> _saveManualEntry() async {
-    final request = pendingManualAddress.value;
-    if (request == null || isSavingManualEntry.value) return false;
+    final request = state.pendingManualAddress;
+    if (request == null || state.isSavingManualEntry) return false;
 
-    isSavingManualEntry.value = true;
+    state = state.copyWith(isSavingManualEntry: true);
     try {
       final result = await _addressRepository.saveServiceAddress(request);
       switch (result) {
@@ -338,20 +373,22 @@ class AddressController extends GetxController with WidgetsBindingObserver {
             title: "Success",
             message: data.message ?? "Service address saved successfully.",
           );
-          pendingManualAddress.value = null;
-          await fetchAddress();
+          if (ref.mounted) {
+            state = state.copyWith(pendingManualAddress: () => null);
+            await fetchAddress();
+          }
           return true;
-        case ApiFailure(message: final message):
-          CustomSnackBar.showError(title: "Error", message: message);
+        case ApiError(failure: final failure):
+          CustomSnackBar.showError(title: "Error", message: failure.message);
           return false;
       }
     } finally {
-      isSavingManualEntry.value = false;
+      if (ref.mounted) state = state.copyWith(isSavingManualEntry: false);
     }
   }
-
-  /// Closes the current active dialog (e.g., LocationAccuracyDialog).
-  void closeDialog() {
-    Get.back();
-  }
 }
+
+final addressProvider =
+    NotifierProvider.autoDispose<AddressNotifier, AddressState>(
+      AddressNotifier.new,
+    );

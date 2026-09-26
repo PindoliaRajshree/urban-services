@@ -2,20 +2,21 @@
 // Purpose: A confirmation dialog for logging out of the application.
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:urban_services/core/colors/colors.dart';
+import 'package:urban_services/core/constants/api_status.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
-import 'package:urban_services/features/profile/profile_controller.dart';
+import 'package:urban_services/features/profile/profile_provider.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
 
-class LogoutDialog extends StatelessWidget {
+class LogoutDialog extends ConsumerWidget {
   const LogoutDialog({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // Access ProfileController for logout logic
-    final controller = Get.find<ProfileController>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Watching keeps the logout provider alive while the dialog is open.
+    final isLoggingOut = ref.watch(logoutProvider) == ApiStatus.loading;
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -59,78 +60,76 @@ class LogoutDialog extends StatelessWidget {
             ),
             SizedBox(height: AppDimensions.padding30h),
             // Action Buttons
-            Obx(
-              () => Row(
-                children: [
-                  // Negative Action: Cancel
-                  Expanded(
-                    child: TextButton(
-                      onPressed: controller.isLoggingOut
-                          ? null
-                          : controller.closeDialog,
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.symmetric(
-                          vertical: AppDimensions.padding12h,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                            AppDimensions.radius10r,
-                          ),
-                          side: const BorderSide(color: AppColors.grey),
-                        ),
+            Row(
+              children: [
+                // Negative Action: Cancel
+                Expanded(
+                  child: TextButton(
+                    onPressed: isLoggingOut
+                        ? null
+                        : () => Navigator.of(context).pop(),
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.symmetric(
+                        vertical: AppDimensions.padding12h,
                       ),
-                      child: Text(
-                        'Cancel',
-                        style: customTextStyle(
-                          AppTextSizes.largeTextSize,
-                          AppColors.text,
-                          FontWeight.w600,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.radius10r,
                         ),
+                        side: const BorderSide(color: AppColors.grey),
+                      ),
+                    ),
+                    child: Text(
+                      'Cancel',
+                      style: customTextStyle(
+                        AppTextSizes.largeTextSize,
+                        AppColors.text,
+                        FontWeight.w600,
                       ),
                     ),
                   ),
-                  SizedBox(width: AppDimensions.padding15w),
-                  // Positive Action: Confirm Logout
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: controller.isLoggingOut
-                          ? null
-                          : controller.logout,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.danger,
-                        padding: EdgeInsets.symmetric(
-                          vertical: AppDimensions.padding12h,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                            AppDimensions.radius10r,
-                          ),
-                        ),
-                        elevation: 0,
+                ),
+                SizedBox(width: AppDimensions.padding15w),
+                // Positive Action: Confirm Logout
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: isLoggingOut
+                        ? null
+                        : ref.read(logoutProvider.notifier).logout,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.danger,
+                      padding: EdgeInsets.symmetric(
+                        vertical: AppDimensions.padding12h,
                       ),
-                      child: controller.isLoggingOut
-                          ? SizedBox(
-                              height: AppDimensions.containerHeight20h,
-                              width: AppDimensions.containerWidth20w,
-                              child: const CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  AppColors.white,
-                                ),
-                              ),
-                            )
-                          : Text(
-                              'Logout',
-                              style: customTextStyle(
-                                AppTextSizes.largeTextSize,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.radius10r,
+                        ),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: isLoggingOut
+                        ? SizedBox(
+                            height: AppDimensions.containerHeight20h,
+                            width: AppDimensions.containerWidth20w,
+                            child: const CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
                                 AppColors.white,
-                                FontWeight.w600,
                               ),
                             ),
-                    ),
+                          )
+                        : Text(
+                            'Logout',
+                            style: customTextStyle(
+                              AppTextSizes.largeTextSize,
+                              AppColors.white,
+                              FontWeight.w600,
+                            ),
+                          ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ],
         ),

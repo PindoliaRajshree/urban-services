@@ -2,36 +2,27 @@
 // Purpose: Primary dashboard for service providers to manage jobs, earnings, and availability.
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:showcaseview/showcaseview.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
-import 'package:urban_services/features/home_provider/complete_profile/service_type_controller.dart';
-import 'package:urban_services/features/home_provider/provider_home_controller.dart';
+import 'package:urban_services/features/home_provider/complete_profile/service_type_provider.dart';
+import 'package:urban_services/features/home_provider/provider_home_provider.dart';
 import 'package:urban_services/routes/route_names.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
 import 'package:urban_services/widgets/section_heading.dart';
 
-class ProviderHomeScreen extends StatefulWidget {
+class ProviderHomeScreen extends ConsumerStatefulWidget {
   const ProviderHomeScreen({super.key});
 
   @override
-  State<ProviderHomeScreen> createState() => _ProviderHomeScreenState();
+  ConsumerState<ProviderHomeScreen> createState() => _ProviderHomeScreenState();
 }
 
-class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
-  // Initialize dashboard logic controller
-  final controller = Get.put(ProviderHomeController());
-
-  // Shared preload/cache for the profile-completion "Service Details" step —
-  // reused via Get.find if already registered so a revisit to Home doesn't
-  // reset the cache or re-trigger the fetch.
-  final serviceTypeController = Get.isRegistered<ServiceTypeController>()
-      ? Get.find<ServiceTypeController>()
-      : Get.put(ServiceTypeController());
-
+class _ProviderHomeScreenState extends ConsumerState<ProviderHomeScreen> {
   // Spotlights the profile avatar with a "complete your profile" callout.
   final GlobalKey _profileShowcaseKey = GlobalKey();
 
@@ -39,9 +30,9 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
   void initState() {
     super.initState();
     // Preload service categories here so they're already available by the
-    // time the provider reaches the Service Details step (no-op if already
-    // loaded).
-    serviceTypeController.fetchServiceTypes();
+    // time the provider reaches the Service Details step. serviceTypesProvider
+    // is kept for the session, so revisiting Home doesn't re-fetch.
+    ref.read(serviceTypesProvider);
 
     // Runs every time this screen is built — there's no "seen it already"
     // flag yet, so the callout shows on every visit to Home for now.
@@ -57,7 +48,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
   /// showcase is dismissed explicitly here before navigating.
   void _onProfileShowcaseTap() {
     ShowCaseWidget.of(context).dismiss();
-    Get.toNamed(RouteNames.completeProviderProfile);
+    context.push(RouteNames.completeProviderProfile);
   }
 
   @override
@@ -189,7 +180,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                       ),
                       // SizedBox(width: AppDimensions.padding15w),
                       // GestureDetector(
-                      //   onTap: () => Get.toNamed(RouteNames.notificationScreen),
+                      //   onTap: () => context.push(RouteNames.notificationScreen),
                       //   child:  Image.asset(
                       //     AppImages.notification,
                       //     height: AppDimensions.containerHeight50h,
@@ -202,10 +193,9 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                   // Complete Your Profile Section with Animation
                   // CompleteProfileCard(
                   //   onFinish: () {
-                  //     Get.toNamed(RouteNames.completeProviderProfile);
+                  //     context.push(RouteNames.completeProviderProfile);
                   //   },
                   // ),
-
                   SizedBox(height: AppDimensions.padding8h),
                   // 4. Availability Toggle Container
                   Container(
@@ -283,12 +273,12 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                           ),
                         ),
                         // Toggle Switch
-                        Obx(
-                          () => Switch(
-                            value: controller.isAvailable.value,
-                            onChanged: controller.toggleAvailability,
-                            activeThumbColor: AppColors.primaryDark,
-                          ),
+                        Switch(
+                          value: ref.watch(providerAvailabilityProvider),
+                          onChanged: ref
+                              .read(providerAvailabilityProvider.notifier)
+                              .toggleAvailability,
+                          activeThumbColor: AppColors.primaryDark,
                         ),
                       ],
                     ),

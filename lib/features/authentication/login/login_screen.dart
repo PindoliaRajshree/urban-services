@@ -2,32 +2,49 @@
 // Purpose: Screen for user authentication via email and password.
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
-import 'package:urban_services/core/constants/api_status.dart';
-import 'package:urban_services/features/authentication/login/login_controller.dart';
+import 'package:urban_services/features/authentication/login/login_provider.dart';
 import 'package:urban_services/routes/route_names.dart';
 import 'package:urban_services/widgets/custom_text_field.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
 import 'package:urban_services/widgets/primary_button.dart';
 import 'package:urban_services/widgets/secondary_button.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-  // Logic controller for login form handling; marked as permanent to persist through navigation stack clears
-  final controller = Get.put(LoginController(), permanent: true);
+class _LoginScreenState extends ConsumerState<LoginScreen> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _emailFocusNode = FocusNode();
+  final _passwordFocusNode = FocusNode();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _emailFocusNode.dispose();
+    _passwordFocusNode.dispose();
+    super.dispose();
+  }
+
+  void _login() => ref
+      .read(loginProvider.notifier)
+      .login(email: _emailController.text, password: _passwordController.text);
 
   @override
   Widget build(BuildContext context) {
+    final state = ref.watch(loginProvider);
+
     return Scaffold(
       backgroundColor: AppColors.screenBackground,
       body: SingleChildScrollView(
@@ -97,31 +114,27 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Column(
                       children: [
                         // Email Input
-                        Obx(
-                          () => CustomTextField(
-                            hintText: 'Enter Email',
-                            prefixIconPath: AppImages.email,
-                            controller: controller.emailController,
-                            focusNode: controller.emailFocusNode,
-                            keyboardType: TextInputType.emailAddress,
-                            textInputAction: TextInputAction.next,
-                            errorText: controller.emailError.value,
-                          ),
+                        CustomTextField(
+                          hintText: 'Enter Email',
+                          prefixIconPath: AppImages.email,
+                          controller: _emailController,
+                          focusNode: _emailFocusNode,
+                          keyboardType: TextInputType.emailAddress,
+                          textInputAction: TextInputAction.next,
+                          errorText: state.emailError,
                         ),
                         SizedBox(height: AppDimensions.padding20h),
 
                         // Password Input
-                        Obx(
-                          () => CustomTextField(
-                            hintText: 'Enter Password',
-                            prefixIconPath: AppImages.password,
-                            isPassword: true,
-                            controller: controller.passwordController,
-                            focusNode: controller.passwordFocusNode,
-                            textInputAction: TextInputAction.done,
-                            onSubmitted: (_) => controller.login(),
-                            errorText: controller.passwordError.value,
-                          ),
+                        CustomTextField(
+                          hintText: 'Enter Password',
+                          prefixIconPath: AppImages.password,
+                          isPassword: true,
+                          controller: _passwordController,
+                          focusNode: _passwordFocusNode,
+                          textInputAction: TextInputAction.done,
+                          onSubmitted: (_) => _login(),
+                          errorText: state.passwordError,
                         ),
 
                         // Forgot Password Link
@@ -129,7 +142,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           alignment: Alignment.centerRight,
                           child: TextButton(
                             onPressed: () =>
-                                Get.toNamed(RouteNames.forgotPasswordScreen),
+                                context.push(RouteNames.forgotPasswordScreen),
                             child: Text(
                               'Forgot Password?',
                               style: customTextStyle(
@@ -142,13 +155,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
 
                         // Login Action
-                        Obx(
-                          () => PrimaryButton(
-                            text: 'Login',
-                            isLoading:
-                                controller.status.value == ApiStatus.loading,
-                            onPressed: controller.login,
-                          ),
+                        PrimaryButton(
+                          text: 'Login',
+                          isLoading: state.isLoading,
+                          onPressed: _login,
                         ),
 
                         SizedBox(height: AppDimensions.padding10h),
@@ -199,14 +209,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         SizedBox(height: AppDimensions.padding20h),
 
                         // Social Login Action
-                        Obx(
-                          () => SecondaryButton(
-                            text: 'Continue with Google',
-                            iconPath: AppImages.google,
-                            isLoading:
-                                controller.status.value == ApiStatus.loading,
-                            onPressed: controller.loginWithGoogle,
-                          ),
+                        SecondaryButton(
+                          text: 'Continue with Google',
+                          iconPath: AppImages.google,
+                          isLoading: state.isLoading,
+                          onPressed: ref
+                              .read(loginProvider.notifier)
+                              .loginWithGoogle,
                         ),
                       ],
                     ),
@@ -217,7 +226,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   // Navigation to Registration
                   Center(
                     child: InkWell(
-                      onTap: () => Get.toNamed(RouteNames.registerScreen),
+                      onTap: () => context.push(RouteNames.registerScreen),
                       child: RichText(
                         text: TextSpan(
                           children: [

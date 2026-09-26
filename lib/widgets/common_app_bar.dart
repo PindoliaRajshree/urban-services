@@ -2,7 +2,6 @@
 // Purpose: A reusable, standardized AppBar component with consistent branding and navigation.
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
@@ -16,7 +15,7 @@ class CommonAppBar extends StatelessWidget {
   /// Optional widget to display on the far right (custom actions)
   final Widget? rightAction;
 
-  /// Custom callback for the back button; defaults to [Get.back()]
+  /// Custom callback for the back button; defaults to [Navigator.maybePop]
   final VoidCallback? onBackPress;
 
   /// Whether to show the standard vertical more icon
@@ -45,7 +44,7 @@ class CommonAppBar extends StatelessWidget {
           Align(
             alignment: Alignment.centerLeft,
             child: GestureDetector(
-              onTap: onBackPress ?? () => Get.back(),
+              onTap: onBackPress ?? () => Navigator.of(context).maybePop(),
               child: Image.asset(
                 AppImages.back,
                 height: AppDimensions.containerHeight24h,

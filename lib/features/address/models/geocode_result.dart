@@ -26,8 +26,7 @@ class GeocodeResult {
 
     String pick(List<String> wantedTypes) {
       for (final component in components) {
-        final types =
-            (component['types'] as List?)?.cast<String>() ?? const [];
+        final types = (component['types'] as List?)?.cast<String>() ?? const [];
         if (wantedTypes.any(types.contains)) {
           return (component['long_name'] as String?)?.trim() ?? '';
         }
@@ -48,7 +47,9 @@ class GeocodeResult {
       r'^[23456789CFGHJMPQRVWX]{4,8}\+[23456789CFGHJMPQRVWX]{2,3}\s*,?\s*',
       caseSensitive: false,
     );
-    final withoutPlusCode = rawFormatted.replaceFirst(plusCodePattern, '').trim();
+    final withoutPlusCode = rawFormatted
+        .replaceFirst(plusCodePattern, '')
+        .trim();
 
     final formattedAddress = withoutPlusCode.isNotEmpty
         ? withoutPlusCode

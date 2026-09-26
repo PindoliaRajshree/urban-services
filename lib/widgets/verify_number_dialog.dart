@@ -1,24 +1,62 @@
-// File: lib/features/home_provider/complete_profile/verify_number_dialog.dart
-// Purpose: OTP verification dialog with masked mobile number display and inline validation.
+// File: lib/widgets/verify_number_dialog.dart
+// Purpose: OTP verification dialog with masked mobile number display and
+// inline validation. Shared by the user and provider profile-completion
+// screens.
+//
+// NOTE: no OTP is actually sent or checked yet — any non-empty code closes
+// the dialog (see docs/UI_FLOW_AUDIT.md).
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
-import 'package:urban_services/features/home_provider/complete_profile/complete_profile_controller.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
 import 'package:urban_services/widgets/primary_button.dart';
 
-class VerifyNumberDialog extends StatelessWidget {
+class VerifyNumberDialog extends StatefulWidget {
   final String phoneNumber;
 
   const VerifyNumberDialog({super.key, required this.phoneNumber});
 
   @override
+  State<VerifyNumberDialog> createState() => _VerifyNumberDialogState();
+}
+
+class _VerifyNumberDialogState extends State<VerifyNumberDialog> {
+  final _otpController = TextEditingController();
+  String? _otpError;
+
+  @override
+  void initState() {
+    super.initState();
+    // Clear the OTP error when typing
+    _otpController.addListener(() {
+      if (_otpController.text.isNotEmpty && _otpError != null) {
+        setState(() => _otpError = null);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _otpController.dispose();
+    super.dispose();
+  }
+
+  /// Verifies the OTP entered in the dialog
+  void _verifyOtp() {
+    if (_otpController.text.trim().isEmpty) {
+      setState(() => _otpError = "Please enter OTP");
+      return;
+    }
+    debugPrint("Verifying OTP: ${_otpController.text}");
+    Navigator.of(context).pop(); // Close dialog on success
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final controller = Get.find<CompleteProfileController>();
+    final phoneNumber = widget.phoneNumber;
 
     // Simple masking: show first 5 and last 2, rest *
     final masked = phoneNumber.length > 7
@@ -55,51 +93,49 @@ class VerifyNumberDialog extends StatelessWidget {
             ),
             SizedBox(height: AppDimensions.padding20h),
             // Standardized OTP Input Field
-            Obx(
-              () => Column(
-                children: [
-                  Container(
-                    width: double.infinity,
-                    height: AppDimensions.containerHeight50h,
-                    decoration: BoxDecoration(
-                      color: AppColors.white,
-                      border: Border.all(
-                        color: controller.otpError.value != null
-                            ? AppColors.danger
-                            : AppColors.lightGreyBorder,
-                        width: 1,
-                      ),
+            Column(
+              children: [
+                Container(
+                  width: double.infinity,
+                  height: AppDimensions.containerHeight50h,
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    border: Border.all(
+                      color: _otpError != null
+                          ? AppColors.danger
+                          : AppColors.lightGreyBorder,
+                      width: 1,
                     ),
-                    child: TextField(
-                      controller: controller.otpController,
-                      keyboardType: TextInputType.number,
-                      textAlign: TextAlign.center,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  ),
+                  child: TextField(
+                    controller: _otpController,
+                    keyboardType: TextInputType.number,
+                    textAlign: TextAlign.center,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    style: customTextStyle(
+                      AppTextSizes.headingTextSize, // 24
+                      AppColors.darkBlueText,
+                      FontWeight.w400,
+                    ),
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      hintText: "- - - - -",
+                    ),
+                  ),
+                ),
+                if (_otpError != null)
+                  Padding(
+                    padding: EdgeInsets.only(top: AppDimensions.padding4h),
+                    child: Text(
+                      _otpError!,
                       style: customTextStyle(
-                        AppTextSizes.headingTextSize, // 24
-                        AppColors.darkBlueText,
+                        AppTextSizes.stableTextSize,
+                        AppColors.danger,
                         FontWeight.w400,
-                      ),
-                      decoration: const InputDecoration(
-                        border: InputBorder.none,
-                        hintText: "- - - - -",
                       ),
                     ),
                   ),
-                  if (controller.otpError.value != null)
-                    Padding(
-                      padding: EdgeInsets.only(top: AppDimensions.padding4h),
-                      child: Text(
-                        controller.otpError.value!,
-                        style: customTextStyle(
-                          AppTextSizes.stableTextSize,
-                          AppColors.danger,
-                          FontWeight.w400,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
+              ],
             ),
             SizedBox(height: AppDimensions.padding15h),
             RichText(
@@ -130,7 +166,7 @@ class VerifyNumberDialog extends StatelessWidget {
               text: 'Verify',
               width: AppDimensions.containerWidth150w,
               height: AppDimensions.containerHeight40h,
-              onPressed: controller.verifyOtp,
+              onPressed: _verifyOtp,
             ),
           ],
         ),

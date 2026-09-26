@@ -3,10 +3,11 @@
 // on the Service Category screen).
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
+import 'package:urban_services/routes/route_args.dart';
 import 'package:urban_services/routes/route_names.dart';
 import 'package:urban_services/widgets/common_app_bar.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
@@ -78,10 +79,7 @@ class ServiceDetailsScreen extends StatelessWidget {
               padding: EdgeInsets.symmetric(
                 horizontal: AppDimensions.padding20w,
               ),
-              child: CommonAppBar(
-                title: 'Service Details',
-                showMoreIcon: true,
-              ),
+              child: CommonAppBar(title: 'Service Details', showMoreIcon: true),
             ),
             SizedBox(height: AppDimensions.padding15h),
 
@@ -97,9 +95,7 @@ class ServiceDetailsScreen extends StatelessWidget {
                         ClipRRect(
                           borderRadius: BorderRadius.only(
                             topLeft: Radius.circular(AppDimensions.radius20r),
-                            topRight: Radius.circular(
-                              AppDimensions.radius20r,
-                            ),
+                            topRight: Radius.circular(AppDimensions.radius20r),
                           ),
                           child: Image.asset(
                             imagePath,
@@ -148,8 +144,7 @@ class ServiceDetailsScreen extends StatelessWidget {
                                   ),
                                 ),
                                 child: ShaderMask(
-                                  shaderCallback: (bounds) => AppColors
-                                      .gradient
+                                  shaderCallback: (bounds) => AppColors.gradient
                                       .createShader(Offset.zero & bounds.size),
                                   child: Text(
                                     'Top Rated',
@@ -320,9 +315,9 @@ class ServiceDetailsScreen extends StatelessWidget {
                 children: [
                   _priceColumn(),
                   GestureDetector(
-                    onTap: () => Get.toNamed(
+                    onTap: () => context.push(
                       RouteNames.bookingServiceScreen,
-                      arguments: {'price': price},
+                      extra: BookingArgs(price: price),
                     ),
                     child: Container(
                       padding: EdgeInsets.symmetric(

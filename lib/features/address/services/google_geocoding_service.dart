@@ -23,6 +23,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:urban_services/core/constants/api_constants.dart';
+import 'package:urban_services/core/network/api_logger_interceptor.dart';
 import 'package:urban_services/features/address/models/geocode_result.dart';
 
 class GoogleGeocodingService {
@@ -36,12 +37,18 @@ class GoogleGeocodingService {
   // Deliberately a fresh Dio instance (not the app's shared ApiService) —
   // this call goes to Google's servers, not the Urban Service backend, so
   // it must not carry the backend's base URL, auth token, or interceptors.
-  final Dio _dio = Dio(
-    BaseOptions(
-      connectTimeout: const Duration(seconds: 15),
-      receiveTimeout: const Duration(seconds: 15),
-    ),
-  );
+  // Same debug logger as the backend client; the `key` query parameter is
+  // masked in the printed URL.
+  final Dio _dio =
+      Dio(
+          BaseOptions(
+            connectTimeout: const Duration(seconds: 15),
+            receiveTimeout: const Duration(seconds: 15),
+          ),
+        )
+        ..interceptors.addAll([
+          if (kDebugMode) ApiLoggerInterceptor(name: 'GEOCODING'),
+        ]);
 
   bool get _isConfigured =>
       ApiConstants.googleMapsApiKey.isNotEmpty &&
@@ -64,8 +71,7 @@ class GoogleGeocodingService {
           'key': ApiConstants.googleMapsApiKey,
           // Nudges Google to prefer a rooftop/street-level match over a
           // broad locality-only match when both are available.
-          'result_type':
-              'street_address|premise|subpremise|route|neighborhood',
+          'result_type': 'street_address|premise|subpremise|route|neighborhood',
         },
         options: Options(headers: _restrictionHeaders()),
       );

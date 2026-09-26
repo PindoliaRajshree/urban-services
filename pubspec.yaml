@@ -57,7 +57,7 @@ dependencies:
   #G
   geocoding: ^3.0.0
   geolocator: ^13.0.0
-  get: ^4.7.3
+  go_router: ^18.0.1
   google_maps_flutter: ^2.9.0
   # Direct (not just transitive) deps so main.dart can force Hybrid
   # Composition on Android — works around a known google_maps_flutter

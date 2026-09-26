@@ -3,10 +3,11 @@
 // a service (opened from the "Book Now" button on the Service Details screen).
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
+import 'package:urban_services/routes/route_args.dart';
 import 'package:urban_services/routes/route_names.dart';
 import 'package:urban_services/widgets/common_app_bar.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
@@ -31,8 +32,7 @@ class BookingServiceScreen extends StatefulWidget {
 
 class _BookingServiceScreenState extends State<BookingServiceScreen> {
   static const int _maxNotesLength = 200;
-  static const String _address =
-      '123, Green Park, Main Road, New Delhi-110016';
+  static const String _address = '123, Green Park, Main Road, New Delhi-110016';
 
   int _selectedDateIndex = 0;
   int _selectedTimeIndex = 1; // Defaults to "11:00 AM"
@@ -420,13 +420,13 @@ class _BookingServiceScreenState extends State<BookingServiceScreen> {
                     onTap: () {
                       final date = _dates[_selectedDateIndex];
                       final time = _times[_selectedTimeIndex];
-                      Get.toNamed(
+                      context.push(
                         RouteNames.paymentScreen,
-                        arguments: {
-                          'price': widget.price,
-                          'dateTime': '${date.date} ${date.month} 2024, $time',
-                          'address': _address,
-                        },
+                        extra: PaymentArgs(
+                          price: widget.price,
+                          dateTime: '${date.date} ${date.month} 2024, $time',
+                          address: _address,
+                        ),
                       );
                     },
                     child: Container(

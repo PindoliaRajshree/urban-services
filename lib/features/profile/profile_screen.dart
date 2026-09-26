@@ -2,12 +2,10 @@
 // Purpose: Screen for displaying user profile details and account options.
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
-import 'package:urban_services/features/profile/profile_controller.dart';
 import 'package:urban_services/widgets/common_app_bar.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
 import 'package:urban_services/widgets/logout_dialog.dart';
@@ -21,9 +19,6 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  // Initialize ProfileController for logic management
-  final controller = Get.put(ProfileController());
-
   @override
   Widget build(BuildContext context) {
     final isSmall = MediaQuery.of(context).size.height < 720;
@@ -207,9 +202,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             child: InkWell(
                               onTap: () {
                                 // Show custom logout confirmation dialog
-                                Get.dialog(
-                                  const LogoutDialog(),
+                                showDialog<void>(
+                                  context: context,
                                   barrierDismissible: false,
+                                  builder: (_) => const LogoutDialog(),
                                 );
                               },
                               child: Row(
@@ -417,9 +413,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             child: InkWell(
                               onTap: () {
                                 // Show custom logout confirmation dialog
-                                Get.dialog(
-                                  const LogoutDialog(),
+                                showDialog<void>(
+                                  context: context,
                                   barrierDismissible: false,
+                                  builder: (_) => const LogoutDialog(),
                                 );
                               },
                               child: Row(

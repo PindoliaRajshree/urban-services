@@ -5,13 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
 import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
 import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
 import 'package:showcaseview/showcaseview.dart';
+import 'package:urban_services/core/navigation/app_keys.dart';
 import 'package:urban_services/core/themes/theme.dart';
-import 'package:urban_services/routes/route_names.dart';
-import 'package:urban_services/routes/route_pages.dart';
+import 'package:urban_services/routes/app_router.dart';
 import 'package:urban_services/shared_preferences/sharedpreference_helper.dart';
 
 Future<void> main() async {
@@ -46,36 +45,32 @@ Future<void> main() async {
     }
   }
 
-  runApp(ProviderScope(child: MyApp()));
+  runApp(const ProviderScope(child: MyApp()));
 }
 
-class MyApp extends StatefulWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  State<MyApp> createState() => _MyAppState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.watch(routerProvider);
 
-class _MyAppState extends State<MyApp> {
-  @override
-  Widget build(BuildContext context) {
     return ScreenUtilInit(
       designSize: const Size(375, 812),
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (_, child) {
-        return GetMaterialApp(
+        return MaterialApp.router(
           debugShowCheckedModeBanner: false,
           title: 'Urban Services App',
           theme: theme,
-          // builder: EasyLoading.init(),
+          routerConfig: router,
+          scaffoldMessengerKey: scaffoldMessengerKey,
           // Wraps every screen so any of them can use Showcase/
           // ShowCaseWidget.of(context) — e.g. the "complete your profile"
           // spotlight on the Home screen's avatar.
           builder: (context, child) =>
               ShowCaseWidget(builder: (context) => child ?? const SizedBox.shrink()),
-          getPages: getRoutes(),
-          initialRoute: RouteNames.splashScreen,
         );
       },
     );

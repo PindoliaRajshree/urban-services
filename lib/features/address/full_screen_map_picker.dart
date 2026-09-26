@@ -2,14 +2,14 @@
 // Purpose: A full-screen version of the location picker used from the Add
 // New Address screen's "enlarge" button. Lets the user pan/zoom/tap on a
 // large map or jump to their current location, then confirms a single
-// LatLng back to the caller via Get.back(result: ...).
+// LatLng back to the caller via context.pop(...).
 //
-// Pushed directly with Get.to() (no named route needed) so it stays a
-// self-contained picker rather than a first-class app screen.
+// Opened via the /mapPicker route (see app_router.dart); it stays a
+// self-contained picker that returns a LatLng to its caller.
 
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:urban_services/core/colors/colors.dart';
@@ -52,7 +52,8 @@ class _FullScreenMapPickerState extends State<FullScreenMapPicker> {
       if (!permissionStatus.isGranted) {
         CustomSnackBar.showError(
           title: "Permission Required",
-          message: "Location permission is needed to use your current location.",
+          message:
+              "Location permission is needed to use your current location.",
         );
         return;
       }
@@ -67,7 +68,9 @@ class _FullScreenMapPickerState extends State<FullScreenMapPicker> {
       }
 
       final position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
       );
       final latLng = LatLng(position.latitude, position.longitude);
       setState(() => _selected = latLng);
@@ -120,7 +123,7 @@ class _FullScreenMapPickerState extends State<FullScreenMapPicker> {
                 backgroundColor: AppColors.white,
                 child: IconButton(
                   icon: Icon(Icons.arrow_back, color: AppColors.black),
-                  onPressed: () => Get.back(),
+                  onPressed: () => context.pop(),
                 ),
               ),
             ),
@@ -166,7 +169,7 @@ class _FullScreenMapPickerState extends State<FullScreenMapPicker> {
                     ),
                     onPressed: _selected == null
                         ? null
-                        : () => Get.back(result: _selected),
+                        : () => context.pop(_selected),
                     child: Text(
                       'Confirm Location',
                       style: customTextStyle(
