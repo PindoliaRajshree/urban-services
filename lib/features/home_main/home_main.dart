@@ -52,11 +52,12 @@ class HomeMain extends ConsumerWidget {
         body: SafeArea(
           child: Stack(
             children: [
-              // Current Screen Content based on selection
+              // All tabs stay alive (scroll position, carousel, loaded
+              // data); only the selected one is shown.
               Positioned.fill(
-                child: SafeArea(
-                  bottom: false,
-                  child: _getScreens(role)[currentIndex],
+                child: IndexedStack(
+                  index: currentIndex,
+                  children: _getScreens(role),
                 ),
               ),
 

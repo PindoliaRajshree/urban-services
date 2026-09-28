@@ -136,49 +136,47 @@ Any 401 from the API ─► session cleared ─► Welcome   (new)
 
 ## 🟡 Medium
 
-- **M1 Logout — ✅ fixed.** The old `Get.deleteAll(force: true)` is gone; screen state resets because the providers depend on the session.
-  - **Still open:** logout clears *all* stored preferences (future flags like "seen showcase" will be lost too), and Google sign-in isn't signed out.
-  - **Fix:** clear only the session keys, and call `GoogleSignIn().signOut()`.
-- **M2 Bottom-bar listener leak — ✅ fixed.** It now uses `ref.listenManual`, which is cleaned up automatically.
-- **M3 Tab switches lose state.** `home_main/home_main.dart` rebuilds the tab widgets on every switch (scroll position and carousel are lost), and has nested `SafeArea`s. Tab 0 is a `Text('Services')` placeholder.
-  - **Fix:** use an `IndexedStack`, or `StatefulShellRoute` like the starter kit.
-- **M4 Duplicate Login screens.** Login → Sign Up → "Login" uses `pushReplacement`, leaving [Welcome, Login, Login].
-  - **Fix:** use `context.pop()` when Login is already underneath.
-- **M5 Forgot password.**
-  - OTP boxes aren't cleared after a wrong code.
-  - Pasting a whole code isn't supported (`maxLength: 1`).
-  - A successful reset uses `go(login)`, which removes Welcome from the stack.
-- **M6 Password rules don't match.** Reset only requires 8 characters; sign-up requires 8–20 with upper, lower, digit and special. `core/utils/password_validator.dart` exists but isn't used.
-  - **Fix:** use it in both places.
-- **M7 Address loading hides errors.** `address_provider.dart` `fetchAddress` treats a network error or 500 as "no address saved yet", with no retry.
-  - **Also:** users must press Next on every login, while a restart skips the Address screen entirely.
-- **M8 Location edge cases.**
-  - When permission is denied, the dialog stays open with no message.
-  - When it is permanently denied, the dialog closes before the user comes back from Settings.
-  - `Geolocator.getCurrentPosition` has no time limit anywhere, so it can spin forever.
-  - **Fix:** add `timeLimit: Duration(seconds: 15)`.
-- **M9 Map-tap race.** Rapid taps on the Add Address map can finish out of order, and the results overwrite what the user typed. There's no loading indicator for taps.
-- **M10 Address dialog.**
-  - `widgets/address_choice_dialog.dart` can't be dismissed and has no Cancel.
-  - "Enter manually" pre-fills from the *saved* address, not the unsaved manual entry.
-  - The text says "We need a service address to continue" even when the user is only changing it.
-- **M11 Map picker.** `full_screen_map_picker.dart` calls `setState` after an `await` without a `mounted` check, and never disposes `_mapController`. The default map centre is defined twice.
-- **M12 Service types have no error or retry.** When `serviceTypesProvider` / `subServiceTypesProvider` fail, the dropdown is just empty.
-  - **Fix:** show `AsyncValue.error` with a retry (`ref.invalidate`).
-- **M13 Weak wizard validation.**
-  - Price fields accept any text.
-  - IFSC is only checked on "Verify", with no uppercase formatter.
-  - Account number has no digits-only filter and no confirmation field.
-  - Mobile fields have no digits-only filter.
-- **M14 Image picking can crash.** There's no try/catch around `pickImage`, so a camera-permission denial throws.
-- **M15 Tokens are stored in plain SharedPreferences.**
-  - **Fix:** consider `flutter_secure_storage` for the auth token.
-- **M16 Duplicated code.**
-  - ✅ The OTP dialog is now one shared widget.
-  - The avatar/greeting/showcase header is still duplicated in the two home screens.
-  - ✅ The Profile screen is now built once (small screens wrap it in a `ListView`).
-  - The basic-info notifier logic is duplicated between user and provider.
-- **M17 Snackbar messages can hide backend detail.** Validation errors now show the first field error. Consider showing `ApiFailure.fieldErrors` on the fields themselves.
+All Medium items are fixed. What changed, and what's left:
+
+- **M1 Logout — ✅ fixed.** Logout removes only the account's data (`StorageKeys.sessionKeys` plus the secure token), so device-level flags survive. It also signs out of Google, so the next Google login shows the account picker.
+- **M2 Bottom-bar listener leak — ✅ fixed.** It uses `ref.listenManual`, which is cleaned up automatically.
+- **M3 Tab switches lost state — ✅ fixed.** `HomeMain` keeps every tab alive in an `IndexedStack` (scroll position, carousel and loaded data), and the nested `SafeArea` is gone. Home no longer re-fetches the address, and the showcase no longer restarts on every tab switch.
+  - **Still open:** tab 0 is a `Text('Services')` placeholder.
+- **M4 Duplicate Login screens — ✅ fixed.** Register's "Login" link and a manual sign-up both pop back to the Login screen underneath.
+- **M5 Forgot password — ✅ fixed.**
+  - Pasting a whole code fills every box.
+  - A wrong code clears the boxes (`verifyOtp` returns false).
+  - A successful reset lands on Login with Welcome underneath.
+- **M6 Password rules — ✅ fixed.** Sign-up and reset both use `PasswordValidator.getPasswordError` (`test/core/password_validator_test.dart`).
+- **M7 Address loading hid errors — ✅ fixed.**
+  - A connection, timeout or server error on the address fetch shows "Couldn't load your address" with Retry. Other failures still mean "no address yet".
+  - After login (and Google sign-up), users with a saved address go straight to Home; only users without one see the Address screen. That matches what a restart does. This uses the GET API only.
+  - **Backend:** GET `user/get-service-address` currently doesn't return the latest saved address. The app keeps using it as the only source; fix it on the backend.
+- **M8 Location edge cases — ✅ fixed.**
+  - New `core/location/location_helper.dart`: permission, service check and a 15 s `timeLimit` for every current-position request, with a "Taking too long" message.
+  - Denied permission closes the dialog with a message.
+  - Permanently denied opens Settings; on return, if granted, current location is selected.
+- **M9 Map-tap race — ✅ fixed.** Only the latest tap's geocode result fills the fields, and a spinner shows on the map while geocoding.
+- **M10 Address dialog — ✅ fixed.**
+  - It can be dismissed and has Cancel.
+  - "Enter manually" pre-fills from the unsaved manual entry when there is one.
+  - The message says "change" when an address already exists.
+- **M11 Map picker — ✅ fixed.** It checks `mounted` after the await, disposes `_mapController`, and uses the shared `defaultMapCenter`.
+- **M12 Service types error — ✅ fixed.** A failed category or sub-service load shows an error with Retry (`ref.invalidate`).
+- **M13 Wizard validation — ✅ fixed.**
+  - Price and mobile fields accept digits only; required prices must be above 0.
+  - IFSC is uppercased, filtered, limited to 11 characters and checked on Submit.
+  - The account number accepts digits only, and a new "Confirm account number" field must match.
+- **M14 Image picking crash — ✅ fixed.** `pickCompressedImage` (`features/profile_common/basic_info.dart`) catches camera/gallery failures and explains them.
+- **M15 Token storage — ✅ fixed.**
+  - The auth token is in `flutter_secure_storage` (`core/session/token_store.dart`). An existing token is migrated from SharedPreferences on first launch.
+  - A keychain token left over from a previous iOS install is cleared.
+- **M16 Duplicated code — ✅ fixed.**
+  - One OTP dialog.
+  - One `widgets/home_header.dart` for both Home screens (avatar showcase, greeting, location, actions).
+  - One Profile layout.
+  - Shared basic-info logic (`features/profile_common/basic_info.dart`: mobile/email checks, DOB, image picking). The user and provider state classes stay separate on purpose, since they hold different fields.
+- **M17 Snackbar cut messages off — ✅ fixed.** The toast is full width, shows the whole message, and stays up longer for long messages.
 
 ## 🟢 Low
 
@@ -198,7 +196,7 @@ Any 401 from the API ─► session cleared ─► Welcome   (new)
   - **Fix:** use `Flexible`/`FittedBox` in `SecondaryButton` and `PrimaryButton`.
 - **L8** Theming is minimal (seed colour and font only). Every screen styles its own fields, and raw font sizes and shadows are repeated.
 - **L9** Dead code:
-  - `core/utils/password_validator.dart` (unused)
+  - ✅ `core/utils/password_validator.dart` is now used (M6).
   - The commented-out `CompleteProfileCard`
   - The `flutter_easyloading` dependency
   - Several dependencies never used: `connectivity_plus`, `internet_connection_checker_plus`, `firebase_crashlytics`, `firebase_messaging`, `cached_network_image`
@@ -216,9 +214,10 @@ Any 401 from the API ─► session cleared ─► Welcome   (new)
 ✅ Done:
 - Session saving (C1, C2, H5), and config and iOS setup (C4, C5). The Maps key still needs to be rotated.
 - Navigation (H3, H4, H7), photo size (H6), and real name and city (H9, most of H10).
+- All Medium items (M1, M3–M17).
 
-1. **Store profile status and use it in routing** (H1, H2, M7): add a completion flag to the session and a router redirect. Waiting on the API.
-2. **Saved address fields** (H8): waiting on the backend.
-3. **Tab state and stack** (M3, M4): `StatefulShellRoute`. This also stops Home re-fetching the saved address on every tab switch.
-4. **Booking with real data** (H11): waiting on the API.
-5. **Validation, error states and shared widgets** (M6, M8, M12–M16).
+1. **Store profile status and use it in routing** (H1, H2): add a completion flag to the session and a router redirect. Waiting on the API.
+2. **Saved address fields** (H8) and the GET address fix: waiting on the backend.
+3. **Booking with real data** (H11): waiting on the API.
+4. **The rest of H10**: Payment Methods, Help & Support, Refer & Earn, About Us, Settings.
+5. **Low items** (L1–L14).

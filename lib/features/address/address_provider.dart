@@ -11,12 +11,16 @@
 // choice — nothing is fetched or saved to the server until the user
 // explicitly confirms with Next ([AddressNotifier.confirmAndProceed]).
 
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:urban_services/core/constants/api_status.dart';
+import 'package:urban_services/core/location/location_helper.dart';
+import 'package:urban_services/core/network/api_failure.dart';
 import 'package:urban_services/core/network/api_result.dart';
 import 'package:urban_services/core/session/session_provider.dart';
 import 'package:urban_services/features/address/address_repository.dart';
@@ -129,11 +133,27 @@ class AddressNotifier extends Notifier<AddressState> {
     final granted = (await Permission.location.status).isGranted;
     if (!ref.mounted) return;
     state = state.copyWith(hasLocationPermission: granted);
+
+    // Back from Settings after a permanently-denied prompt: finish what the
+    // user started and select current location.
+    if (_returningFromSettings) {
+      _returningFromSettings = false;
+      if (granted) {
+        state = state.copyWith(
+          selectedSource: () => AddressSource.currentLocation,
+        );
+      }
+    }
   }
 
-  /// Calls GET /user/get-service-address. A failure (including "no address
-  /// saved yet") just leaves `address` null — that's an expected state on
-  /// a fresh account, not something to show as an error.
+  /// Set when the user is sent to system Settings to grant location; read
+  /// on resume by [refreshLocationPermissionStatus].
+  bool _returningFromSettings = false;
+
+  /// Calls GET /user/get-service-address. A connection, timeout or server
+  /// failure sets [ApiStatus.error] (the screen offers Retry) and keeps any
+  /// address already loaded. Any other failure means "no address saved
+  /// yet", which is an expected state on a fresh account.
   Future<void> fetchAddress() async {
     state = state.copyWith(status: ApiStatus.loading);
     final result = await _addressRepository.getServiceAddress();
@@ -146,6 +166,8 @@ class AddressNotifier extends Notifier<AddressState> {
           selectedSource: () => AddressSource.savedAddress,
           status: ApiStatus.successful,
         );
+      case ApiError(failure: final failure) when _isTransient(failure):
+        state = state.copyWith(status: ApiStatus.error);
       case ApiError():
         state = state.copyWith(
           address: () => null,
@@ -154,6 +176,14 @@ class AddressNotifier extends Notifier<AddressState> {
         );
     }
   }
+
+  /// Failures worth retrying, as opposed to "there's nothing saved".
+  static bool _isTransient(ApiFailure failure) => switch (failure.type) {
+    ApiFailureType.network ||
+    ApiFailureType.timeout ||
+    ApiFailureType.server => true,
+    _ => false,
+  };
 
   /// Selects whatever is showing in the "CHOOSE YOUR ADDRESS" card — the
   /// staged manual entry if there is one, otherwise the already-saved
@@ -215,14 +245,25 @@ class AddressNotifier extends Notifier<AddressState> {
         );
       }
       return true;
-    } else if (permissionStatus.isDenied) {
-      debugPrint("Location permission denied");
-      // The user denied the permission but can be asked again in the future
-      return false;
     } else if (permissionStatus.isPermanentlyDenied) {
-      debugPrint("Location permission permanently denied");
-      // User opted to not be asked again, redirecting to system settings is standard UX
+      // The system won't ask again, so send the user to Settings. When the
+      // app resumes, refreshLocationPermissionStatus selects current
+      // location if they granted it.
+      _returningFromSettings = true;
+      CustomSnackBar.showInfo(
+        title: "Location permission",
+        message:
+            "Allow location for Urban Service in Settings, then come back.",
+      );
       await openAppSettings();
+      return true;
+    } else if (permissionStatus.isDenied) {
+      // Close the dialog and say why nothing happened; the user can tap
+      // "Use my Current Location" again to be asked again.
+      CustomSnackBar.showError(
+        title: "Permission Required",
+        message: "Location permission is needed to use your current location.",
+      );
       return true;
     }
     return true; // Default fallback to close dialog
@@ -246,9 +287,7 @@ class AddressNotifier extends Notifier<AddressState> {
       }
 
       final position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-        ),
+        locationSettings: currentLocationSettings,
       );
 
       // Prefer Google's Geocoding API (server-side, much more accurate)
@@ -328,6 +367,9 @@ class AddressNotifier extends Notifier<AddressState> {
           CustomSnackBar.showError(title: "Error", message: failure.message);
           return false;
       }
+    } on TimeoutException {
+      showLocationTimeout();
+      return false;
     } catch (e) {
       debugPrint("AddressNotifier - current location error: $e");
       CustomSnackBar.showError(

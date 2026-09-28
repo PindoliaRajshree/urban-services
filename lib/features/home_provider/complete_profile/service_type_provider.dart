@@ -14,7 +14,7 @@ import 'package:urban_services/features/home_provider/complete_profile/models/su
 import 'package:urban_services/features/home_provider/complete_profile/service_type_repository.dart';
 
 /// Service category list. Fetched once per session; errors surface as
-/// AsyncError so the dropdown can show an empty list.
+/// AsyncError, and the wizard shows a Retry that invalidates this provider.
 final serviceTypesProvider = FutureProvider<List<ServiceType>>((ref) async {
   // A new login starts with a fresh list.
   ref.watch(sessionProvider.select((s) => s.token));

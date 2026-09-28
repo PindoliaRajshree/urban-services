@@ -8,7 +8,8 @@
 // (AppColors.toastSuccess/toastDanger/toastWarning/toastInfo), a white
 // circular icon badge with the accent color as the glyph, white text, a
 // white close (X") button, no border and no progress bar, floating near the
-// top and pinned to the right of the screen (not centered/full-width).
+// top. It spans the screen width (with side margins) and grows to show the
+// whole message, staying up longer for long messages.
 
 import 'dart:async';
 
@@ -133,7 +134,7 @@ class CustomSnackBar {
         title: title,
         message: message,
         style: _styleFor(contentType),
-        duration: duration,
+        duration: _durationFor(message, duration),
         position: position,
         onDismissed: () {
           if (_current == entry) dismiss();
@@ -142,6 +143,15 @@ class CustomSnackBar {
     );
     _current = entry;
     overlay.insert(entry);
+  }
+
+  /// Long messages need time to read: at least [requested], or about 60 ms
+  /// per character plus 2 s, capped at 8 s.
+  static Duration _durationFor(String message, Duration requested) {
+    final forLength = Duration(milliseconds: 2000 + 60 * message.length);
+    const cap = Duration(seconds: 8);
+    final wanted = forLength > requested ? forLength : requested;
+    return wanted > cap && requested <= cap ? cap : wanted;
   }
 
   static _SnackBarStyle _styleFor(ContentType contentType) {
@@ -286,10 +296,9 @@ class _ToastState extends State<_Toast> with SingleTickerProviderStateMixin {
                 ),
                 Padding(
                   padding: EdgeInsets.only(top: 2.h),
+                  // No line limit: the whole message is shown.
                   child: Text(
                     widget.message,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: AppColors.white,
                       fontWeight: FontWeight.w500,
@@ -319,12 +328,11 @@ class _ToastState extends State<_Toast> with SingleTickerProviderStateMixin {
       ),
     );
 
-    // Pinned to the right rather than centered/full-width — a small margin
-    // from the right edge and a large one on the left.
+    // Full width with equal side margins, so long messages have room.
     return Positioned(
       top: isTop ? 0 : null,
       bottom: isTop ? null : 0,
-      left: 0.40.sw,
+      left: AppDimensions.padding15w,
       right: AppDimensions.padding15w,
       child: SafeArea(
         top: isTop,

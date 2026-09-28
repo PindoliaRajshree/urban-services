@@ -9,6 +9,7 @@ import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
 import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
 import 'package:showcaseview/showcaseview.dart';
 import 'package:urban_services/core/navigation/app_keys.dart';
+import 'package:urban_services/core/session/token_store.dart';
 import 'package:urban_services/core/themes/theme.dart';
 import 'package:urban_services/routes/app_router.dart';
 import 'package:urban_services/shared_preferences/sharedpreference_helper.dart';
@@ -27,8 +28,10 @@ Future<void> main() async {
 
   await Firebase.initializeApp();
 
-  // Initialize SharedPreferences
+  // Initialize SharedPreferences, then the secure auth token (which reads
+  // a flag from SharedPreferences).
   await SharedPreferencesHelper.init();
+  await TokenStore.init();
 
   // Force Hybrid Composition for the google_maps_flutter map on Android.
   // Without this, some devices/emulators (especially those with software

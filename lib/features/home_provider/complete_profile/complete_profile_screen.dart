@@ -4,15 +4,17 @@
 // its own page, navigated with Previous/Next/Submit buttons.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:urban_services/core/utils/input_formatters.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
 import 'package:urban_services/features/home_provider/complete_profile/complete_profile_provider.dart';
-import 'package:urban_services/features/home/complete_profile/user_complete_profile_provider.dart';
+import 'package:urban_services/features/profile_common/basic_info.dart';
 import 'package:urban_services/features/home_provider/complete_profile/models/service_type.dart';
 import 'package:urban_services/features/home_provider/complete_profile/models/sub_service_type.dart';
 import 'package:urban_services/features/home_provider/complete_profile/service_type_provider.dart';
@@ -62,6 +64,12 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
   // --- Bank Details (Step 2) ---
   final _accountHolderController = TextEditingController();
   final _accountNumberController = TextEditingController();
+  final _confirmAccountNumberController = TextEditingController();
+
+  static final List<TextInputFormatter> _accountNumberFormatters = [
+    FilteringTextInputFormatter.digitsOnly,
+    LengthLimitingTextInputFormatter(18),
+  ];
   final _ifscController = TextEditingController();
   final _upiIdController = TextEditingController();
 
@@ -106,6 +114,7 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
     _areaController,
     _accountHolderController,
     _accountNumberController,
+    _confirmAccountNumberController,
     _ifscController,
     _upiIdController,
   ];
@@ -541,6 +550,7 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
                         hintText: "Enter your Number",
                         controller: _mobileController,
                         keyboardType: TextInputType.phone,
+                        inputFormatters: mobileNumberFormatters,
                         errorText: _state.mobileError,
                         validator: (v) => (v == null || v.length != 10)
                             ? "Enter 10 digits"
@@ -805,6 +815,11 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
                   .toList(),
               onChanged: _notifier.setServiceCategory,
             ),
+            if (_serviceTypes.hasError && !_serviceTypes.isLoading)
+              _buildLoadError(
+                "Couldn't load service categories.",
+                () => ref.invalidate(serviceTypesProvider),
+              ),
             if (_state.categoryError != null)
               _buildInlineError(_state.categoryError!),
           ],
@@ -828,6 +843,13 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
                   .toList(),
               onChanged: _notifier.setSubService,
             ),
+            if (_subServiceTypes.hasError && !_subServiceTypes.isLoading)
+              _buildLoadError(
+                "Couldn't load sub services.",
+                () => ref.invalidate(
+                  subServiceTypesProvider(_state.serviceCategory!),
+                ),
+              ),
             if (_state.subServiceError != null)
               _buildInlineError(_state.subServiceError!),
           ],
@@ -877,7 +899,8 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
                 hintText: "Enter amount",
                 controller: _startingPriceController,
                 keyboardType: TextInputType.number,
-                validator: (v) => (v == null || v.isEmpty) ? "Required" : null,
+                inputFormatters: amountFormatters,
+                validator: (v) => _notifier.validatePrice(v, required: true),
               ),
             ),
             SizedBox(width: AppDimensions.padding15w),
@@ -887,7 +910,8 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
                 hintText: "Enter amount",
                 controller: _perHourRateController,
                 keyboardType: TextInputType.number,
-                validator: (v) => (v == null || v.isEmpty) ? "Required" : null,
+                inputFormatters: amountFormatters,
+                validator: (v) => _notifier.validatePrice(v, required: true),
               ),
             ),
           ],
@@ -901,6 +925,8 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
                 hintText: "Enter amount",
                 controller: _perVisitRateController,
                 keyboardType: TextInputType.number,
+                inputFormatters: amountFormatters,
+                validator: _notifier.validatePrice,
               ),
             ),
             SizedBox(width: AppDimensions.padding15w),
@@ -910,6 +936,8 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
                 hintText: "Enter amount",
                 controller: _customPricingController,
                 keyboardType: TextInputType.number,
+                inputFormatters: amountFormatters,
+                validator: _notifier.validatePrice,
               ),
             ),
           ],
@@ -1046,10 +1074,24 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
                 hintText: "Enter number",
                 controller: _accountNumberController,
                 keyboardType: TextInputType.number,
+                inputFormatters: _accountNumberFormatters,
                 validator: _notifier.validateAccountNumber,
               ),
             ),
           ],
+        ),
+        SizedBox(height: AppDimensions.padding15h),
+        // Typed twice so a typo can't send payouts to the wrong account.
+        AddressFormField(
+          label: "Confirm account number",
+          hintText: "Re-enter account number",
+          controller: _confirmAccountNumberController,
+          keyboardType: TextInputType.number,
+          inputFormatters: _accountNumberFormatters,
+          validator: (v) => _notifier.validateAccountNumberConfirmation(
+            v,
+            _accountNumberController.text,
+          ),
         ),
         SizedBox(height: AppDimensions.padding15h),
         Row(
@@ -1061,7 +1103,12 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
                 hintText: "Enter IFSC Code",
                 controller: _ifscController,
                 errorText: _state.ifscError,
-                validator: (v) => (v == null || v.isEmpty) ? "Required" : null,
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]')),
+                  const UpperCaseTextFormatter(),
+                  LengthLimitingTextInputFormatter(11),
+                ],
+                validator: _notifier.validateIfsc,
                 labelTrailing: GestureDetector(
                   onTap: () => _notifier.verifyIfsc(_ifscController.text),
                   child: Text(
@@ -1141,6 +1188,41 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
           AppColors.danger,
           FontWeight.w400,
         ),
+      ),
+    );
+  }
+
+  /// Shown under a dropdown whose options failed to load.
+  Widget _buildLoadError(String message, VoidCallback onRetry) {
+    return Padding(
+      padding: EdgeInsets.only(
+        top: AppDimensions.padding4h,
+        left: AppDimensions.padding4w,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              message,
+              style: customTextStyle(
+                AppTextSizes.stableTextSize,
+                AppColors.danger,
+                FontWeight.w400,
+              ),
+            ),
+          ),
+          GestureDetector(
+            onTap: onRetry,
+            child: Text(
+              "Retry",
+              style: customTextStyle(
+                AppTextSizes.stableTextSize,
+                AppColors.primaryDark,
+                FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

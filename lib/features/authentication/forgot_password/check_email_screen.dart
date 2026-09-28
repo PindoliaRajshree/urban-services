@@ -44,8 +44,25 @@ class _CheckEmailScreenState extends ConsumerState<CheckEmailScreen> {
     super.dispose();
   }
 
-  /// Handles auto-advance/back between the OTP boxes.
+  /// Handles typing, pasting and auto-advance/back between the OTP boxes.
   void _onDigitChanged(int index, String value) {
+    if (value.length > 1) {
+      // Several digits arrived at once (a paste, or typing into a full
+      // box): spread them across this box and the ones after it.
+      var next = index;
+      for (final digit in value.split('')) {
+        if (next >= _otpControllers.length) break;
+        _otpControllers[next].text = digit;
+        next++;
+      }
+      if (next >= _otpControllers.length) {
+        _otpFocusNodes.last.unfocus();
+      } else {
+        _otpFocusNodes[next].requestFocus();
+      }
+      return;
+    }
+
     if (value.isNotEmpty && index < _otpControllers.length - 1) {
       _otpFocusNodes[index + 1].requestFocus();
     } else if (value.isEmpty && index > 0) {
@@ -53,9 +70,17 @@ class _CheckEmailScreenState extends ConsumerState<CheckEmailScreen> {
     }
   }
 
-  void _verifyOtp() => ref
-      .read(forgotPasswordProvider.notifier)
-      .verifyOtp(_otpControllers.map((c) => c.text).join());
+  Future<void> _verifyOtp() async {
+    final accepted = await ref
+        .read(forgotPasswordProvider.notifier)
+        .verifyOtp(_otpControllers.map((c) => c.text).join());
+    if (accepted || !mounted) return;
+    // Wrong code: clear the boxes so the user can type a fresh one.
+    for (final c in _otpControllers) {
+      c.clear();
+    }
+    _otpFocusNodes.first.requestFocus();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -217,8 +242,12 @@ class _CheckEmailScreenState extends ConsumerState<CheckEmailScreen> {
         focusNode: _otpFocusNodes[index],
         keyboardType: TextInputType.number,
         textAlign: TextAlign.center,
-        maxLength: 1,
-        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        // No maxLength: a pasted code arrives in one box and is spread
+        // across all of them by _onDigitChanged.
+        inputFormatters: [
+          FilteringTextInputFormatter.digitsOnly,
+          LengthLimitingTextInputFormatter(ForgotPasswordNotifier.otpLength),
+        ],
         onChanged: (value) => _onDigitChanged(index, value),
         style: customTextStyle(
           AppTextSizes.doubleLargeTextSize, // 18

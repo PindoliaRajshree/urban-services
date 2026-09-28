@@ -40,4 +40,9 @@ class AddressRepository {
     () => _dio.get(ApiConstants.getServiceAddress),
     ServiceAddressResponse.fromJson,
   );
+
+  /// Whether the logged-in user already has a saved address. Used after
+  /// login to skip the address screen for returning users.
+  Future<bool> hasServiceAddress() async =>
+      await getServiceAddress() is ApiSuccess;
 }

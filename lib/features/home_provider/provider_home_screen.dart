@@ -4,7 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:showcaseview/showcaseview.dart';
+import 'package:urban_services/widgets/home_header.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
@@ -24,9 +24,6 @@ class ProviderHomeScreen extends ConsumerStatefulWidget {
 }
 
 class _ProviderHomeScreenState extends ConsumerState<ProviderHomeScreen> {
-  // Spotlights the profile avatar with a "complete your profile" callout.
-  final GlobalKey _profileShowcaseKey = GlobalKey();
-
   @override
   void initState() {
     super.initState();
@@ -34,22 +31,6 @@ class _ProviderHomeScreenState extends ConsumerState<ProviderHomeScreen> {
     // time the provider reaches the Service Details step. serviceTypesProvider
     // is kept for the session, so revisiting Home doesn't re-fetch.
     ref.read(serviceTypesProvider);
-
-    // Runs every time this screen is built — there's no "seen it already"
-    // flag yet, so the callout shows on every visit to Home for now.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      ShowCaseWidget.of(context).startShowCase([_profileShowcaseKey]);
-    });
-  }
-
-  /// Sends the provider to their onboarding/profile form.
-  /// `disableDefaultTargetGestures: true` below means the package's own
-  /// tap handling (and its `disposeOnTap` logic) never runs, so the
-  /// showcase is dismissed explicitly here before navigating.
-  void _onProfileShowcaseTap() {
-    ShowCaseWidget.of(context).dismiss();
-    context.push(RouteNames.completeProviderProfile);
   }
 
   @override
@@ -80,97 +61,26 @@ class _ProviderHomeScreenState extends ConsumerState<ProviderHomeScreen> {
                 children: [
                   SizedBox(height: AppDimensions.padding15h),
 
-                  // 3. User Profile and Location Header
-                  Row(
-                    children: [
-                      // User Avatar with Shadow — showcased with a
-                      // "complete your profile" spotlight + arrow, and now
-                      // actually tappable (it wasn't before).
-                      Showcase(
-                        key: _profileShowcaseKey,
-                        title: 'Complete Your Profile',
-                        description:
-                            'Tap your photo to finish setting up your provider details — pricing, service area, availability, and documents.',
-                        targetShapeBorder: const CircleBorder(),
-                        tooltipBackgroundColor: AppColors.primaryDark,
-                        textColor: AppColors.white,
-                        titleTextStyle: customTextStyle(
-                          AppTextSizes.largeTextSize,
-                          AppColors.white,
-                          FontWeight.w700,
-                        ),
-                        descTextStyle: customTextStyle(
-                          AppTextSizes.smallTextSize,
-                          AppColors.white,
-                          FontWeight.w400,
-                        ),
-                        disableDefaultTargetGestures: true,
-                        onTargetClick: _onProfileShowcaseTap,
-                        disposeOnTap: true,
-                        child: GestureDetector(
-                          onTap: _onProfileShowcaseTap,
-                          child: Container(
-                            width: AppDimensions.containerWidth45w,
-                            height: AppDimensions.containerHeight45h,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: AppColors.primaryDark,
-                                width: 1,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.25),
-                                  offset: const Offset(0, 1),
-                                  blurRadius: 2.9,
-                                  spreadRadius: 0,
-                                ),
-                              ],
-                              image: const DecorationImage(
-                                image: AssetImage(AppImages.image),
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: AppDimensions.padding10w),
-                      // Greeting. No location line: providers have no
-                      // saved address yet (the provider profile API will
-                      // supply their city).
-                      Flexible(
-                        child: Text(
-                          'Hi, ${firstName ?? 'there'}',
-                          overflow: TextOverflow.ellipsis,
-                          style: customTextStyle(
-                            AppTextSizes.smallTextSize, // 10
-                            AppColors.text,
-                            FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                      const Spacer(),
-                      // Action Icons
+                  // 3. Profile Header. No location line: providers have no
+                  // saved address yet (the provider profile API will supply
+                  // their city).
+                  HomeHeader(
+                    firstName: firstName,
+                    showcaseDescription:
+                        'Tap your photo to finish setting up your provider details — pricing, service area, availability, and documents.',
+                    onAvatarTap: () =>
+                        context.push(RouteNames.completeProviderProfile),
+                    actions: [
                       Image.asset(
                         AppImages.homeLocation,
                         height: AppDimensions.containerHeight50h,
                         width: AppDimensions.containerWidth50w,
                       ),
-                      // SizedBox(width: AppDimensions.padding4w),
                       Image.asset(
                         AppImages.addToCart,
                         height: AppDimensions.containerHeight50h,
                         width: AppDimensions.containerWidth50w,
                       ),
-                      // SizedBox(width: AppDimensions.padding15w),
-                      // GestureDetector(
-                      //   onTap: () => context.push(RouteNames.notificationScreen),
-                      //   child:  Image.asset(
-                      //     AppImages.notification,
-                      //     height: AppDimensions.containerHeight50h,
-                      //     width: AppDimensions.containerWidth50w,
-                      //   ),
-                      // ),
                     ],
                   ),
 
@@ -401,7 +311,7 @@ class _ProviderHomeScreenState extends ConsumerState<ProviderHomeScreen> {
                                       isBold: true,
                                     ),
                                     Text(
-                                      '₹ 699',
+                                      'â¹ 699',
                                       style: customTextStyle(
                                         AppTextSizes.smallTextSize, // 10
                                         AppColors.primaryDark,
@@ -541,7 +451,7 @@ class _ProviderHomeScreenState extends ConsumerState<ProviderHomeScreen> {
                               bottom: 0,
                               right: AppDimensions.padding50w,
                               child: Text(
-                                '₹ 699',
+                                'â¹ 699',
                                 style: customTextStyle(
                                   AppTextSizes.smallTextSize,
                                   AppColors.primaryDark,

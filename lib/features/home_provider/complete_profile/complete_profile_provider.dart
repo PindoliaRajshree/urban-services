@@ -9,11 +9,10 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
 import 'package:urban_services/core/network/api_result.dart';
-import 'package:urban_services/core/utils/validators.dart';
 import 'package:urban_services/features/home_provider/complete_profile/complete_profile_repository.dart';
 import 'package:urban_services/features/home_provider/complete_profile/models/profile_update_request.dart';
+import 'package:urban_services/features/profile_common/basic_info.dart';
 import 'package:urban_services/routes/app_router.dart';
 import 'package:urban_services/routes/route_names.dart';
 import 'package:urban_services/widgets/custom_snackbar.dart';
@@ -220,10 +219,7 @@ class ProviderProfileNotifier extends Notifier<ProviderProfileState> {
   }
 
   void setDob(DateTime picked) {
-    state = state.copyWith(
-      dob: DateFormat('dd/MM/yyyy').format(picked),
-      dobError: () => null,
-    );
+    state = state.copyWith(dob: formatDob(picked), dobError: () => null);
   }
 
   /// Sub-services belong to a category — reset the previous selection. The
@@ -284,16 +280,12 @@ class ProviderProfileNotifier extends Notifier<ProviderProfileState> {
   /// (documents keep a higher resolution so they stay legible), then
   /// capped at 4MB.
   Future<void> pickPhotoFor(String field, ImageSource source) async {
-    final double maxSide = field == 'profile' ? 1024 : 2000;
-    final XFile? pickedFile = await _picker.pickImage(
-      source: source,
-      maxWidth: maxSide,
-      maxHeight: maxSide,
-      imageQuality: 80,
+    final file = await pickCompressedImage(
+      _picker,
+      source,
+      maxSide: field == 'profile' ? 1024 : 2000,
     );
-    if (pickedFile == null) return;
-
-    final file = File(pickedFile.path);
+    if (file == null) return;
 
     final sizeInMb = await file.length() / (1024 * 1024);
     if (!ref.mounted) return;
@@ -336,43 +328,41 @@ class ProviderProfileNotifier extends Notifier<ProviderProfileState> {
   /// Validates the mobile number before the OTP dialog is shown. Returns
   /// true when the dialog should open.
   bool sendOtp(String mobile) {
-    if (mobile.length != 10) {
-      state = state.copyWith(
-        mobileError: () => "Enter a valid 10-digit mobile number",
-      );
-      return false;
-    }
-    state = state.copyWith(mobileError: () => null);
+    final error = mobileNumberError(mobile);
+    state = state.copyWith(mobileError: () => error);
+    if (error != null) return false;
     debugPrint("Sending OTP to $mobile");
     return true;
   }
 
+  /// IFSC format: 4 letters, a 0, then 6 letters or digits.
+  static final RegExp ifscPattern = RegExp(r'^[A-Z]{4}0[A-Z0-9]{6}$');
+
   /// Logic to verify IFSC code
   void verifyIfsc(String rawIfsc) {
-    final ifsc = rawIfsc.trim();
-    if (ifsc.isEmpty) {
-      state = state.copyWith(ifscError: () => "Please enter IFSC code first");
-      return;
-    }
-    // Basic IFSC regex: 4 chars, 0, then 6 alphanumeric
-    if (!RegExp(r'^[A-Z]{4}0[A-Z0-9]{6}$').hasMatch(ifsc)) {
-      state = state.copyWith(ifscError: () => "Invalid IFSC code format");
-      return;
-    }
-    state = state.copyWith(ifscError: () => null);
-    debugPrint("Verifying IFSC: $ifsc");
+    final error = validateIfsc(rawIfsc.trim());
+    state = state.copyWith(ifscError: () => error);
+    if (error != null) return;
+    debugPrint("Verifying IFSC: ${rawIfsc.trim()}");
     CustomSnackBar.showSuccess(title: "Success", message: "IFSC Code Verified");
   }
 
   /// --- Specific Field Validators ---
 
-  String? validateEmail(String? value) {
-    if (value != null && value.isNotEmpty) {
-      if (!AppValidators.isValidEmail(value)) {
-        return "Enter a valid email address";
-      }
-    }
-    return null;
+  String? validateEmail(String? value) => optionalEmailError(value);
+
+  /// Also runs on Submit, not only on "Verify".
+  String? validateIfsc(String? value) {
+    if (value == null || value.isEmpty) return "Required";
+    return ifscPattern.hasMatch(value) ? null : "Invalid IFSC code format";
+  }
+
+  /// For price fields (digits only via the field's formatter). Optional
+  /// fields accept empty; any entered amount must be above zero.
+  String? validatePrice(String? value, {bool required = false}) {
+    if (value == null || value.isEmpty) return required ? "Required" : null;
+    final amount = int.tryParse(value);
+    return amount == null || amount <= 0 ? "Enter an amount above 0" : null;
   }
 
   String? validateAccountNumber(String? value) {
@@ -381,6 +371,15 @@ class ProviderProfileNotifier extends Notifier<ProviderProfileState> {
       return "Enter valid account number";
     }
     return null;
+  }
+
+  /// The "Confirm account number" field must match [accountNumber].
+  String? validateAccountNumberConfirmation(
+    String? value,
+    String accountNumber,
+  ) {
+    if (value == null || value.isEmpty) return "Required";
+    return value == accountNumber ? null : "Account numbers don't match";
   }
 
   String? validateUpi(String? value) {

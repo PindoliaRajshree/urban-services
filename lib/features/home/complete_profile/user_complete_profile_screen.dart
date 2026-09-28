@@ -5,11 +5,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:urban_services/core/utils/input_formatters.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
 import 'package:urban_services/features/home/complete_profile/user_complete_profile_provider.dart';
+import 'package:urban_services/features/profile_common/basic_info.dart';
 import 'package:urban_services/widgets/address_form_field.dart';
 import 'package:urban_services/widgets/common_app_bar.dart';
 import 'package:urban_services/widgets/custom_dropdown.dart';
@@ -248,6 +250,7 @@ class _UserCompleteProfileScreenState
                         hintText: "Enter your Number",
                         controller: _mobileController,
                         keyboardType: TextInputType.phone,
+                        inputFormatters: mobileNumberFormatters,
                         errorText: state.mobileError,
                         validator: (v) => (v == null || v.length != 10)
                             ? "Enter 10 digits"

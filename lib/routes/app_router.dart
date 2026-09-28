@@ -17,6 +17,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:urban_services/core/navigation/app_keys.dart';
 import 'package:urban_services/core/session/session_provider.dart';
 import 'package:urban_services/features/address/add_address_screen.dart';
+import 'package:urban_services/features/address/address_repository.dart';
 import 'package:urban_services/features/address/address_screen.dart';
 import 'package:urban_services/features/address/full_screen_map_picker.dart';
 import 'package:urban_services/features/address/models/service_address_response.dart';
@@ -91,6 +92,20 @@ String? appRedirect(
       ? _userOnlyRoutes.contains(location)
       : _providerOnlyRoutes.contains(location);
   return blocked ? RouteNames.homeMain : null;
+}
+
+/// Where to send someone who has just logged in (or signed up with
+/// Google): providers go to Home; users go to Home when they already have
+/// a saved address, otherwise to the Address screen first. Matches what a
+/// restart does, where Splash sends a logged-in user straight to Home.
+Future<String> postLoginRoute(Ref ref) async {
+  if (ref.read(sessionProvider).effectiveRole.isProvider) {
+    return RouteNames.homeMain;
+  }
+  final hasAddress = await ref
+      .read(addressRepositoryProvider)
+      .hasServiceAddress();
+  return hasAddress ? RouteNames.homeMain : RouteNames.addressScreen;
 }
 
 final routerProvider = Provider<GoRouter>((ref) {

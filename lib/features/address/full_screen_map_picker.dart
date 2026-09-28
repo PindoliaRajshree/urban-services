@@ -8,14 +8,13 @@
 // self-contained picker that returns a LatLng to its caller.
 
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
-import 'package:urban_services/widgets/custom_snackbar.dart';
+import 'package:urban_services/core/location/location_helper.dart';
+import 'package:urban_services/features/address/add_address_provider.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
 
 class FullScreenMapPicker extends StatefulWidget {
@@ -40,47 +39,22 @@ class _FullScreenMapPickerState extends State<FullScreenMapPicker> {
     _selected = widget.initialPosition;
   }
 
+  @override
+  void dispose() {
+    _mapController?.dispose();
+    super.dispose();
+  }
+
   Future<void> _useCurrentLocation() async {
     if (_isLocating) return;
     setState(() => _isLocating = true);
 
     try {
-      var permissionStatus = await Permission.location.status;
-      if (!permissionStatus.isGranted) {
-        permissionStatus = await Permission.location.request();
-      }
-      if (!permissionStatus.isGranted) {
-        CustomSnackBar.showError(
-          title: "Permission Required",
-          message:
-              "Location permission is needed to use your current location.",
-        );
-        return;
-      }
-
-      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        CustomSnackBar.showError(
-          title: "Location Off",
-          message: "Please turn on location services and try again.",
-        );
-        return;
-      }
-
-      final position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-        ),
-      );
+      final position = await currentPositionOrNotify();
+      if (position == null || !mounted) return;
       final latLng = LatLng(position.latitude, position.longitude);
       setState(() => _selected = latLng);
       _mapController?.animateCamera(CameraUpdate.newLatLngZoom(latLng, 17));
-    } catch (e) {
-      debugPrint("FullScreenMapPicker - current location error: $e");
-      CustomSnackBar.showError(
-        title: "Error",
-        message: "Couldn't get your current location. Please try again.",
-      );
     } finally {
       if (mounted) setState(() => _isLocating = false);
     }
@@ -88,8 +62,8 @@ class _FullScreenMapPickerState extends State<FullScreenMapPicker> {
 
   @override
   Widget build(BuildContext context) {
-    const defaultCenter = LatLng(20.5937, 78.9629);
-    final startPosition = _selected ?? widget.initialPosition ?? defaultCenter;
+    final startPosition =
+        _selected ?? widget.initialPosition ?? defaultMapCenter;
 
     return Scaffold(
       backgroundColor: AppColors.screenBackground,

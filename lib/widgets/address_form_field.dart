@@ -2,6 +2,7 @@
 // Purpose: A specialized input field with standardized styling for address-related forms, supporting prefixes and trailing labels.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
@@ -33,6 +34,9 @@ class AddressFormField extends StatelessWidget {
   /// Reactive error text passed from the controller
   final String? errorText;
 
+  /// Restricts what can be typed (e.g. digits only, a max length).
+  final List<TextInputFormatter>? inputFormatters;
+
   const AddressFormField({
     super.key,
     required this.label,
@@ -46,6 +50,7 @@ class AddressFormField extends StatelessWidget {
     this.maxLines = 1,
     this.validator,
     this.errorText,
+    this.inputFormatters,
   });
 
   @override
@@ -77,6 +82,7 @@ class AddressFormField extends StatelessWidget {
           textInputAction: textInputAction,
           maxLines: maxLines,
           validator: validator,
+          inputFormatters: inputFormatters,
           style: customTextStyle(
             AppTextSizes.smallTextSize,
             AppColors.black,

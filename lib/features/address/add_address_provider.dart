@@ -10,10 +10,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geocoding/geocoding.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:urban_services/core/constants/api_status.dart';
+import 'package:urban_services/core/location/location_helper.dart';
 import 'package:urban_services/core/session/session_provider.dart';
 import 'package:urban_services/features/address/address_provider.dart';
 import 'package:urban_services/features/address/models/service_address_request.dart';
@@ -62,6 +61,7 @@ class AddAddressState {
   const AddAddressState({
     this.selectedPosition,
     this.isLocatingOnMap = false,
+    this.isGeocoding = false,
     this.flatError,
     this.floorError,
     this.buildingError,
@@ -75,6 +75,9 @@ class AddAddressState {
 
   final LatLng? selectedPosition;
   final bool isLocatingOnMap;
+
+  /// A map position is being turned into address fields.
+  final bool isGeocoding;
 
   // Validation errors for real-time feedback
   final String? flatError;
@@ -99,11 +102,13 @@ class AddAddressState {
   AddAddressState copyWith({
     LatLng? selectedPosition,
     bool? isLocatingOnMap,
+    bool? isGeocoding,
     bool? isDefault,
     ApiStatus? status,
   }) => AddAddressState(
     selectedPosition: selectedPosition ?? this.selectedPosition,
     isLocatingOnMap: isLocatingOnMap ?? this.isLocatingOnMap,
+    isGeocoding: isGeocoding ?? this.isGeocoding,
     flatError: flatError,
     floorError: floorError,
     buildingError: buildingError,
@@ -153,44 +158,11 @@ class AddAddressNotifier extends Notifier<AddAddressState> {
     state = state.copyWith(isLocatingOnMap: true);
 
     try {
-      var permissionStatus = await Permission.location.status;
-      if (!permissionStatus.isGranted) {
-        permissionStatus = await Permission.location.request();
-      }
-      if (!permissionStatus.isGranted) {
-        CustomSnackBar.showError(
-          title: "Permission Required",
-          message:
-              "Location permission is needed to use your current location.",
-        );
-        return null;
-      }
-
-      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        CustomSnackBar.showError(
-          title: "Location Off",
-          message: "Please turn on location services and try again.",
-        );
-        return null;
-      }
-
-      final position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-        ),
-      );
-      if (!ref.mounted) return null;
+      final position = await currentPositionOrNotify();
+      if (position == null || !ref.mounted) return null;
       final latLng = LatLng(position.latitude, position.longitude);
       onLocated?.call(latLng);
       return await applyLatLng(latLng);
-    } catch (e) {
-      debugPrint("AddAddressNotifier - current location error: $e");
-      CustomSnackBar.showError(
-        title: "Error",
-        message: "Couldn't get your current location. Please try again.",
-      );
-      return null;
     } finally {
       if (ref.mounted) state = state.copyWith(isLocatingOnMap: false);
     }
@@ -200,9 +172,24 @@ class AddAddressNotifier extends Notifier<AddAddressState> {
   /// Address / City / State / Pincode values. Used for map taps, the
   /// full-screen picker and "Use Current Location". The screen animates the
   /// camera and writes the returned values into its text fields.
+  ///
+  /// Taps can arrive faster than geocoding finishes, and the calls can
+  /// complete out of order. Only the latest call's result is returned;
+  /// older ones return null so they never overwrite the fields.
   Future<AddressFill?> applyLatLng(LatLng latLng) async {
-    state = state.copyWith(selectedPosition: latLng);
+    final seq = ++_geocodeSeq;
+    state = state.copyWith(selectedPosition: latLng, isGeocoding: true);
 
+    final fill = await _reverseGeocode(latLng);
+    if (seq != _geocodeSeq || !ref.mounted) return null;
+    state = state.copyWith(isGeocoding: false);
+    return fill;
+  }
+
+  /// Bumped by every [applyLatLng] call; see there.
+  int _geocodeSeq = 0;
+
+  Future<AddressFill?> _reverseGeocode(LatLng latLng) async {
     try {
       // Prefer Google's Geocoding API (server-side, much more accurate)
       // and only fall back to the on-device geocoder if it isn't
@@ -262,6 +249,7 @@ class AddAddressNotifier extends Notifier<AddAddressState> {
     final next = AddAddressState(
       selectedPosition: state.selectedPosition,
       isLocatingOnMap: state.isLocatingOnMap,
+      isGeocoding: state.isGeocoding,
       isDefault: state.isDefault,
       status: state.status,
       flatError: required(form.flat, "Flat/Apartment is required"),

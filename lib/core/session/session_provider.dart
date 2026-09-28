@@ -6,6 +6,7 @@
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:urban_services/core/constants/storage_keys.dart';
+import 'package:urban_services/core/session/token_store.dart';
 import 'package:urban_services/core/session/user_role.dart';
 import 'package:urban_services/features/authentication/login/models/login_response.dart';
 import 'package:urban_services/features/authentication/register/models/register_response.dart';
@@ -63,12 +64,12 @@ class SessionNotifier extends Notifier<SessionState> {
 
   @override
   SessionState build() {
-    // SharedPreferencesHelper.init() is awaited in main(), so this is safe
-    // to read synchronously before the first frame.
+    // SharedPreferencesHelper.init() and TokenStore.init() are awaited in
+    // main(), so this is safe to read synchronously before the first frame.
     final p = _prefs.prefs;
     final storedRole = p.getString(StorageKeys.userRole);
     return SessionState(
-      token: p.getString(StorageKeys.authToken),
+      token: TokenStore.instance.token,
       userId: p.getInt(StorageKeys.userId),
       name: p.getString(StorageKeys.userName),
       email: p.getString(StorageKeys.userEmail),
@@ -128,7 +129,7 @@ class SessionNotifier extends Notifier<SessionState> {
     String? mobile,
     String? role,
   }) async {
-    await _prefs.setValue(StorageKeys.authToken, token);
+    await TokenStore.instance.write(token);
     if (userId != null) await _prefs.setValue(StorageKeys.userId, userId);
     if (name != null) await _prefs.setValue(StorageKeys.userName, name);
     if (email != null) await _prefs.setValue(StorageKeys.userEmail, email);
@@ -138,11 +139,15 @@ class SessionNotifier extends Notifier<SessionState> {
     state = build();
   }
 
-  /// Wipes all local data and ends the session. The router reacts by
+  /// Removes the account's data (token and [StorageKeys.sessionKeys]) and
+  /// ends the session. Device-level flags are kept. The router reacts by
   /// sending the user to Welcome; providers that watch [sessionProvider]
-  /// rebuild from scratch (replaces GetX's `Get.deleteAll(force: true)`).
+  /// rebuild from scratch.
   Future<void> logout() async {
-    await _prefs.clear();
+    await TokenStore.instance.delete();
+    for (final key in StorageKeys.sessionKeys) {
+      await _prefs.remove(key);
+    }
     state = const SessionState();
   }
 

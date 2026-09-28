@@ -356,11 +356,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
                     SizedBox(height: AppDimensions.padding30h),
 
-                    // Navigation to Login
+                    // Navigation to Login: Register is always opened from
+                    // Login, so go back to it instead of stacking another.
                     Center(
                       child: InkWell(
-                        onTap: () =>
-                            context.pushReplacement(RouteNames.loginScreen),
+                        onTap: () => context.canPop()
+                            ? context.pop()
+                            : context.go(RouteNames.loginScreen),
                         child: RichText(
                           text: TextSpan(
                             children: [

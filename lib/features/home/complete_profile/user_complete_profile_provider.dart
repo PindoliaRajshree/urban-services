@@ -8,8 +8,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
-import 'package:urban_services/core/utils/validators.dart';
+import 'package:urban_services/features/profile_common/basic_info.dart';
 import 'package:urban_services/routes/app_router.dart';
 import 'package:urban_services/routes/route_names.dart';
 
@@ -63,18 +62,11 @@ class UserCompleteProfileNotifier extends Notifier<UserCompleteProfileState> {
 
   /// Picks an image from camera or gallery for profile
   Future<void> pickImage(ImageSource source) async {
-    // Downscale and recompress: a full-resolution camera photo is several
-    // MB and slow to upload.
-    final XFile? pickedFile = await _picker.pickImage(
-      source: source,
-      maxWidth: 1024,
-      maxHeight: 1024,
-      imageQuality: 80,
-    );
-    if (pickedFile != null && ref.mounted) {
+    final file = await pickCompressedImage(_picker, source, maxSide: 1024);
+    if (file != null && ref.mounted) {
       // Clear the inline error as soon as the user provides a value.
       state = state.copyWith(
-        profileImage: () => File(pickedFile.path),
+        profileImage: () => file,
         profileImageError: () => null,
       );
     }
@@ -90,10 +82,7 @@ class UserCompleteProfileNotifier extends Notifier<UserCompleteProfileState> {
   }
 
   void setDob(DateTime picked) {
-    state = state.copyWith(
-      dob: DateFormat('dd/MM/yyyy').format(picked),
-      dobError: () => null,
-    );
+    state = state.copyWith(dob: formatDob(picked), dobError: () => null);
   }
 
   void clearMobileError() {
@@ -105,25 +94,14 @@ class UserCompleteProfileNotifier extends Notifier<UserCompleteProfileState> {
   /// Validates the mobile number before the OTP dialog is shown. Returns
   /// true when the dialog should open.
   bool sendOtp(String mobile) {
-    if (mobile.length != 10) {
-      state = state.copyWith(
-        mobileError: () => "Enter a valid 10-digit mobile number",
-      );
-      return false;
-    }
-    state = state.copyWith(mobileError: () => null);
+    final error = mobileNumberError(mobile);
+    state = state.copyWith(mobileError: () => error);
+    if (error != null) return false;
     debugPrint("Sending OTP to $mobile");
     return true;
   }
 
-  String? validateEmail(String? value) {
-    if (value != null && value.isNotEmpty) {
-      if (!AppValidators.isValidEmail(value)) {
-        return "Enter a valid email address";
-      }
-    }
-    return null;
-  }
+  String? validateEmail(String? value) => optionalEmailError(value);
 
   /// Validates the non-TextFormField parts of Basic Details: profile photo,
   /// gender and dob.
@@ -155,12 +133,3 @@ final userCompleteProfileProvider =
       UserCompleteProfileNotifier,
       UserCompleteProfileState
     >(UserCompleteProfileNotifier.new);
-
-/// Opens the system date picker for DOB (shared by the user and provider
-/// profile forms). Returns null if cancelled.
-Future<DateTime?> pickDateOfBirth(BuildContext context) => showDatePicker(
-  context: context,
-  initialDate: DateTime.now().subtract(const Duration(days: 365 * 18)),
-  firstDate: DateTime(1950),
-  lastDate: DateTime.now(),
-);

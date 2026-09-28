@@ -4,18 +4,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:showcaseview/showcaseview.dart';
+import 'package:urban_services/widgets/home_header.dart';
 import 'package:urban_services/routes/route_args.dart';
 import 'package:urban_services/routes/route_names.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
-import 'package:urban_services/core/constants/app_text_sizes.dart';
 import 'package:urban_services/core/session/session_provider.dart';
 import 'package:urban_services/features/address/address_provider.dart';
 import 'package:urban_services/widgets/category_item.dart';
 import 'package:urban_services/widgets/custom_search_bar.dart';
-import 'package:urban_services/widgets/custom_text_style.dart';
 import 'package:urban_services/widgets/section_heading.dart';
 import 'package:urban_services/widgets/top_rated_card.dart';
 
@@ -29,30 +27,6 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   // Current index for the promotional slider
   int _currentSliderIndex = 0;
-
-  // Spotlights the profile avatar with a "complete your profile" callout.
-  final GlobalKey _profileShowcaseKey = GlobalKey();
-
-  @override
-  void initState() {
-    super.initState();
-    // Runs every time this screen is built — there's no "seen it already"
-    // flag yet, so the callout shows on every visit to Home for now.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      ShowCaseWidget.of(context).startShowCase([_profileShowcaseKey]);
-    });
-  }
-
-  /// Sends the user to the basic profile-completion screen (name, photo,
-  /// mobile, email, gender, DOB) — not the provider onboarding wizard.
-  /// `disableDefaultTargetGestures: true` below means the package's own tap
-  /// handling (and its `disposeOnTap` logic) never runs, so the showcase is
-  /// dismissed explicitly here before navigating.
-  void _onProfileShowcaseTap() {
-    ShowCaseWidget.of(context).dismiss();
-    context.push(RouteNames.completeProfile);
-  }
 
   /// Opens the address screen to change the saved address; it pops back
   /// here after saving.
@@ -94,104 +68,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   SizedBox(height: AppDimensions.padding15h),
 
                   // 3. User Profile and Location Header
-                  Row(
-                    children: [
-                      // User Avatar with Shadow — showcased with a
-                      // "complete your profile" spotlight + arrow, and now
-                      // actually tappable (it wasn't before).
-                      Showcase(
-                        key: _profileShowcaseKey,
-                        title: 'Complete Your Profile',
-                        description:
-                            'Tap your photo to complete your basic profile details.',
-                        targetShapeBorder: const CircleBorder(),
-                        tooltipBackgroundColor: AppColors.primaryDark,
-                        textColor: AppColors.white,
-                        titleTextStyle: customTextStyle(
-                          AppTextSizes.largeTextSize,
-                          AppColors.white,
-                          FontWeight.w700,
-                        ),
-                        descTextStyle: customTextStyle(
-                          AppTextSizes.smallTextSize,
-                          AppColors.white,
-                          FontWeight.w400,
-                        ),
-                        disableDefaultTargetGestures: true,
-                        onTargetClick: _onProfileShowcaseTap,
-                        disposeOnTap: true,
-                        child: GestureDetector(
-                          onTap: _onProfileShowcaseTap,
-                          child: Container(
-                            width: AppDimensions.containerWidth45w,
-                            height: AppDimensions.containerHeight45h,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: AppColors.primaryDark,
-                                width: 1,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.25),
-                                  offset: const Offset(0, 1),
-                                  blurRadius: 2.9,
-                                  spreadRadius: 0,
-                                ),
-                              ],
-                              image: const DecorationImage(
-                                image: AssetImage(AppImages.image),
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: AppDimensions.padding10w),
-                      // Greeting and saved location (tap to change it)
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Hi, ${firstName ?? 'there'}',
-                              overflow: TextOverflow.ellipsis,
-                              style: customTextStyle(
-                                AppTextSizes.smallTextSize, // 10
-                                AppColors.text,
-                                FontWeight.w600,
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: _openAddress,
-                              child: Row(
-                                children: [
-                                  Image.asset(
-                                    AppImages.placeMarker,
-                                    height: AppDimensions.containerHeight15h,
-                                    width: AppDimensions.containerWidth15w,
-                                  ),
-                                  SizedBox(width: AppDimensions.padding4w),
-                                  Flexible(
-                                    child: Text(
-                                      location.isNotEmpty
-                                          ? location
-                                          : 'Add your address',
-                                      overflow: TextOverflow.ellipsis,
-                                      style: customTextStyle(
-                                        AppTextSizes.smallTextSize, // 10
-                                        AppColors.text,
-                                        FontWeight.w500,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Action Icons
+                  HomeHeader(
+                    firstName: firstName,
+                    showcaseDescription:
+                        'Tap your photo to complete your basic profile details.',
+                    // The basic profile-completion screen (name, photo,
+                    // mobile, email, gender, DOB), not the provider wizard.
+                    onAvatarTap: () => context.push(RouteNames.completeProfile),
+                    location: location.isNotEmpty
+                        ? location
+                        : 'Add your address',
+                    onLocationTap: _openAddress,
+                    actions: [
                       GestureDetector(
                         onTap: _openAddress,
                         child: Image.asset(
@@ -200,13 +88,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           width: AppDimensions.containerWidth50w,
                         ),
                       ),
-                      // SizedBox(width: AppDimensions.padding8w),
-                      // Image.asset(
-                      //   AppImages.addToCart,
-                      //   height: AppDimensions.containerHeight50h,
-                      //   width: AppDimensions.containerWidth50w,
-                      // ),
-                      // SizedBox(width: AppDimensions.padding15w),
                       GestureDetector(
                         onTap: () =>
                             context.push(RouteNames.notificationScreen),

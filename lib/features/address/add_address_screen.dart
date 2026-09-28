@@ -257,6 +257,31 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
                                   },
                                 ),
 
+                                // Shown while a tapped position is being
+                                // turned into address fields.
+                                if (state.isGeocoding)
+                                  Positioned(
+                                    top: AppDimensions.padding10h,
+                                    left: AppDimensions.padding10w,
+                                    child: Container(
+                                      padding: EdgeInsets.all(
+                                        AppDimensions.padding8h,
+                                      ),
+                                      decoration: const BoxDecoration(
+                                        color: AppColors.white,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: SizedBox(
+                                        height:
+                                            AppDimensions.containerHeight18h,
+                                        width: AppDimensions.containerWidth18w,
+                                        child: const CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+
                                 // Expand / fullscreen button.
                                 Positioned(
                                   top: AppDimensions.padding10h,

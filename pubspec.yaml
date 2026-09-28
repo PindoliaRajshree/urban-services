@@ -86,6 +86,7 @@ dependencies:
   shared_preferences: ^2.5.4
   shimmer: ^3.0.0
   showcaseview: ^4.0.1
+  flutter_secure_storage: ^10.3.4
 
   #U
 

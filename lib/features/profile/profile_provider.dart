@@ -1,9 +1,12 @@
 // File: lib/features/profile/profile_provider.dart
-// Purpose: Logout via POST /logout. Logout fully wipes local storage and
-// ends the session, so nothing from this account carries over into the
-// next login (every provider that watches sessionProvider rebuilds).
+// Purpose: Logout via POST /logout. Logout removes the account's stored
+// data, ends the session and signs out of Google, so nothing from this
+// account carries over into the next login (every provider that watches
+// sessionProvider rebuilds).
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:urban_services/core/constants/api_status.dart';
 import 'package:urban_services/core/navigation/app_keys.dart';
 import 'package:urban_services/core/network/api_result.dart';
@@ -45,9 +48,16 @@ class LogoutNotifier extends Notifier<ApiStatus> {
         CustomSnackBar.showWarning(title: "Logout", message: failure.message);
     }
 
-    // Close the confirmation dialog, then wipe ALL locally stored data (not
-    // just auth/profile keys) so the next login starts from a clean slate.
+    // Close the confirmation dialog, then clear the account's data so the
+    // next login starts from a clean slate. Signing out of Google makes
+    // the next Google login show the account picker; it's a no-op for
+    // manual logins.
     rootNavigatorKey.currentState?.maybePop();
+    try {
+      await GoogleSignIn().signOut();
+    } catch (e) {
+      debugPrint("Google sign-out failed: $e");
+    }
     await session.logout();
     router.go(RouteNames.welcomeScreen);
   }

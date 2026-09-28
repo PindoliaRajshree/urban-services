@@ -9,6 +9,7 @@ import 'package:urban_services/core/constants/api_status.dart';
 import 'package:urban_services/core/network/api_result.dart';
 import 'package:urban_services/core/session/session_provider.dart';
 import 'package:urban_services/core/session/user_role.dart';
+import 'package:urban_services/core/utils/password_validator.dart';
 import 'package:urban_services/core/utils/validators.dart';
 import 'package:urban_services/features/authentication/register/models/register_request.dart';
 import 'package:urban_services/features/authentication/register/models/register_response.dart';
@@ -113,32 +114,8 @@ class RegisterNotifier extends Notifier<RegisterState> {
       emailError = "Please enter a valid email";
     }
 
-    // Password validation
-    final password = form.password;
-    if (password.isEmpty) {
-      passwordError = "Password is required";
-    } else {
-      final hasUpperCase = password.contains(RegExp(r'[A-Z]'));
-      final hasLowerCase = password.contains(RegExp(r'[a-z]'));
-      final hasDigit = password.contains(RegExp(r'[0-9]'));
-      final hasSpecialCharacters = password.contains(
-        RegExp(r'[!@#$%^&*(),.?":{}|<>]'),
-      );
-      final hasMinLength = password.length >= 8;
-      final hasMaxLength = password.length <= 20;
-
-      if (!hasMinLength || !hasMaxLength) {
-        passwordError = "Password must be between 8 and 20 characters";
-      } else if (!hasUpperCase) {
-        passwordError = "At least one uppercase letter required";
-      } else if (!hasLowerCase) {
-        passwordError = "At least one lowercase letter required";
-      } else if (!hasDigit) {
-        passwordError = "At least one digit required";
-      } else if (!hasSpecialCharacters) {
-        passwordError = "At least one special character required";
-      }
-    }
+    // Same rules as the password reset screen.
+    passwordError = PasswordValidator.getPasswordError(form.password);
 
     if (form.confirmPassword != form.password) {
       confirmPasswordError = "Passwords do not match";
@@ -264,7 +241,12 @@ class RegisterNotifier extends Notifier<RegisterState> {
             title: "Success",
             message: data.message ?? "Registered successfully",
           );
-          router.pushReplacement(RouteNames.loginScreen);
+          // Back to the Login screen underneath, not a second copy of it.
+          if (router.canPop()) {
+            router.pop();
+          } else {
+            router.go(RouteNames.loginScreen);
+          }
           return;
         }
 
@@ -286,6 +268,10 @@ class RegisterNotifier extends Notifier<RegisterState> {
           return;
         }
 
+        // Decided while the button still shows loading.
+        final route = await postLoginRoute(ref);
+        if (!ref.mounted) return;
+
         state = const RegisterState(status: ApiStatus.successful);
         final mismatch = roleMismatchMessage(
           pickedRole,
@@ -300,13 +286,7 @@ class RegisterNotifier extends Notifier<RegisterState> {
           );
         }
 
-        // "set location" is a user-only step, so providers skip it and go
-        // straight to their home dashboard.
-        if (ref.read(sessionProvider).effectiveRole.isProvider) {
-          router.go(RouteNames.homeMain);
-        } else {
-          router.go(RouteNames.addressScreen);
-        }
+        router.go(route);
 
       case ApiError(failure: final failure):
         if (!ref.mounted) return;

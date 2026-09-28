@@ -14,7 +14,6 @@ import 'package:urban_services/features/authentication/login/models/login_reques
 import 'package:urban_services/features/authentication/login/models/login_response.dart';
 import 'package:urban_services/features/authentication/register/register_repository.dart';
 import 'package:urban_services/routes/app_router.dart';
-import 'package:urban_services/routes/route_names.dart';
 import 'package:urban_services/widgets/custom_snackbar.dart';
 
 class LoginState {
@@ -110,6 +109,11 @@ class LoginNotifier extends Notifier<LoginState> {
           return;
         }
 
+        // Decided while the button still shows loading: users with a saved
+        // address go straight to Home.
+        final route = await postLoginRoute(ref);
+        if (!ref.mounted) return;
+
         state = const LoginState(status: ApiStatus.successful);
 
         final mismatch = roleMismatchMessage(
@@ -125,15 +129,7 @@ class LoginNotifier extends Notifier<LoginState> {
           );
         }
 
-        // Route by role: "set location" is a user-only onboarding step, so
-        // providers skip straight to their home dashboard while users go
-        // through the address/location screen first.
-        final router = ref.read(routerProvider);
-        if (ref.read(sessionProvider).effectiveRole.isProvider) {
-          router.go(RouteNames.homeMain);
-        } else {
-          router.go(RouteNames.addressScreen);
-        }
+        ref.read(routerProvider).go(route);
 
       case ApiError(failure: final failure):
         if (!ref.mounted) return;

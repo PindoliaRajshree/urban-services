@@ -15,6 +15,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:urban_services/core/constants/api_status.dart';
 import 'package:urban_services/core/network/api_result.dart';
+import 'package:urban_services/core/utils/password_validator.dart';
 import 'package:urban_services/core/utils/validators.dart';
 import 'package:urban_services/features/authentication/forgot_password/models/forgot_password_request.dart';
 import 'package:urban_services/features/authentication/forgot_password/models/resend_otp_request.dart';
@@ -161,9 +162,10 @@ class ForgotPasswordNotifier extends Notifier<ForgotPasswordState> {
   // Step 2 — OTP
   // ---------------------------------------------------------------------
 
-  /// Step 2 — verifies the code against the email from step 1.
-  Future<void> verifyOtp(String code) async {
-    if (state.isLoading) return;
+  /// Step 2 — verifies the code against the email from step 1. Returns
+  /// false when the code was rejected, so the screen can clear the boxes.
+  Future<bool> verifyOtp(String code) async {
+    if (state.isLoading) return true;
 
     if (code.length != otpLength) {
       CustomSnackBar.showError(
@@ -171,7 +173,7 @@ class ForgotPasswordNotifier extends Notifier<ForgotPasswordState> {
         message: "Please enter the full $otpLength-digit code",
         position: SnackPosition.bottom,
       );
-      return;
+      return true;
     }
 
     final email = state.email;
@@ -182,7 +184,7 @@ class ForgotPasswordNotifier extends Notifier<ForgotPasswordState> {
         message: "Please request a new code first.",
       );
       ref.read(routerProvider).pushReplacement(RouteNames.forgotPasswordScreen);
-      return;
+      return true;
     }
 
     state = state.copyWith(status: ApiStatus.loading);
@@ -190,7 +192,7 @@ class ForgotPasswordNotifier extends Notifier<ForgotPasswordState> {
     final result = await _authRepository.forgotPassword(
       ForgotPasswordRequest(email: email, otp: code),
     );
-    if (!ref.mounted) return;
+    if (!ref.mounted) return true;
 
     switch (result) {
       case ApiSuccess(data: final message):
@@ -200,12 +202,14 @@ class ForgotPasswordNotifier extends Notifier<ForgotPasswordState> {
         );
         CustomSnackBar.showSuccess(title: "Success", message: message);
         ref.read(routerProvider).push(RouteNames.resetPasswordScreen);
+        return true;
       case ApiError(failure: final failure):
         state = state.copyWith(status: ApiStatus.error);
         CustomSnackBar.showError(
           title: "Invalid Code",
           message: failure.message,
         );
+        return false;
     }
   }
 
@@ -282,14 +286,9 @@ class ForgotPasswordNotifier extends Notifier<ForgotPasswordState> {
   );
 
   bool _validateNewPassword(String password, String confirmPassword) {
-    String? passwordError;
+    // Same rules as sign-up.
+    final passwordError = PasswordValidator.getPasswordError(password);
     String? confirmPasswordError;
-
-    if (password.isEmpty) {
-      passwordError = "Password is required";
-    } else if (password.length < 8) {
-      passwordError = "Password must be at least 8 characters";
-    }
 
     if (confirmPassword.isEmpty) {
       confirmPasswordError = "Please confirm your password";
@@ -340,7 +339,10 @@ class ForgotPasswordNotifier extends Notifier<ForgotPasswordState> {
         _resendTimer?.cancel();
         state = const ForgotPasswordState(status: ApiStatus.successful);
         CustomSnackBar.showSuccess(title: "Success", message: message);
-        router.go(RouteNames.loginScreen);
+        // Back to Login with Welcome underneath (a plain go(login) would
+        // leave Login as the only screen).
+        router.go(RouteNames.welcomeScreen);
+        router.push(RouteNames.loginScreen);
       case ApiError(failure: final failure):
         state = state.copyWith(status: ApiStatus.error);
         CustomSnackBar.showError(title: "Error", message: failure.message);

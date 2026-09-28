@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:urban_services/core/colors/colors.dart';
+import 'package:urban_services/core/constants/api_status.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
@@ -54,7 +55,6 @@ class _AddressScreenState extends ConsumerState<AddressScreen>
 
   void _showAddressChoice() => showDialog<void>(
     context: context,
-    barrierDismissible: false,
     builder: (_) =>
         AddressChoiceDialog(onUseCurrentLocation: _onCurrentLocationTap),
   );
@@ -404,6 +404,31 @@ class _AddressScreenState extends ConsumerState<AddressScreen>
 
                                 final pending = state.pendingManualAddress;
                                 final address = state.address;
+
+                                if (state.status == ApiStatus.error &&
+                                    pending == null &&
+                                    address == null) {
+                                  return Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          "Couldn't load your address.",
+                                          style: customTextStyle(
+                                            AppTextSizes.stableTextSize,
+                                            AppColors.darkGrey2,
+                                            FontWeight.w400,
+                                          ),
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: ref
+                                            .read(addressProvider.notifier)
+                                            .fetchAddress,
+                                        child: const Text('Retry'),
+                                      ),
+                                    ],
+                                  );
+                                }
 
                                 if (pending == null && address == null) {
                                   return Text(
