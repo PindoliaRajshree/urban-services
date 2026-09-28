@@ -2,7 +2,6 @@
 // Purpose: A reusable, standardized AppBar component with consistent branding and navigation.
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
@@ -16,7 +15,7 @@ class CommonAppBar extends StatelessWidget {
   /// Optional widget to display on the far right (custom actions)
   final Widget? rightAction;
 
-  /// Custom callback for the back button; defaults to [Get.back()]
+  /// Custom callback for the back button; defaults to [Navigator.maybePop]
   final VoidCallback? onBackPress;
 
   /// Whether to show the standard vertical more icon
@@ -25,6 +24,10 @@ class CommonAppBar extends StatelessWidget {
   /// Callback for the vertical more icon tap
   final VoidCallback? onMorePressed;
 
+  /// Whether to show the back button. False on tab roots (Bookings,
+  /// Profile), where there is nothing to go back to.
+  final bool showBackButton;
+
   const CommonAppBar({
     super.key,
     required this.title,
@@ -32,6 +35,7 @@ class CommonAppBar extends StatelessWidget {
     this.onBackPress,
     this.showMoreIcon = false,
     this.onMorePressed,
+    this.showBackButton = true,
   });
 
   @override
@@ -42,18 +46,19 @@ class CommonAppBar extends StatelessWidget {
         alignment: Alignment.center,
         children: [
           // Left: Standardized Back button from assets
-          Align(
-            alignment: Alignment.centerLeft,
-            child: GestureDetector(
-              onTap: onBackPress ?? () => Get.back(),
-              child: Image.asset(
-                AppImages.back,
-                height: AppDimensions.containerHeight24h,
-                width: AppDimensions.containerWidth24w,
-                color: AppColors.text,
+          if (showBackButton)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: GestureDetector(
+                onTap: onBackPress ?? () => Navigator.of(context).maybePop(),
+                child: Image.asset(
+                  AppImages.back,
+                  height: AppDimensions.containerHeight24h,
+                  width: AppDimensions.containerWidth24w,
+                  color: AppColors.text,
+                ),
               ),
             ),
-          ),
 
           // Center: Standardized Title text
           Text(

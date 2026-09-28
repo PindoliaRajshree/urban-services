@@ -2,28 +2,27 @@
 // Purpose: Welcome landing page for choosing User or Provider role.
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
-import 'package:urban_services/features/authentication/login/login_controller.dart';
+import 'package:urban_services/core/session/session_provider.dart';
+import 'package:urban_services/core/session/user_role.dart';
 import 'package:urban_services/routes/route_names.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
 import 'package:urban_services/widgets/primary_button.dart';
 import 'package:urban_services/widgets/secondary_button.dart';
 
-class WelcomeScreen extends StatefulWidget {
+class WelcomeScreen extends ConsumerStatefulWidget {
   const WelcomeScreen({super.key});
 
   @override
-  State<WelcomeScreen> createState() => _WelcomeScreenState();
+  ConsumerState<WelcomeScreen> createState() => _WelcomeScreenState();
 }
 
-class _WelcomeScreenState extends State<WelcomeScreen> {
-  // Access LoginController to set the user role early; marked as permanent to persist through offAllNamed
-  final loginController = Get.put(LoginController(), permanent: true);
-
+class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
   @override
   Widget build(BuildContext context) {
     // Check screen height to decide on scrollability for smaller devices
@@ -67,26 +66,29 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              RichText(
-                text: TextSpan(
-                  children: [
-                    TextSpan(
-                      text: 'All Home Services\nAt',
-                      style: customTextStyle(
-                        AppTextSizes.headingTextSize,
-                        AppColors.black,
-                        FontWeight.w600,
+              // Flexible: wraps instead of overflowing with large fonts.
+              Flexible(
+                child: RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: 'All Home Services\nAt',
+                        style: customTextStyle(
+                          AppTextSizes.headingTextSize,
+                          AppColors.black,
+                          FontWeight.w600,
+                        ),
                       ),
-                    ),
-                    TextSpan(
-                      text: ' One Place',
-                      style: customTextStyle(
-                        AppTextSizes.headingTextSize,
-                        AppColors.primary,
-                        FontWeight.w600,
+                      TextSpan(
+                        text: ' One Place',
+                        style: customTextStyle(
+                          AppTextSizes.headingTextSize,
+                          AppColors.primary,
+                          FontWeight.w600,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -116,12 +118,14 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Text(
-                'Trusted professionals for your \nhome and office needs.',
-                style: customTextStyle(
-                  AppTextSizes.largeTextSize,
-                  AppColors.black,
-                  FontWeight.w400,
+              Flexible(
+                child: Text(
+                  'Trusted professionals for your \nhome and office needs.',
+                  style: customTextStyle(
+                    AppTextSizes.largeTextSize,
+                    AppColors.black,
+                    FontWeight.w400,
+                  ),
                 ),
               ),
             ],
@@ -139,8 +143,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           child: PrimaryButton(
             text: 'Continue as User',
             onPressed: () {
-              loginController.setRole('User');
-              Get.toNamed(RouteNames.loginScreen);
+              ref.read(sessionProvider.notifier).selectRole(UserRole.user);
+              context.push(RouteNames.loginScreen);
             },
           ),
         ),
@@ -150,8 +154,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           child: SecondaryButton(
             text: 'Continue as Provider',
             onPressed: () {
-              loginController.setRole('Provider');
-              Get.toNamed(RouteNames.loginScreen);
+              ref.read(sessionProvider.notifier).selectRole(UserRole.provider);
+              context.push(RouteNames.loginScreen);
             },
           ),
         ),

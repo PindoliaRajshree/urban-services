@@ -1,17 +1,20 @@
 import 'dart:io';
 
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
 import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
 import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
 import 'package:showcaseview/showcaseview.dart';
+import 'package:urban_services/core/navigation/app_keys.dart';
+import 'package:urban_services/core/session/token_store.dart';
 import 'package:urban_services/core/themes/theme.dart';
-import 'package:urban_services/routes/route_names.dart';
-import 'package:urban_services/routes/route_pages.dart';
+import 'package:urban_services/firebase_options.dart';
+import 'package:urban_services/routes/app_router.dart';
 import 'package:urban_services/shared_preferences/sharedpreference_helper.dart';
 
 Future<void> main() async {
@@ -26,10 +29,27 @@ Future<void> main() async {
     const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
   );
 
-  await Firebase.initializeApp();
+  // Options come from lib/firebase_options.dart: iOS has no
+  // GoogleService-Info.plist, so it can't be read from native config.
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // Initialize SharedPreferences
+  // Crash reporting in release builds only; debug keeps the normal red
+  // screen and console output.
+  await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(
+    kReleaseMode,
+  );
+  if (kReleaseMode) {
+    FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+    PlatformDispatcher.instance.onError = (error, stack) {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      return true;
+    };
+  }
+
+  // Initialize SharedPreferences, then the secure auth token (which reads
+  // a flag from SharedPreferences).
   await SharedPreferencesHelper.init();
+  await TokenStore.init();
 
   // Force Hybrid Composition for the google_maps_flutter map on Android.
   // Without this, some devices/emulators (especially those with software
@@ -46,36 +66,33 @@ Future<void> main() async {
     }
   }
 
-  runApp(ProviderScope(child: MyApp()));
+  runApp(const ProviderScope(child: MyApp()));
 }
 
-class MyApp extends StatefulWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  State<MyApp> createState() => _MyAppState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.watch(routerProvider);
 
-class _MyAppState extends State<MyApp> {
-  @override
-  Widget build(BuildContext context) {
     return ScreenUtilInit(
       designSize: const Size(375, 812),
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (_, child) {
-        return GetMaterialApp(
+        return MaterialApp.router(
           debugShowCheckedModeBanner: false,
           title: 'Urban Services App',
           theme: theme,
-          // builder: EasyLoading.init(),
+          routerConfig: router,
+          scaffoldMessengerKey: scaffoldMessengerKey,
           // Wraps every screen so any of them can use Showcase/
           // ShowCaseWidget.of(context) — e.g. the "complete your profile"
           // spotlight on the Home screen's avatar.
-          builder: (context, child) =>
-              ShowCaseWidget(builder: (context) => child ?? const SizedBox.shrink()),
-          getPages: getRoutes(),
-          initialRoute: RouteNames.splashScreen,
+          builder: (context, child) => ShowCaseWidget(
+            builder: (context) => child ?? const SizedBox.shrink(),
+          ),
         );
       },
     );

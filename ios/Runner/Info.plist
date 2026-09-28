@@ -24,6 +24,10 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>MapsApiKey</key>
+	<string>$(MAPS_API_KEY)</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Urban Service uses your location to fill in your service address.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Urban Service needs camera access to capture your profile photo and Aadhaar/PAN documents.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

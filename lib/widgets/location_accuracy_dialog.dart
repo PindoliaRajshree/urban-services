@@ -2,22 +2,19 @@
 // Purpose: A custom system-style dialog to request Location Accuracy from the user.
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
-import 'package:urban_services/features/address/address_controller.dart';
+import 'package:urban_services/features/address/address_provider.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
 
-class LocationAccuracyDialog extends StatelessWidget {
+class LocationAccuracyDialog extends ConsumerWidget {
   const LocationAccuracyDialog({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // Access AddressController to handle button actions
-    final controller = Get.find<AddressController>();
-
+  Widget build(BuildContext context, WidgetRef ref) {
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: EdgeInsets.symmetric(horizontal: AppDimensions.padding20w),
@@ -169,7 +166,7 @@ class LocationAccuracyDialog extends StatelessWidget {
                   // Negative Action: Close Dialog
                   Expanded(
                     child: TextButton(
-                      onPressed: controller.closeDialog,
+                      onPressed: () => Navigator.of(context).pop(),
                       style: TextButton.styleFrom(
                         padding: EdgeInsets.symmetric(
                           vertical: AppDimensions.padding12h,
@@ -192,7 +189,13 @@ class LocationAccuracyDialog extends StatelessWidget {
                   // Positive Action: Trigger Permission Request
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: controller.requestLocationPermission,
+                      onPressed: () async {
+                        final navigator = Navigator.of(context);
+                        final shouldClose = await ref
+                            .read(addressProvider.notifier)
+                            .requestLocationPermission();
+                        if (shouldClose) navigator.pop();
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         padding: EdgeInsets.symmetric(

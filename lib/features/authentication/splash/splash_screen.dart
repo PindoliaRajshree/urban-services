@@ -5,23 +5,22 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
-import 'package:urban_services/core/constants/storage_keys.dart';
-import 'package:urban_services/features/authentication/login/login_controller.dart';
+import 'package:urban_services/core/session/session_provider.dart';
 import 'package:urban_services/routes/route_names.dart';
-import 'package:urban_services/shared_preferences/sharedpreference_helper.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
+class _SplashScreenState extends ConsumerState<SplashScreen>
     with SingleTickerProviderStateMixin {
   /// Controller to manage the timing of all animations
   late AnimationController _controller;
@@ -64,40 +63,27 @@ class _SplashScreenState extends State<SplashScreen>
           ),
         );
 
-    // Start the animation sequence
-    _controller.forward();
-
-    // After the intro animation, route straight into the app if a session
-    // is already stored (persistent login), otherwise start at Welcome.
-    Future.delayed(const Duration(seconds: 3), _routeAfterSplash);
+    // Play the intro, hold the finished logo briefly, then route straight
+    // into the app if a session is stored (persistent login), otherwise to
+    // Welcome.
+    _controller.forward().then(
+      (_) => Future.delayed(_holdAfterAnimation, _routeAfterSplash),
+    );
   }
 
-  /// Checks for a stored auth token and, if present, restores the saved
-  /// role onto the shared LoginController and goes straight to Home —
-  /// keeping the user logged in until they manually log out. Otherwise
-  /// falls back to the Welcome screen.
-  Future<void> _routeAfterSplash() async {
-    final token = await SharedPreferencesHelper.instance.getValue<String>(
-      StorageKeys.authToken,
-    );
+  /// How long the finished logo stays up before routing.
+  static const Duration _holdAfterAnimation = Duration(milliseconds: 300);
 
+  /// If a session is stored (sessionProvider restores token + role from
+  /// storage), go straight to Home — keeping the user logged in until they
+  /// manually log out. Otherwise fall back to the Welcome screen.
+  void _routeAfterSplash() {
     if (!mounted) return;
 
-    if (token != null && token.isNotEmpty) {
-      final savedRole = await SharedPreferencesHelper.instance
-          .getValue<String>(StorageKeys.userRole);
-
-      final loginController = Get.isRegistered<LoginController>()
-          ? Get.find<LoginController>()
-          : Get.put(LoginController(), permanent: true);
-      if (savedRole != null && savedRole.isNotEmpty) {
-        loginController.setRole(savedRole);
-      }
-
-      if (!mounted) return;
-      Get.offAllNamed(RouteNames.homeMain);
+    if (ref.read(sessionProvider).isAuthenticated) {
+      context.go(RouteNames.homeMain);
     } else {
-      Get.offAllNamed(RouteNames.welcomeScreen);
+      context.go(RouteNames.welcomeScreen);
     }
   }
 

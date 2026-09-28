@@ -3,30 +3,44 @@
 // step 1 of the shared forgot-password flow (send OTP).
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
-import 'package:urban_services/core/constants/api_status.dart';
-import 'package:urban_services/features/authentication/forgot_password/forgot_password_controller.dart';
+import 'package:urban_services/features/authentication/forgot_password/forgot_password_provider.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
 import 'package:urban_services/widgets/primary_button.dart';
 
-class ForgotPasswordScreen extends StatefulWidget {
+class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
 
   @override
-  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+  ConsumerState<ForgotPasswordScreen> createState() =>
+      _ForgotPasswordScreenState();
 }
 
-class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
-  // Marked permanent so this controller (and the email it captures) survives
-  // navigation into the OTP and Reset Password screens further down the flow.
-  final controller = Get.put(ForgotPasswordController(), permanent: true);
+class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
+  final _emailController = TextEditingController();
+  final _emailFocusNode = FocusNode();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _emailFocusNode.dispose();
+    super.dispose();
+  }
+
+  void _sendOtp() =>
+      ref.read(forgotPasswordProvider.notifier).sendOtp(_emailController.text);
 
   @override
   Widget build(BuildContext context) {
+    // Watching keeps the flow's provider (and the email it captures) alive
+    // while the OTP and Reset Password screens are pushed on top.
+    final state = ref.watch(forgotPasswordProvider);
+
     return Scaffold(
       backgroundColor: AppColors.screenBackground,
       body: SafeArea(
@@ -39,7 +53,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
               // 3. Custom Circular Back Button
               GestureDetector(
-                onTap: () => Get.back(),
+                onTap: () => context.pop(),
                 child: Container(
                   width: AppDimensions.containerWidth35w,
                   height: AppDimensions.containerHeight35h,
@@ -97,80 +111,76 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               SizedBox(height: AppDimensions.padding10h),
 
               // 7. Custom Styled Email TextField
-              Obx(
-                () => Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: AppColors.white,
-                        borderRadius: BorderRadius.circular(
-                          AppDimensions.radius10r,
-                        ),
-                        border: Border.all(
-                          color: controller.emailError.value != null
-                              ? AppColors.danger
-                              : AppColors.grey,
-                          width: AppDimensions.containerWidth1w,
-                        ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.white,
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.radius10r,
                       ),
-                      padding: EdgeInsets.symmetric(
-                        horizontal: AppDimensions.padding10w,
+                      border: Border.all(
+                        color: state.emailError != null
+                            ? AppColors.danger
+                            : AppColors.grey,
+                        width: AppDimensions.containerWidth1w,
                       ),
-                      child: TextField(
-                        controller: controller.emailController,
-                        focusNode: controller.emailFocusNode,
-                        keyboardType: TextInputType.emailAddress,
-                        textInputAction: TextInputAction.done,
-                        onSubmitted: (_) => controller.sendOtp(),
-                        style: customTextStyle(
-                          AppTextSizes.smallTextSize,
-                          AppColors.black,
+                    ),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: AppDimensions.padding10w,
+                    ),
+                    child: TextField(
+                      controller: _emailController,
+                      focusNode: _emailFocusNode,
+                      keyboardType: TextInputType.emailAddress,
+                      textInputAction: TextInputAction.done,
+                      onSubmitted: (_) => _sendOtp(),
+                      style: customTextStyle(
+                        AppTextSizes.smallTextSize,
+                        AppColors.black,
+                        FontWeight.w400,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: 'Enter your email',
+                        hintStyle: customTextStyle(
+                          AppTextSizes.smallTextSize, // 12
+                          AppColors.darkGrey,
                           FontWeight.w400,
                         ),
-                        decoration: InputDecoration(
-                          hintText: 'Enter your email',
-                          hintStyle: customTextStyle(
-                            AppTextSizes.smallTextSize, // 12
-                            AppColors.darkGrey,
-                            FontWeight.w400,
-                          ),
-                          border: InputBorder.none,
-                          isDense: true,
-                          contentPadding: EdgeInsets.symmetric(
-                            vertical: AppDimensions.padding12h,
-                          ),
+                        border: InputBorder.none,
+                        isDense: true,
+                        contentPadding: EdgeInsets.symmetric(
+                          vertical: AppDimensions.padding12h,
                         ),
                       ),
                     ),
-                    if (controller.emailError.value != null)
-                      Padding(
-                        padding: EdgeInsets.only(
-                          top: AppDimensions.padding4h,
-                          left: AppDimensions.padding4w,
-                        ),
-                        child: Text(
-                          controller.emailError.value!,
-                          style: customTextStyle(
-                            AppTextSizes.stableTextSize,
-                            AppColors.danger,
-                            FontWeight.w400,
-                          ),
+                  ),
+                  if (state.emailError != null)
+                    Padding(
+                      padding: EdgeInsets.only(
+                        top: AppDimensions.padding4h,
+                        left: AppDimensions.padding4w,
+                      ),
+                      child: Text(
+                        state.emailError!,
+                        style: customTextStyle(
+                          AppTextSizes.stableTextSize,
+                          AppColors.danger,
+                          FontWeight.w400,
                         ),
                       ),
-                  ],
-                ),
+                    ),
+                ],
               ),
 
               SizedBox(height: AppDimensions.padding30h),
 
               // 8. Reset Password Button
-              Obx(
-                () => PrimaryButton(
-                  text: 'Reset Password',
-                  isLoading: controller.status.value == ApiStatus.loading,
-                  onPressed: controller.sendOtp,
-                ),
+              PrimaryButton(
+                text: 'Reset Password',
+                isLoading: state.isLoading,
+                onPressed: _sendOtp,
               ),
             ],
           ),

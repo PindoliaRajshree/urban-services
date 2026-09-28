@@ -3,30 +3,53 @@
 // successful OTP verification.
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:urban_services/core/colors/colors.dart';
-import 'package:urban_services/core/constants/api_status.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
-import 'package:urban_services/features/authentication/forgot_password/forgot_password_controller.dart';
+import 'package:urban_services/features/authentication/forgot_password/forgot_password_provider.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
 import 'package:urban_services/widgets/primary_button.dart';
 
-class ResetPasswordScreen extends StatefulWidget {
+class ResetPasswordScreen extends ConsumerStatefulWidget {
   const ResetPasswordScreen({super.key});
 
   @override
-  State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
+  ConsumerState<ResetPasswordScreen> createState() =>
+      _ResetPasswordScreenState();
 }
 
-class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
-  // Reuse the flow controller put (permanent) on ForgotPasswordScreen, so
-  // the verified email/OTP from steps 1-2 carry through here.
-  final controller = Get.find<ForgotPasswordController>();
+class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  final _passwordFocus = FocusNode();
+  final _confirmPasswordFocus = FocusNode();
+
+  @override
+  void dispose() {
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    _passwordFocus.dispose();
+    _confirmPasswordFocus.dispose();
+    super.dispose();
+  }
+
+  void _updatePassword() => ref
+      .read(forgotPasswordProvider.notifier)
+      .updatePassword(
+        password: _passwordController.text,
+        confirmPassword: _confirmPasswordController.text,
+      );
 
   @override
   Widget build(BuildContext context) {
+    // Same provider instance as the earlier steps (still on the stack), so
+    // the verified email/OTP from steps 1-2 carry through here.
+    final state = ref.watch(forgotPasswordProvider);
+    final notifier = ref.read(forgotPasswordProvider.notifier);
+
     return Scaffold(
       backgroundColor: AppColors.screenBackground,
       body: SafeArea(
@@ -40,7 +63,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
                 // 3. Custom Circular Back Button
                 GestureDetector(
-                  onTap: () => Get.back(),
+                  onTap: () => context.pop(),
                   child: Container(
                     width: AppDimensions.containerWidth35w,
                     height: AppDimensions.containerHeight35h,
@@ -99,11 +122,11 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 SizedBox(height: AppDimensions.padding10h),
                 // Password Input with eye icon
                 _buildPasswordField(
-                  controller: controller.passwordController,
-                  focusNode: controller.passwordFocus,
-                  obscureRx: controller.obscurePassword,
-                  errorRx: controller.passwordError,
-                  toggleVisibility: controller.togglePasswordVisibility,
+                  controller: _passwordController,
+                  focusNode: _passwordFocus,
+                  obscure: state.obscurePassword,
+                  error: state.passwordError,
+                  toggleVisibility: notifier.togglePasswordVisibility,
                 ),
 
                 SizedBox(height: AppDimensions.padding20h),
@@ -120,23 +143,21 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 SizedBox(height: AppDimensions.padding10h),
                 // Confirm Password Input with eye icon
                 _buildPasswordField(
-                  controller: controller.confirmPasswordController,
-                  focusNode: controller.confirmPasswordFocus,
-                  obscureRx: controller.obscureConfirmPassword,
-                  errorRx: controller.confirmPasswordError,
-                  toggleVisibility: controller.toggleConfirmPasswordVisibility,
+                  controller: _confirmPasswordController,
+                  focusNode: _confirmPasswordFocus,
+                  obscure: state.obscureConfirmPassword,
+                  error: state.confirmPasswordError,
+                  toggleVisibility: notifier.toggleConfirmPasswordVisibility,
                   isLast: true,
                 ),
 
                 SizedBox(height: AppDimensions.padding20h),
 
                 // 8. Update Password Button
-                Obx(
-                  () => PrimaryButton(
-                    text: 'Update Password',
-                    isLoading: controller.status.value == ApiStatus.loading,
-                    onPressed: controller.updatePassword,
-                  ),
+                PrimaryButton(
+                  text: 'Update Password',
+                  isLoading: state.isLoading,
+                  onPressed: _updatePassword,
                 ),
 
                 SizedBox(height: AppDimensions.padding30h),
@@ -152,84 +173,79 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   Widget _buildPasswordField({
     required TextEditingController controller,
     required FocusNode focusNode,
-    required RxBool obscureRx,
-    required RxnString errorRx,
+    required bool obscure,
+    required String? error,
     required VoidCallback toggleVisibility,
     bool isLast = false,
   }) {
-    return Obx(
-      () => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              color: AppColors.white,
-              borderRadius: BorderRadius.circular(AppDimensions.radius10r),
-              border: Border.all(
-                color: errorRx.value != null
-                    ? AppColors.danger
-                    : AppColors.grey,
-                width: AppDimensions.containerWidth1w,
-              ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(AppDimensions.radius10r),
+            border: Border.all(
+              color: error != null ? AppColors.danger : AppColors.grey,
+              width: AppDimensions.containerWidth1w,
             ),
-            padding: EdgeInsets.symmetric(horizontal: AppDimensions.padding10w),
-            child: TextField(
-              textAlignVertical: .center,
-              controller: controller,
-              focusNode: focusNode,
-              obscureText: obscureRx.value,
-              textInputAction: isLast
-                  ? TextInputAction.done
-                  : TextInputAction.next,
-              onSubmitted: (_) =>
-                  isLast ? this.controller.updatePassword() : null,
-              style: customTextStyle(
-                AppTextSizes.smallTextSize, // 12
-                AppColors.darkBlack,
+          ),
+          padding: EdgeInsets.symmetric(horizontal: AppDimensions.padding10w),
+          child: TextField(
+            textAlignVertical: .center,
+            controller: controller,
+            focusNode: focusNode,
+            obscureText: obscure,
+            textInputAction: isLast
+                ? TextInputAction.done
+                : TextInputAction.next,
+            onSubmitted: (_) => isLast ? _updatePassword() : null,
+            style: customTextStyle(
+              AppTextSizes.smallTextSize, // 12
+              AppColors.darkBlack,
+              FontWeight.w400,
+            ),
+            decoration: InputDecoration(
+              hintText: 'Enter your password',
+              hintStyle: customTextStyle(
+                AppTextSizes.smallTextSize,
+                AppColors.grey,
                 FontWeight.w400,
               ),
-              decoration: InputDecoration(
-                hintText: 'Enter your password',
-                hintStyle: customTextStyle(
-                  AppTextSizes.smallTextSize,
-                  AppColors.grey,
-                  FontWeight.w400,
+              border: InputBorder.none,
+              isDense: true,
+              contentPadding: EdgeInsets.symmetric(
+                vertical: AppDimensions.padding12h,
+              ),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  obscure
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined,
+                  color: AppColors.grey,
+                  size: AppDimensions.containerHeight20h,
                 ),
-                border: InputBorder.none,
-                isDense: true,
-                contentPadding: EdgeInsets.symmetric(
-                  vertical: AppDimensions.padding12h,
-                ),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    obscureRx.value
-                        ? Icons.visibility_off_outlined
-                        : Icons.visibility_outlined,
-                    color: AppColors.grey,
-                    size: AppDimensions.containerHeight20h,
-                  ),
-                  onPressed: toggleVisibility,
-                ),
+                onPressed: toggleVisibility,
               ),
             ),
           ),
-          if (errorRx.value != null)
-            Padding(
-              padding: EdgeInsets.only(
-                top: AppDimensions.padding4h,
-                left: AppDimensions.padding4w,
-              ),
-              child: Text(
-                errorRx.value!,
-                style: customTextStyle(
-                  AppTextSizes.stableTextSize,
-                  AppColors.danger,
-                  FontWeight.w400,
-                ),
+        ),
+        if (error != null)
+          Padding(
+            padding: EdgeInsets.only(
+              top: AppDimensions.padding4h,
+              left: AppDimensions.padding4w,
+            ),
+            child: Text(
+              error,
+              style: customTextStyle(
+                AppTextSizes.stableTextSize,
+                AppColors.danger,
+                FontWeight.w400,
               ),
             ),
-        ],
-      ),
+          ),
+      ],
     );
   }
 }

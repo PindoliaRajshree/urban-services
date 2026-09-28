@@ -2,67 +2,41 @@
 // Purpose: Primary dashboard for service providers to manage jobs, earnings, and availability.
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:showcaseview/showcaseview.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:urban_services/widgets/home_header.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
-import 'package:urban_services/features/home_provider/complete_profile/service_type_controller.dart';
-import 'package:urban_services/features/home_provider/provider_home_controller.dart';
+import 'package:urban_services/core/session/session_provider.dart';
+import 'package:urban_services/features/home_provider/complete_profile/service_type_provider.dart';
+import 'package:urban_services/features/home_provider/provider_home_provider.dart';
 import 'package:urban_services/routes/route_names.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
 import 'package:urban_services/widgets/section_heading.dart';
 
-class ProviderHomeScreen extends StatefulWidget {
+class ProviderHomeScreen extends ConsumerStatefulWidget {
   const ProviderHomeScreen({super.key});
 
   @override
-  State<ProviderHomeScreen> createState() => _ProviderHomeScreenState();
+  ConsumerState<ProviderHomeScreen> createState() => _ProviderHomeScreenState();
 }
 
-class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
-  // Initialize dashboard logic controller
-  final controller = Get.put(ProviderHomeController());
-
-  // Shared preload/cache for the profile-completion "Service Details" step —
-  // reused via Get.find if already registered so a revisit to Home doesn't
-  // reset the cache or re-trigger the fetch.
-  final serviceTypeController = Get.isRegistered<ServiceTypeController>()
-      ? Get.find<ServiceTypeController>()
-      : Get.put(ServiceTypeController());
-
-  // Spotlights the profile avatar with a "complete your profile" callout.
-  final GlobalKey _profileShowcaseKey = GlobalKey();
-
+class _ProviderHomeScreenState extends ConsumerState<ProviderHomeScreen> {
   @override
   void initState() {
     super.initState();
     // Preload service categories here so they're already available by the
-    // time the provider reaches the Service Details step (no-op if already
-    // loaded).
-    serviceTypeController.fetchServiceTypes();
-
-    // Runs every time this screen is built — there's no "seen it already"
-    // flag yet, so the callout shows on every visit to Home for now.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      ShowCaseWidget.of(context).startShowCase([_profileShowcaseKey]);
-    });
-  }
-
-  /// Sends the provider to their onboarding/profile form.
-  /// `disableDefaultTargetGestures: true` below means the package's own
-  /// tap handling (and its `disposeOnTap` logic) never runs, so the
-  /// showcase is dismissed explicitly here before navigating.
-  void _onProfileShowcaseTap() {
-    ShowCaseWidget.of(context).dismiss();
-    Get.toNamed(RouteNames.completeProviderProfile);
+    // time the provider reaches the Service Details step. serviceTypesProvider
+    // is kept for the session, so revisiting Home doesn't re-fetch.
+    ref.read(serviceTypesProvider);
   }
 
   @override
   Widget build(BuildContext context) {
     final isSmall = MediaQuery.of(context).size.height < 720;
+    final firstName = ref.watch(sessionProvider.select((s) => s.firstName));
 
     return Scaffold(
       backgroundColor: AppColors.screenBackground,
@@ -87,124 +61,28 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                 children: [
                   SizedBox(height: AppDimensions.padding15h),
 
-                  // 3. User Profile and Location Header
-                  Row(
-                    children: [
-                      // User Avatar with Shadow — showcased with a
-                      // "complete your profile" spotlight + arrow, and now
-                      // actually tappable (it wasn't before).
-                      Showcase(
-                        key: _profileShowcaseKey,
-                        title: 'Complete Your Profile',
-                        description:
-                            'Tap your photo to finish setting up your provider details — pricing, service area, availability, and documents.',
-                        targetShapeBorder: const CircleBorder(),
-                        tooltipBackgroundColor: AppColors.primaryDark,
-                        textColor: AppColors.white,
-                        titleTextStyle: customTextStyle(
-                          AppTextSizes.largeTextSize,
-                          AppColors.white,
-                          FontWeight.w700,
-                        ),
-                        descTextStyle: customTextStyle(
-                          AppTextSizes.smallTextSize,
-                          AppColors.white,
-                          FontWeight.w400,
-                        ),
-                        disableDefaultTargetGestures: true,
-                        onTargetClick: _onProfileShowcaseTap,
-                        disposeOnTap: true,
-                        child: GestureDetector(
-                          onTap: _onProfileShowcaseTap,
-                          child: Container(
-                            width: AppDimensions.containerWidth45w,
-                            height: AppDimensions.containerHeight45h,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: AppColors.primaryDark,
-                                width: 1,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.25),
-                                  offset: const Offset(0, 1),
-                                  blurRadius: 2.9,
-                                  spreadRadius: 0,
-                                ),
-                              ],
-                              image: const DecorationImage(
-                                image: AssetImage(AppImages.image),
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: AppDimensions.padding10w),
-                      // Greeting and Location
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Hi, Anamika',
-                            style: customTextStyle(
-                              AppTextSizes.smallTextSize, // 10
-                              AppColors.text,
-                              FontWeight.w600,
-                            ),
-                          ),
-                          Row(
-                            children: [
-                              Image.asset(
-                                AppImages.placeMarker,
-                                height: AppDimensions.containerHeight15h,
-                                width: AppDimensions.containerWidth15w,
-                              ),
-                              SizedBox(width: AppDimensions.padding4w),
-                              Text(
-                                'Indore, MP',
-                                style: customTextStyle(
-                                  AppTextSizes.smallTextSize, // 10
-                                  AppColors.text,
-                                  FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      const Spacer(),
-                      // Action Icons
+                  // 3. Profile Header. No location line: providers have no
+                  // saved address yet (the provider profile API will supply
+                  // their city).
+                  HomeHeader(
+                    firstName: firstName,
+                    showcaseDescription:
+                        'Tap your photo to finish setting up your provider details — pricing, service area, availability, and documents.',
+                    onAvatarTap: () =>
+                        context.push(RouteNames.completeProviderProfile),
+                    actions: [
                       Image.asset(
                         AppImages.homeLocation,
                         height: AppDimensions.containerHeight50h,
                         width: AppDimensions.containerWidth50w,
                       ),
-                      // SizedBox(width: AppDimensions.padding4w),
                       Image.asset(
                         AppImages.addToCart,
                         height: AppDimensions.containerHeight50h,
                         width: AppDimensions.containerWidth50w,
                       ),
-                      // SizedBox(width: AppDimensions.padding15w),
-                      // GestureDetector(
-                      //   onTap: () => Get.toNamed(RouteNames.notificationScreen),
-                      //   child:  Image.asset(
-                      //     AppImages.notification,
-                      //     height: AppDimensions.containerHeight50h,
-                      //     width: AppDimensions.containerWidth50w,
-                      //   ),
-                      // ),
                     ],
                   ),
-
-                  // Complete Your Profile Section with Animation
-                  // CompleteProfileCard(
-                  //   onFinish: () {
-                  //     Get.toNamed(RouteNames.completeProviderProfile);
-                  //   },
-                  // ),
 
                   SizedBox(height: AppDimensions.padding8h),
                   // 4. Availability Toggle Container
@@ -283,12 +161,12 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                           ),
                         ),
                         // Toggle Switch
-                        Obx(
-                          () => Switch(
-                            value: controller.isAvailable.value,
-                            onChanged: controller.toggleAvailability,
-                            activeThumbColor: AppColors.primaryDark,
-                          ),
+                        Switch(
+                          value: ref.watch(providerAvailabilityProvider),
+                          onChanged: ref
+                              .read(providerAvailabilityProvider.notifier)
+                              .toggleAvailability,
+                          activeThumbColor: AppColors.primaryDark,
                         ),
                       ],
                     ),
@@ -493,87 +371,85 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                             ],
                           ),
                         ),
-                        // Booking Card
-                        Stack(
+                        // Booking Card. The status badge and price sit in
+                        // their own trailing column (not positioned over
+                        // the card), so long names wrap instead of running
+                        // underneath them.
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            Row(
+                            _buildBorderedImage(AppImages.serviceProvider),
+                            SizedBox(width: AppDimensions.padding12w),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Bathroom Cleaning',
+                                    style: customTextStyle(
+                                      AppTextSizes.largeTextSize, // 16
+                                      AppColors.black,
+                                      FontWeight.w700,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Customer: Rahul Sharma',
+                                    style: customTextStyle(
+                                      AppTextSizes.smallTextSize,
+                                      AppColors.black,
+                                      FontWeight.w400,
+                                    ),
+                                  ),
+                                  _buildIconTextRow(
+                                    AppImages.clockOutlined,
+                                    'Today At 2:00PM',
+                                    isBold: true,
+                                  ),
+                                  _buildIconTextRow(
+                                    AppImages.locationOutlined,
+                                    'Vijay Nagar, Indore',
+                                    isBold: true,
+                                  ),
+                                  SizedBox(height: AppDimensions.padding4h),
+                                ],
+                              ),
+                            ),
+                            SizedBox(width: AppDimensions.padding8w),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                _buildBorderedImage(AppImages.serviceProvider),
-                                SizedBox(width: AppDimensions.padding12w),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Bathroom Cleaning',
-                                        style: customTextStyle(
-                                          AppTextSizes.largeTextSize, // 16
-                                          AppColors.black,
-                                          FontWeight.w700,
-                                        ),
-                                      ),
-                                      Text(
-                                        'Customer: Rahul Sharma',
-                                        style: customTextStyle(
-                                          AppTextSizes.smallTextSize,
-                                          AppColors.black,
-                                          FontWeight.w400,
-                                        ),
-                                      ),
-                                      _buildIconTextRow(
-                                        AppImages.clockOutlined,
-                                        'Today At 2:00PM',
-                                        isBold: true,
-                                      ),
-                                      _buildIconTextRow(
-                                        AppImages.locationOutlined,
-                                        'Vijay Nagar, Indore',
-                                        isBold: true,
-                                      ),
-                                      SizedBox(height: AppDimensions.padding4h),
-                                    ],
+                                // Status Badge
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: AppDimensions.padding8w,
+                                    vertical: AppDimensions.padding2h,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.lightSuccess,
+                                    borderRadius: BorderRadius.circular(
+                                      AppDimensions.radius10r,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    'Confirmed',
+                                    style: customTextStyle(
+                                      AppTextSizes.stableTextSize,
+                                      AppColors.success,
+                                      FontWeight.w400,
+                                    ),
                                   ),
                                 ),
-                              ],
-                            ),
-                            // Status Badge
-                            Positioned(
-                              bottom: AppDimensions.padding25h,
-                              right: AppDimensions.padding20w,
-                              child: Container(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: AppDimensions.padding8w,
-                                  vertical: AppDimensions.padding2h,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.lightSuccess,
-                                  borderRadius: BorderRadius.circular(
-                                    AppDimensions.radius10r,
-                                  ),
-                                ),
-                                child: Text(
-                                  'Confirmed',
+                                SizedBox(height: AppDimensions.padding8h),
+                                Text(
+                                  '₹ 699',
                                   style: customTextStyle(
-                                    AppTextSizes.stableTextSize,
-                                    AppColors.success,
-                                    FontWeight.w400,
+                                    AppTextSizes.smallTextSize,
+                                    AppColors.primaryDark,
+                                    FontWeight.w700,
                                   ),
                                 ),
-                              ),
-                            ),
-                            // Price at top right
-                            Positioned(
-                              bottom: 0,
-                              right: AppDimensions.padding50w,
-                              child: Text(
-                                '₹ 699',
-                                style: customTextStyle(
-                                  AppTextSizes.smallTextSize,
-                                  AppColors.primaryDark,
-                                  FontWeight.w700,
-                                ),
-                              ),
+                                SizedBox(height: AppDimensions.padding4h),
+                              ],
                             ),
                           ],
                         ),

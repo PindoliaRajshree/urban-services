@@ -3,10 +3,11 @@
 // button on the Payment screen).
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
+import 'package:urban_services/routes/route_args.dart';
 import 'package:urban_services/routes/route_names.dart';
 import 'package:urban_services/widgets/common_app_bar.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
@@ -80,10 +81,7 @@ class PaymentSuccessScreen extends StatelessWidget {
               padding: EdgeInsets.symmetric(
                 horizontal: AppDimensions.padding20w,
               ),
-              child: CommonAppBar(
-                title: 'Booking Success',
-                showMoreIcon: true,
-              ),
+              child: CommonAppBar(title: 'Booking Success', showMoreIcon: true),
             ),
             SizedBox(height: AppDimensions.padding10h),
 
@@ -220,20 +218,19 @@ class PaymentSuccessScreen extends StatelessWidget {
                 children: [
                   PrimaryButton(
                     text: 'Track Booking',
-                    onPressed: () => Get.toNamed(
+                    onPressed: () => context.push(
                       RouteNames.liveTrackingScreen,
-                      arguments: {
-                        'bookingId': bookingId,
-                        'serviceName': serviceName,
-                        'dateTime': dateTime,
-                      },
+                      extra: LiveTrackingArgs(
+                        bookingId: bookingId,
+                        serviceName: serviceName,
+                        dateTime: dateTime,
+                      ),
                     ),
                   ),
                   SizedBox(height: AppDimensions.padding12h),
                   SecondaryButton(
                     text: 'Go to Home',
-                    onPressed: () =>
-                        Get.offAllNamed(RouteNames.homeMain),
+                    onPressed: () => context.go(RouteNames.homeMain),
                   ),
                 ],
               ),

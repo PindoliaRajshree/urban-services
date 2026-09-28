@@ -110,9 +110,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
     }
   }
 
-  void _onMorePressed() {
-
-  }
+  void _onMorePressed() {}
 
   @override
   Widget build(BuildContext context) {
@@ -131,6 +129,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
               SizedBox(height: AppDimensions.padding15h),
               CommonAppBar(
                 title: 'My Bookings',
+                showBackButton: false,
                 showMoreIcon: true,
                 onMorePressed: _onMorePressed,
               ),
@@ -146,8 +145,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                         horizontal: AppDimensions.padding4w,
                       ),
                       child: GestureDetector(
-                        onTap: () =>
-                            setState(() => _selectedTabIndex = index),
+                        onTap: () => setState(() => _selectedTabIndex = index),
                         child: Container(
                           padding: EdgeInsets.symmetric(
                             vertical: AppDimensions.padding10h,

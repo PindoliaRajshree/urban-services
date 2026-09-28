@@ -1,25 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
-import 'package:urban_services/features/home_main/main_navigation_controller.dart';
+import 'package:urban_services/features/home_main/main_navigation_provider.dart';
 import 'package:urban_services/widgets/concave_bottom_bar_painter.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
 
-class CustomBottomBar extends StatefulWidget {
+class CustomBottomBar extends ConsumerStatefulWidget {
   const CustomBottomBar({super.key});
 
   @override
-  State<CustomBottomBar> createState() => _CustomBottomBarState();
+  ConsumerState<CustomBottomBar> createState() => _CustomBottomBarState();
 }
 
-class _CustomBottomBarState extends State<CustomBottomBar>
+class _CustomBottomBarState extends ConsumerState<CustomBottomBar>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _notchXAnimation;
-  final navigationController = Get.find<MainNavigationController>();
 
   @override
   void initState() {
@@ -30,12 +29,14 @@ class _CustomBottomBarState extends State<CustomBottomBar>
     );
 
     // Initial position based on the current index
-    _notchXAnimation = Tween<double>(begin: 0, end: 0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _notchXAnimation = Tween<double>(
+      begin: 0,
+      end: 0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
-    // Listen for index changes to trigger animation
-    ever(navigationController.currentIndex, (index) {
+    // Listen for index changes to trigger animation. listenManual is closed
+    // automatically when this widget is disposed.
+    ref.listenManual(mainTabIndexProvider, (_, index) {
       if (mounted) {
         _animateTo(index);
       }
@@ -43,7 +44,9 @@ class _CustomBottomBarState extends State<CustomBottomBar>
 
     // Set initial animation value once layout is available
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _animateTo(navigationController.currentIndex.value, isInitial: true);
+      if (mounted) {
+        _animateTo(ref.read(mainTabIndexProvider), isInitial: true);
+      }
     });
   }
 
@@ -53,18 +56,17 @@ class _CustomBottomBarState extends State<CustomBottomBar>
 
     if (isInitial) {
       setState(() {
-        _notchXAnimation = Tween<double>(begin: targetX, end: targetX).animate(
-          _controller,
-        );
+        _notchXAnimation = Tween<double>(
+          begin: targetX,
+          end: targetX,
+        ).animate(_controller);
       });
     } else {
       setState(() {
-        _notchXAnimation = Tween<double>(
-          begin: _notchXAnimation.value,
-          end: targetX,
-        ).animate(
-          CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-        );
+        _notchXAnimation =
+            Tween<double>(begin: _notchXAnimation.value, end: targetX).animate(
+              CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+            );
       });
       _controller.forward(from: 0);
     }
@@ -123,7 +125,9 @@ class _CustomBottomBarState extends State<CustomBottomBar>
             // Animated Floating Button that follows the notch
             Positioned(
               top: -AppDimensions.padding30h, // Pop up above the bar
-              left: _notchXAnimation.value - (AppDimensions.containerWidth60w / 2),
+              left:
+                  _notchXAnimation.value -
+                  (AppDimensions.containerWidth60w / 2),
               child: _buildFloatingButton(),
             ),
           ],
@@ -132,112 +136,121 @@ class _CustomBottomBarState extends State<CustomBottomBar>
     );
   }
 
-  Widget _buildNavItem(int index, String iconPath, String label, {bool isHome = false}) {
+  Widget _buildNavItem(
+    int index,
+    String iconPath,
+    String label, {
+    bool isHome = false,
+  }) {
     return Expanded(
       child: GestureDetector(
-        onTap: () => navigationController.changeIndex(index),
+        onTap: () => ref.read(mainTabIndexProvider.notifier).changeIndex(index),
         behavior: HitTestBehavior.opaque,
-        child: Obx(() {
-          final isSelected = navigationController.currentIndex.value == index;
-          
-          // Hide icon/label ONLY if it's the currently selected tab
-          // (because the selected tab is always shown in the floating button/notch)
-          final bool shouldShow = !isSelected;
+        child: Builder(
+          builder: (context) {
+            final isSelected = ref.watch(mainTabIndexProvider) == index;
 
-          final color = AppColors.white.withValues(alpha: 0.6);
+            // Hide icon/label ONLY if it's the currently selected tab
+            // (because the selected tab is always shown in the floating button/notch)
+            final bool shouldShow = !isSelected;
 
-          return Opacity(
-            opacity: shouldShow ? 1.0 : 0.0,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset(
-                  iconPath,
-                  width: AppDimensions.containerWidth22w,
-                  height: AppDimensions.containerHeight22h,
-                  color: color,
-                ),
-                SizedBox(height: AppDimensions.padding2h),
-                Text(
-                  label,
-                  style: customTextStyle(
-                    AppTextSizes.stableTextSize,
-                    color,
-                    FontWeight.w400,
+            final color = AppColors.white.withValues(alpha: 0.6);
+
+            return Opacity(
+              opacity: shouldShow ? 1.0 : 0.0,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    iconPath,
+                    width: AppDimensions.containerWidth22w,
+                    height: AppDimensions.containerHeight22h,
+                    color: color,
                   ),
-                ),
-              ],
-            ),
-          );
-        }),
+                  SizedBox(height: AppDimensions.padding2h),
+                  Text(
+                    label,
+                    style: customTextStyle(
+                      AppTextSizes.stableTextSize,
+                      color,
+                      FontWeight.w400,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
       ),
     );
   }
 
   Widget _buildFloatingButton() {
-    return Obx(() {
-      final index = navigationController.currentIndex.value;
-      String iconPath;
-      String label;
+    return Builder(
+      builder: (context) {
+        final index = ref.watch(mainTabIndexProvider);
+        String iconPath;
+        String label;
 
-      switch (index) {
-        case 0:
-          iconPath = AppImages.settings;
-          label = "Services";
-          break;
-        case 1:
-          iconPath = AppImages.booking;
-          label = "Booking";
-          break;
-        case 3:
-          iconPath = AppImages.chat;
-          label = "Chat";
-          break;
-        case 4:
-          iconPath = AppImages.profile;
-          label = "Profile";
-          break;
-        default:
-          iconPath = AppImages.home;
-          label = "Home";
-      }
+        switch (index) {
+          case 0:
+            iconPath = AppImages.settings;
+            label = "Services";
+            break;
+          case 1:
+            iconPath = AppImages.booking;
+            label = "Booking";
+            break;
+          case 3:
+            iconPath = AppImages.chat;
+            label = "Chat";
+            break;
+          case 4:
+            iconPath = AppImages.profile;
+            label = "Profile";
+            break;
+          default:
+            iconPath = AppImages.home;
+            label = "Home";
+        }
 
-      return Container(
-        width: AppDimensions.containerWidth60w,
-        height: AppDimensions.containerHeight60h,
-        decoration: const BoxDecoration(
-          gradient: AppColors.gradient,
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black26,
-              blurRadius: 10,
-              offset: Offset(0, 5),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset(
-              iconPath,
-              width: AppDimensions.containerWidth24w,
-              height: AppDimensions.containerHeight24h,
-              color: AppColors.white,
-            ),
-            SizedBox(height: AppDimensions.padding2h),
-            Text(
-              label,
-              style: customTextStyle(
-                AppTextSizes.stableTextSize,
-                AppColors.white,
-                FontWeight.w600,
+        return Container(
+          width: AppDimensions.containerWidth60w,
+          height: AppDimensions.containerHeight60h,
+          decoration: const BoxDecoration(
+            gradient: AppColors.gradient,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black26,
+                blurRadius: 10,
+                offset: Offset(0, 5),
               ),
-            ),
-          ],
-        ),
-      );
-    });
+            ],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset(
+                iconPath,
+                width: AppDimensions.containerWidth24w,
+                height: AppDimensions.containerHeight24h,
+                color: AppColors.white,
+              ),
+              SizedBox(height: AppDimensions.padding2h),
+              Text(
+                label,
+                style: customTextStyle(
+                  AppTextSizes.stableTextSize,
+                  AppColors.white,
+                  FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }

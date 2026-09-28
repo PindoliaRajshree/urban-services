@@ -2,9 +2,10 @@
 // Purpose: Lists all services under a category (opened from a category card on the Home screen).
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
+import 'package:urban_services/routes/route_args.dart';
 import 'package:urban_services/routes/route_names.dart';
 import 'package:urban_services/widgets/common_app_bar.dart';
 import 'package:urban_services/widgets/custom_search_bar.dart';
@@ -175,13 +176,13 @@ class ServiceCategoryScreen extends StatelessWidget {
                       reviewCount: service.reviewCount,
                       price: service.price,
                       imagePath: service.imagePath,
-                      onTap: () => Get.toNamed(
+                      onTap: () => context.push(
                         RouteNames.serviceDetailsScreen,
-                        arguments: {
-                          'imagePath': service.imagePath,
-                          'reviewCount': service.reviewCount,
-                          'price': service.price,
-                        },
+                        extra: ServiceDetailsArgs(
+                          imagePath: service.imagePath,
+                          reviewCount: service.reviewCount,
+                          price: service.price,
+                        ),
                       ),
                     );
                   },

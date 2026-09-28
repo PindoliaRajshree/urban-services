@@ -6,23 +6,29 @@
 // both paths always stay available.
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
-import 'package:urban_services/features/address/address_controller.dart';
+import 'package:urban_services/features/address/address_provider.dart';
+import 'package:urban_services/features/address/models/service_address_response.dart';
 import 'package:urban_services/routes/route_names.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
 import 'package:urban_services/widgets/primary_button.dart';
 import 'package:urban_services/widgets/secondary_button.dart';
 
-class AddressChoiceDialog extends StatelessWidget {
-  const AddressChoiceDialog({super.key});
+class AddressChoiceDialog extends ConsumerWidget {
+  const AddressChoiceDialog({super.key, required this.onUseCurrentLocation});
+
+  /// Runs the address screen's "Use my Current Location" handling (which
+  /// may open the Location Accuracy dialog) after this dialog closes.
+  final VoidCallback onUseCurrentLocation;
 
   @override
-  Widget build(BuildContext context) {
-    final controller = Get.find<AddressController>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(addressProvider);
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -57,7 +63,9 @@ class AddressChoiceDialog extends StatelessWidget {
 
             // Message
             Text(
-              'We need a service address to continue. How would you like to set it?',
+              state.hasCardAddress
+                  ? 'How would you like to change your service address?'
+                  : 'We need a service address to continue. How would you like to set it?',
               textAlign: TextAlign.center,
               style: customTextStyle(
                 AppTextSizes.largeMediumTextSize, // 14
@@ -70,31 +78,46 @@ class AddressChoiceDialog extends StatelessWidget {
             // Option 1: Use current location (mirrors the loading state of
             // the "Use my Current Location" row on the address screen so
             // there's no dead tap while a fetch is already in flight).
-            Obx(
-              () => SecondaryButton(
-                text: 'Use My Current Location',
-                iconPath: AppImages.placeMarker,
-                isLoading: controller.isFetchingLocation.value,
-                onPressed: () {
-                  Get.back(); // Close this dialog first.
-                  controller.onCurrentLocationTap();
-                },
-              ),
+            SecondaryButton(
+              text: 'Use My Current Location',
+              iconPath: AppImages.placeMarker,
+              isLoading: state.isFetchingLocation,
+              onPressed: () {
+                Navigator.of(context).pop(); // Close this dialog first.
+                onUseCurrentLocation();
+              },
             ),
             SizedBox(height: AppDimensions.padding15h),
 
-            // Option 2: Enter address manually. Passes the saved address
-            // (if any) so Add Address can prefill its fields when the user
-            // is just switching a previously-set manual address.
+            // Option 2: Enter address manually. Prefills Add Address with
+            // the unsaved manual entry if there is one (it's what the card
+            // shows), otherwise with the saved address.
             PrimaryButton(
               text: 'Enter Address Manually',
               onPressed: () {
-                Get.back(); // Close this dialog first.
-                Get.toNamed(
+                final router = GoRouter.of(context);
+                final pending = state.pendingManualAddress;
+                Navigator.of(context).pop(); // Close this dialog first.
+                router.push(
                   RouteNames.addAddressScreen,
-                  arguments: controller.address.value,
+                  extra: pending != null
+                      ? ServiceAddressResponse.fromRequest(pending)
+                      : state.address,
                 );
               },
+            ),
+            SizedBox(height: AppDimensions.padding10h),
+
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                'Cancel',
+                style: customTextStyle(
+                  AppTextSizes.largeTextSize,
+                  AppColors.darkGrey,
+                  FontWeight.w600,
+                ),
+              ),
             ),
           ],
         ),

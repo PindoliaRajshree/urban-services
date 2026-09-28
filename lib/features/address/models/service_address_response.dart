@@ -25,6 +25,8 @@
 //   }
 // }
 
+import 'package:urban_services/features/address/models/service_address_request.dart';
+
 class ServiceAddressResponse {
   ServiceAddressResponse({
     this.message,
@@ -63,6 +65,21 @@ class ServiceAddressResponse {
   final bool? isDefault;
   final String? createdAt;
   final String? updatedAt;
+
+  /// An unsaved address entered on the Add Address form, in the shape the
+  /// form prefills from.
+  factory ServiceAddressResponse.fromRequest(ServiceAddressRequest request) =>
+      ServiceAddressResponse(
+        userId: request.userId,
+        flatApartment: request.flatApartment,
+        floorBuilding: request.floorBuilding,
+        buildingSocietyLandmark: request.buildingSocietyLandmark,
+        fullAddress: request.fullAddress,
+        landmark: request.landmark,
+        city: request.city,
+        state: request.state,
+        pincode: request.pincode,
+      );
 
   factory ServiceAddressResponse.fromJson(Map<String, dynamic> json) {
     final Map<String, dynamic> data = (json['data'] is Map<String, dynamic>)

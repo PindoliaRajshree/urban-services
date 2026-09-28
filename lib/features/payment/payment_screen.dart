@@ -3,10 +3,11 @@
 // (opened from the "Book Now" button on the Booking Service screen).
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
+import 'package:urban_services/routes/route_args.dart';
 import 'package:urban_services/routes/route_names.dart';
 import 'package:urban_services/widgets/common_app_bar.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
@@ -154,11 +155,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 children: [
                   Text(
                     method.name,
-                    style: customTextStyle(
-                      14,
-                      AppColors.text,
-                      FontWeight.w600,
-                    ),
+                    style: customTextStyle(14, AppColors.text, FontWeight.w600),
                   ),
                   SizedBox(height: AppDimensions.padding2h),
                   Text(
@@ -267,12 +264,12 @@ class _PaymentScreenState extends State<PaymentScreen> {
               padding: EdgeInsets.all(AppDimensions.padding20w),
               child: PrimaryButton(
                 text: 'Pay ₹${widget.price}',
-                onPressed: () => Get.offNamed(
+                onPressed: () => context.pushReplacement(
                   RouteNames.paymentSuccessScreen,
-                  arguments: {
-                    'dateTime': widget.dateTime,
-                    'address': widget.address,
-                  },
+                  extra: PaymentSuccessArgs(
+                    dateTime: widget.dateTime,
+                    address: widget.address,
+                  ),
                 ),
               ),
             ),

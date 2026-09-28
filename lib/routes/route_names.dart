@@ -1,5 +1,5 @@
 // File: lib/routes/route_names.dart
-// Purpose: Defines constant strings for all navigation route names.
+// Purpose: Route paths for go_router (see app_router.dart).
 
 class RouteNames {
   static const String splashScreen = '/splash';
@@ -25,6 +25,7 @@ class RouteNames {
   //address
   static const String addressScreen = '/address';
   static const String addAddressScreen = '/addAddress';
+  static const String mapPicker = '/mapPicker';
 
   //notification
   static const String notificationScreen = '/notification';

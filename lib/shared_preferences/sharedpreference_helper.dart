@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SharedPreferencesHelper {
@@ -13,6 +12,16 @@ class SharedPreferencesHelper {
   /// Optional: call once at app start to warm up the instance.
   static Future<void> init() async {
     _prefs ??= await SharedPreferences.getInstance();
+  }
+
+  /// Synchronous access for code that runs after [init] (e.g. the session
+  /// provider, which must know the logged-in state before the first frame).
+  SharedPreferences get prefs {
+    final p = _prefs;
+    if (p == null) {
+      throw StateError('SharedPreferencesHelper.init() must be awaited first.');
+    }
+    return p;
   }
 
   //get SharedPreferences instance
@@ -80,16 +89,6 @@ class SharedPreferencesHelper {
   Future<bool> clear() async {
     final p = await _getPrefs;
     return p.clear();
-  }
-
-  /// Clear all preferences and reset providers except authProvider.
-  /// Use this when calling from within AuthNotifier to avoid
-  /// "A provider cannot depend on itself" error.
-  Future<bool> clearExceptAuth(Ref ref) async {
-    final p = await _getPrefs;
-    final result = await p.clear();
-
-    return result;
   }
 
   // Check if a key exists

@@ -26,6 +26,10 @@ class PrimaryButton extends StatelessWidget {
   /// controller's loading flag straight through.
   final bool isLoading;
 
+  /// Dimmed and ignores taps, without a spinner — e.g. while a different
+  /// button's request is running.
+  final bool isDisabled;
+
   const PrimaryButton({
     super.key,
     required this.text,
@@ -33,6 +37,7 @@ class PrimaryButton extends StatelessWidget {
     this.width,
     this.height,
     this.isLoading = false,
+    this.isDisabled = false,
   });
 
   @override
@@ -40,9 +45,13 @@ class PrimaryButton extends StatelessWidget {
     final double spinnerSize = AppDimensions.containerHeight22h;
 
     return GestureDetector(
-      onTap: isLoading ? null : onPressed,
+      onTap: isLoading || isDisabled ? null : onPressed,
       child: AnimatedOpacity(
-        opacity: isLoading ? 0.75 : 1,
+        opacity: isDisabled
+            ? 0.5
+            : isLoading
+            ? 0.75
+            : 1,
         duration: const Duration(milliseconds: 200),
         child: Container(
           width: width ?? double.infinity,
@@ -71,13 +80,23 @@ class PrimaryButton extends StatelessWidget {
                       ),
                     ),
                   )
-                : Text(
-                    text,
+                // Shrinks rather than overflowing with large system fonts.
+                : Padding(
                     key: const ValueKey('label'),
-                    style: customTextStyle(
-                      AppTextSizes.doubleLargeTextSize, // Font size 18
-                      AppColors.white,
-                      FontWeight.w600, // Medium weight
+                    padding: EdgeInsets.symmetric(
+                      horizontal: AppDimensions.padding12w,
+                    ),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        text,
+                        maxLines: 1,
+                        style: customTextStyle(
+                          AppTextSizes.doubleLargeTextSize, // Font size 18
+                          AppColors.white,
+                          FontWeight.w600, // Medium weight
+                        ),
+                      ),
                     ),
                   ),
           ),

@@ -5,13 +5,16 @@
 class ApiConstants {
   ApiConstants._();
 
-  /// Base URL for the Urban Service backend.
+  /// Base URL for the Urban Service backend. Override per build with
+  /// `API_BASE_URL` in dart_defines.json (see README "Local config").
   ///
-  /// NOTE: This currently points at the `testing` environment path that was
-  /// shared for initial setup. Update this single constant when the
-  /// production API path is available — nothing else needs to change.
-  static const String baseUrl =
-      'https://bhavishyodayinstitute.com/bhavishyodayinstitute2/UrbanService Project/public/api/';
+  /// The default is the shared `testing` environment path (the space in its
+  /// folder name is written as %20).
+  static const String baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue:
+        'https://bhavishyodayinstitute.com/bhavishyodayinstitute2/UrbanService%20Project/public/api/',
+  );
 
   static const Duration connectTimeout = Duration(seconds: 30);
   static const Duration receiveTimeout = Duration(seconds: 30);
@@ -57,31 +60,31 @@ class ApiConstants {
   /// Double `provider` prefix matches [serviceTypes]/[subServiceTypes] above
   /// — the single-prefix path (`provider/provide-profile/update`) returned a
   /// Laravel "route not found" 404 in testing.
-  static const String providerProfileUpdate =
-      'provider/provide-profile/update';
+  static const String providerProfileUpdate = 'provider/provide-profile/update';
 
   // ---- Google Maps / Geocoding ----
-  /// Your Google Maps Platform API key — currently the same key already set
-  /// in android/app/src/main/AndroidManifest.xml
-  /// (com.google.android.geo.API_KEY meta-data, which enables the map
-  /// widget) and now mirrored in ios/Runner/AppDelegate.swift
-  /// (GMSServices.provideAPIKey). This constant lets the app additionally
-  /// call Google's Geocoding API directly over HTTP for more accurate
-  /// reverse geocoding than the on-device geocoder. Make sure the
-  /// "Geocoding API" is enabled for this key in Google Cloud Console
-  /// (APIs & Services > Library) — it's a separate toggle from "Maps SDK
-  /// for Android/iOS".
-  static const String googleMapsApiKey = 'AIzaSyCqhp43e2-dckwF04XtGyFMeTQKxkjpfD4';
+  /// Google Maps Platform API key, injected at build time with
+  /// `--dart-define-from-file=dart_defines.json` (gitignored; copy
+  /// dart_defines.example.json). The map widget gets the same key from
+  /// android/local.properties and ios/Flutter/Secrets.xcconfig — see
+  /// README "Local config". This constant is used to call Google's
+  /// Geocoding API directly for more accurate reverse geocoding than the
+  /// on-device geocoder; when it's empty, GoogleGeocodingService falls back
+  /// to the on-device geocoder. The "Geocoding API" must be enabled for
+  /// this key in Google Cloud Console.
+  static const String googleMapsApiKey = String.fromEnvironment('MAPS_API_KEY');
 
   /// SHA-1 fingerprint (no colons) of the certificate this app is signed
   /// with, sent as the `X-Android-Cert` header on Geocoding API calls.
   /// Only matters if googleMapsApiKey is restricted to "Android apps" in
   /// Google Cloud Console — see GoogleGeocodingService's doc comment.
-  /// Currently set to the release keystore's SHA-1
-  /// (android/app/upload-keystore.jks). If you test reverse geocoding on a
-  /// debug build (flutter run) with an app-restricted key, add the debug
-  /// keystore's SHA-1 to the key's allowed list in Cloud Console too, or
-  /// switch this constant per build flavor.
-  static const String androidSigningCertSha1 =
-      '001269F1D9AB6BE2B6CCFEBB09AC228CDE80F52A';
+  /// Defaults to the release keystore's SHA-1
+  /// (android/app/upload-keystore.jks). Debug builds are signed with the
+  /// debug keystore, so set `ANDROID_CERT_SHA1` in dart_defines.json to its
+  /// SHA-1 (and allow it on the key in Cloud Console) to use the Geocoding
+  /// API from `flutter run` — see README "Local config".
+  static const String androidSigningCertSha1 = String.fromEnvironment(
+    'ANDROID_CERT_SHA1',
+    defaultValue: '001269F1D9AB6BE2B6CCFEBB09AC228CDE80F52A',
+  );
 }

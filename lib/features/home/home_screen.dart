@@ -2,56 +2,48 @@
 // Purpose: The primary dashboard for users to explore services, categories, and top-rated providers.
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:showcaseview/showcaseview.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:urban_services/widgets/home_header.dart';
+import 'package:urban_services/routes/route_args.dart';
 import 'package:urban_services/routes/route_names.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
-import 'package:urban_services/core/constants/app_text_sizes.dart';
+import 'package:urban_services/core/session/session_provider.dart';
+import 'package:urban_services/features/address/address_provider.dart';
 import 'package:urban_services/widgets/category_item.dart';
 import 'package:urban_services/widgets/custom_search_bar.dart';
-import 'package:urban_services/widgets/custom_text_style.dart';
 import 'package:urban_services/widgets/section_heading.dart';
 import 'package:urban_services/widgets/top_rated_card.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   // Current index for the promotional slider
   int _currentSliderIndex = 0;
 
-  // Spotlights the profile avatar with a "complete your profile" callout.
-  final GlobalKey _profileShowcaseKey = GlobalKey();
-
-  @override
-  void initState() {
-    super.initState();
-    // Runs every time this screen is built — there's no "seen it already"
-    // flag yet, so the callout shows on every visit to Home for now.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      ShowCaseWidget.of(context).startShowCase([_profileShowcaseKey]);
-    });
-  }
-
-  /// Sends the user to the basic profile-completion screen (name, photo,
-  /// mobile, email, gender, DOB) — not the provider onboarding wizard.
-  /// `disableDefaultTargetGestures: true` below means the package's own tap
-  /// handling (and its `disposeOnTap` logic) never runs, so the showcase is
-  /// dismissed explicitly here before navigating.
-  void _onProfileShowcaseTap() {
-    ShowCaseWidget.of(context).dismiss();
-    Get.toNamed(RouteNames.completeProfile);
-  }
+  /// Opens the address screen to change the saved address; it pops back
+  /// here after saving.
+  void _openAddress() => context.push(
+    RouteNames.addressScreen,
+    extra: const AddressArgs(manage: true),
+  );
 
   @override
   Widget build(BuildContext context) {
+    final firstName = ref.watch(sessionProvider.select((s) => s.firstName));
+    final address = ref.watch(addressProvider.select((s) => s.address));
+    final location = [
+      address?.city,
+      address?.state,
+    ].where((part) => part != null && part.trim().isNotEmpty).join(', ');
+
     return Scaffold(
       backgroundColor: AppColors.screenBackground,
       body: Stack(
@@ -76,108 +68,29 @@ class _HomeScreenState extends State<HomeScreen> {
                   SizedBox(height: AppDimensions.padding15h),
 
                   // 3. User Profile and Location Header
-                  Row(
-                    children: [
-                      // User Avatar with Shadow — showcased with a
-                      // "complete your profile" spotlight + arrow, and now
-                      // actually tappable (it wasn't before).
-                      Showcase(
-                        key: _profileShowcaseKey,
-                        title: 'Complete Your Profile',
-                        description:
-                            'Tap your photo to complete your basic profile details.',
-                        targetShapeBorder: const CircleBorder(),
-                        tooltipBackgroundColor: AppColors.primaryDark,
-                        textColor: AppColors.white,
-                        titleTextStyle: customTextStyle(
-                          AppTextSizes.largeTextSize,
-                          AppColors.white,
-                          FontWeight.w700,
-                        ),
-                        descTextStyle: customTextStyle(
-                          AppTextSizes.smallTextSize,
-                          AppColors.white,
-                          FontWeight.w400,
-                        ),
-                        disableDefaultTargetGestures: true,
-                        onTargetClick: _onProfileShowcaseTap,
-                        disposeOnTap: true,
-                        child: GestureDetector(
-                          onTap: _onProfileShowcaseTap,
-                          child: Container(
-                            width: AppDimensions.containerWidth45w,
-                            height: AppDimensions.containerHeight45h,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: AppColors.primaryDark,
-                                width: 1,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.25),
-                                  offset: const Offset(0, 1),
-                                  blurRadius: 2.9,
-                                  spreadRadius: 0,
-                                ),
-                              ],
-                              image: const DecorationImage(
-                                image: AssetImage(AppImages.image),
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: AppDimensions.padding10w),
-                      // Greeting and Location
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Hi, Anamika',
-                            style: customTextStyle(
-                              AppTextSizes.smallTextSize, // 10
-                              AppColors.text,
-                              FontWeight.w600,
-                            ),
-                          ),
-                          Row(
-                            children: [
-                              Image.asset(
-                                AppImages.placeMarker,
-                                height: AppDimensions.containerHeight15h,
-                                width: AppDimensions.containerWidth15w,
-                              ),
-                              SizedBox(width: AppDimensions.padding4w),
-                              Text(
-                                'Indore, MP',
-                                style: customTextStyle(
-                                  AppTextSizes.smallTextSize, // 10
-                                  AppColors.text,
-                                  FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      const Spacer(),
-                      // Action Icons
-                      Image.asset(
-                        AppImages.homeLocation,
-                        height: AppDimensions.containerHeight50h,
-                        width: AppDimensions.containerWidth50w,
-                      ),
-                      // SizedBox(width: AppDimensions.padding8w),
-                      // Image.asset(
-                      //   AppImages.addToCart,
-                      //   height: AppDimensions.containerHeight50h,
-                      //   width: AppDimensions.containerWidth50w,
-                      // ),
-                      // SizedBox(width: AppDimensions.padding15w),
+                  HomeHeader(
+                    firstName: firstName,
+                    showcaseDescription:
+                        'Tap your photo to complete your basic profile details.',
+                    // The basic profile-completion screen (name, photo,
+                    // mobile, email, gender, DOB), not the provider wizard.
+                    onAvatarTap: () => context.push(RouteNames.completeProfile),
+                    location: location.isNotEmpty
+                        ? location
+                        : 'Add your address',
+                    onLocationTap: _openAddress,
+                    actions: [
                       GestureDetector(
-                        onTap: () => Get.toNamed(RouteNames.notificationScreen),
+                        onTap: _openAddress,
+                        child: Image.asset(
+                          AppImages.homeLocation,
+                          height: AppDimensions.containerHeight50h,
+                          width: AppDimensions.containerWidth50w,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () =>
+                            context.push(RouteNames.notificationScreen),
                         child: Image.asset(
                           AppImages.notification,
                           height: AppDimensions.containerHeight50h,
@@ -187,14 +100,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
 
-                  // Complete Your Profile Section with Animation
-                  // CompleteProfileCard(
-                  //   onFinish: () {
-                  //     Get.toNamed(RouteNames.completeProviderProfile);
-                  //   },
-                  // ),
-
-                  SizedBox(height: AppDimensions.padding8h,),
+                  SizedBox(height: AppDimensions.padding8h),
 
                   // 4. Search Bar
                   const CustomSearchBar(hintText: 'Search'),
@@ -250,19 +156,20 @@ class _HomeScreenState extends State<HomeScreen> {
                       AppImages.promotionalBanners.length,
                       (index) {
                         final isSelected = _currentSliderIndex == index;
-                      return Container(
-                        width: AppDimensions.containerWidth7w,
-                        height: AppDimensions.containerHeight7h,
-                        margin: EdgeInsets.symmetric(
-                          horizontal: AppDimensions.padding4w,
-                        ),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: !isSelected ? AppColors.lightGrey2 : null,
-                          gradient: isSelected ? AppColors.gradient : null,
-                        ),
-                      );
-                    }),
+                        return Container(
+                          width: AppDimensions.containerWidth7w,
+                          height: AppDimensions.containerHeight7h,
+                          margin: EdgeInsets.symmetric(
+                            horizontal: AppDimensions.padding4w,
+                          ),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: !isSelected ? AppColors.lightGrey2 : null,
+                            gradient: isSelected ? AppColors.gradient : null,
+                          ),
+                        );
+                      },
+                    ),
                   ),
 
                   SizedBox(height: AppDimensions.padding10h),
@@ -279,48 +186,48 @@ class _HomeScreenState extends State<HomeScreen> {
                         CategoryItem(
                           icon: AppImages.cleaningService,
                           title: 'Cleaning',
-                          onTap: () => Get.toNamed(
+                          onTap: () => context.push(
                             RouteNames.serviceCategoryScreen,
-                            arguments: {
-                              'categoryTitle': 'Cleaning Service',
-                              'serviceCount': '30+ Services',
-                            },
+                            extra: ServiceCategoryArgs(
+                              categoryTitle: 'Cleaning Service',
+                              serviceCount: '30+ Services',
+                            ),
                           ),
                         ),
                         SizedBox(width: AppDimensions.padding15w),
                         CategoryItem(
                           icon: AppImages.electrician,
                           title: 'Electrician',
-                          onTap: () => Get.toNamed(
+                          onTap: () => context.push(
                             RouteNames.serviceCategoryScreen,
-                            arguments: {
-                              'categoryTitle': 'Electrician Service',
-                              'serviceCount': '30+ Services',
-                            },
+                            extra: ServiceCategoryArgs(
+                              categoryTitle: 'Electrician Service',
+                              serviceCount: '30+ Services',
+                            ),
                           ),
                         ),
                         SizedBox(width: AppDimensions.padding15w),
                         CategoryItem(
                           icon: AppImages.plumber,
                           title: 'Plumber',
-                          onTap: () => Get.toNamed(
+                          onTap: () => context.push(
                             RouteNames.serviceCategoryScreen,
-                            arguments: {
-                              'categoryTitle': 'Plumber Service',
-                              'serviceCount': '30+ Services',
-                            },
+                            extra: ServiceCategoryArgs(
+                              categoryTitle: 'Plumber Service',
+                              serviceCount: '30+ Services',
+                            ),
                           ),
                         ),
                         SizedBox(width: AppDimensions.padding15w),
                         CategoryItem(
                           icon: AppImages.laundry,
                           title: 'Laundry',
-                          onTap: () => Get.toNamed(
+                          onTap: () => context.push(
                             RouteNames.serviceCategoryScreen,
-                            arguments: {
-                              'categoryTitle': 'Laundry Service',
-                              'serviceCount': '30+ Services',
-                            },
+                            extra: ServiceCategoryArgs(
+                              categoryTitle: 'Laundry Service',
+                              serviceCount: '30+ Services',
+                            ),
                           ),
                         ),
                       ],
