@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,6 +13,7 @@ import 'package:showcaseview/showcaseview.dart';
 import 'package:urban_services/core/navigation/app_keys.dart';
 import 'package:urban_services/core/session/token_store.dart';
 import 'package:urban_services/core/themes/theme.dart';
+import 'package:urban_services/firebase_options.dart';
 import 'package:urban_services/routes/app_router.dart';
 import 'package:urban_services/shared_preferences/sharedpreference_helper.dart';
 
@@ -26,7 +29,22 @@ Future<void> main() async {
     const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
   );
 
-  await Firebase.initializeApp();
+  // Options come from lib/firebase_options.dart: iOS has no
+  // GoogleService-Info.plist, so it can't be read from native config.
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // Crash reporting in release builds only; debug keeps the normal red
+  // screen and console output.
+  await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(
+    kReleaseMode,
+  );
+  if (kReleaseMode) {
+    FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+    PlatformDispatcher.instance.onError = (error, stack) {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      return true;
+    };
+  }
 
   // Initialize SharedPreferences, then the secure auth token (which reads
   // a flag from SharedPreferences).

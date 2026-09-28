@@ -28,13 +28,19 @@ String? optionalEmailError(String? value) {
 /// The DOB format the profile forms display and submit.
 String formatDob(DateTime date) => DateFormat('dd/MM/yyyy').format(date);
 
-/// Opens the system date picker for DOB. Returns null if cancelled.
-Future<DateTime?> pickDateOfBirth(BuildContext context) => showDatePicker(
-  context: context,
-  initialDate: DateTime.now().subtract(const Duration(days: 365 * 18)),
-  firstDate: DateTime(1950),
-  lastDate: DateTime.now(),
-);
+/// Opens the system date picker for DOB, limited to people aged 18 or over.
+/// Returns null if cancelled.
+Future<DateTime?> pickDateOfBirth(BuildContext context) {
+  final now = DateTime.now();
+  // The latest allowed birthday: exactly 18 years ago today.
+  final eighteenYearsAgo = DateTime(now.year - 18, now.month, now.day);
+  return showDatePicker(
+    context: context,
+    initialDate: eighteenYearsAgo,
+    firstDate: DateTime(1950),
+    lastDate: eighteenYearsAgo,
+  );
+}
 
 /// Picks a photo from [source], downscaled to [maxSide] pixels and
 /// recompressed (a full-resolution camera photo is several MB and slow to

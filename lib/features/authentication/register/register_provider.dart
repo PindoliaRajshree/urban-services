@@ -45,6 +45,7 @@ class RegisterState {
     this.termsError,
     this.agreeToTerms = false,
     this.status = ApiStatus.initial,
+    this.googleInProgress = false,
   });
 
   final String? nameError;
@@ -59,19 +60,29 @@ class RegisterState {
   /// show a loading state.
   final ApiStatus status;
 
-  bool get isLoading => status == ApiStatus.loading;
+  /// Whether the running request is the Google flow (vs the form), so only
+  /// the tapped button shows a spinner.
+  final bool googleInProgress;
 
-  RegisterState copyWith({bool? agreeToTerms, ApiStatus? status}) =>
-      RegisterState(
-        nameError: nameError,
-        mobileError: mobileError,
-        emailError: emailError,
-        passwordError: passwordError,
-        confirmPasswordError: confirmPasswordError,
-        termsError: termsError,
-        agreeToTerms: agreeToTerms ?? this.agreeToTerms,
-        status: status ?? this.status,
-      );
+  bool get isLoading => status == ApiStatus.loading;
+  bool get isFormLoading => isLoading && !googleInProgress;
+  bool get isGoogleLoading => isLoading && googleInProgress;
+
+  RegisterState copyWith({
+    bool? agreeToTerms,
+    ApiStatus? status,
+    bool? googleInProgress,
+  }) => RegisterState(
+    nameError: nameError,
+    mobileError: mobileError,
+    emailError: emailError,
+    passwordError: passwordError,
+    confirmPasswordError: confirmPasswordError,
+    termsError: termsError,
+    agreeToTerms: agreeToTerms ?? this.agreeToTerms,
+    status: status ?? this.status,
+    googleInProgress: googleInProgress ?? this.googleInProgress,
+  );
 }
 
 class RegisterNotifier extends Notifier<RegisterState> {
@@ -149,7 +160,7 @@ class RegisterNotifier extends Notifier<RegisterState> {
     if (state.isLoading) return;
     if (!validate(form)) return;
 
-    state = state.copyWith(status: ApiStatus.loading);
+    state = state.copyWith(status: ApiStatus.loading, googleInProgress: false);
 
     final request = RegisterRequest(
       loginType: 'manual',
@@ -169,7 +180,7 @@ class RegisterNotifier extends Notifier<RegisterState> {
   /// name/email are passed along when Google provides them.
   Future<void> loginWithGoogle() async {
     if (state.isLoading) return;
-    state = state.copyWith(status: ApiStatus.loading);
+    state = state.copyWith(status: ApiStatus.loading, googleInProgress: true);
 
     try {
       // Google caches the last-picked account and will silently re-sign

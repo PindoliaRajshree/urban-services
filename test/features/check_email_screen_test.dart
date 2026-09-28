@@ -10,15 +10,6 @@ void main() {
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.reset);
 
-    // Ahem (the test font) makes text wider than Inter; ignore overflow
-    // only, as in widget_test.dart.
-    final originalOnError = FlutterError.onError;
-    FlutterError.onError = (details) {
-      if (details.exceptionAsString().contains('overflowed')) return;
-      originalOnError?.call(details);
-    };
-    addTearDown(() => FlutterError.onError = originalOnError);
-
     await tester.pumpWidget(
       ProviderScope(
         child: ScreenUtilInit(

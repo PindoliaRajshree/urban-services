@@ -286,7 +286,14 @@ final routerProvider = Provider<GoRouter>((ref) {
   return router;
 });
 
+/// The route's typed `extra`, or [fallback] when the caller didn't pass one.
+/// The fallbacks are placeholder data (see route_args.dart), so a missing
+/// argument is logged in debug builds to catch callers that forget it.
 T _extra<T>(GoRouterState state, T fallback) {
   final extra = state.extra;
-  return extra is T ? extra : fallback;
+  if (extra is T) return extra;
+  debugPrint(
+    'Missing route args ($T) for ${state.matchedLocation}; using defaults.',
+  );
+  return fallback;
 }

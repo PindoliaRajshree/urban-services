@@ -24,7 +24,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 // Local secrets (e.g. MAPS_API_KEY) — loaded from android/local.properties,
-// which is gitignored. See README "Local secrets".
+// which is gitignored. See README "Local config".
 val localProperties = Properties()
 val localPropertiesFile = rootProject.file("local.properties")
 if (localPropertiesFile.exists()) {

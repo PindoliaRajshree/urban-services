@@ -42,7 +42,7 @@ Any 401 from the API ─► session cleared ─► Welcome   (new)
 - **Not affected:** login, register, forgot-password and logout calls, which are marked `skipAuth`.
 
 ### C4. ✅ Partly fixed — the Google Maps API key was committed in three places
-- **Now:** the key is read at build time from gitignored files (see README "Local secrets"):
+- **Now:** the key is read at build time from gitignored files (see README "Local config"):
   - `dart_defines.json`, via `--dart-define-from-file`
   - `android/local.properties`, via a manifest placeholder
   - `ios/Flutter/Secrets.xcconfig`, via the Info.plist `MapsApiKey` entry
@@ -180,32 +180,40 @@ All Medium items are fixed. What changed, and what's left:
 
 ## 🟢 Low
 
-- **L1** The base URL contains a space and points at a test path on a third-party domain.
-  - **Fix:** use flavors or `--dart-define`.
-- **L2** Splash always waits a fixed 3 s on top of a 2 s animation.
-- **L3** Sign-up:
-  - The Terms & Policy text can't be tapped.
-  - The comment says email is optional, but it's required.
-  - The mobile field has no length limit.
-- **L4** Both Login and Google buttons show a spinner while either is loading.
-- **L5** Date of birth allows ages under 18 (`lastDate: DateTime.now()`).
-- **L6** Provider "Available for Work" is local only. Dashboard numbers and bookings are hard-coded, and the absolutely-positioned badges overlap long text.
-- **L7 Overflow.**
-  - The widget test shows the **Welcome buttons overflow** when text is wider (large accessibility font sizes).
-  - The service-radius chip row, the fixed-height Profile layout and the header rows are also at risk.
-  - **Fix:** use `Flexible`/`FittedBox` in `SecondaryButton` and `PrimaryButton`.
+- **L1 — ✅ fixed.** The base URL can be overridden per build with `API_BASE_URL` in `dart_defines.json`. The default is the same testing backend, with the space in its path written as `%20` (a real request still reaches it). See README "Local config".
+  - **Still open:** production still needs its own URL once it exists.
+- **L2 — ✅ fixed.** Splash routes when its 2 s intro finishes, plus a 300 ms hold (about 2.3 s instead of a fixed 3 s).
+- **L3 Sign-up — partly fixed.**
+  - ✅ The mobile field is limited to 10 digits.
+  - ✅ The "email is optional" comment is gone.
+  - **Still open:** the Terms & Policy text can't be tapped, until the pages exist.
+- **L4 — ✅ fixed.** On Login and Sign-up, only the tapped button (form or Google) shows a spinner; the other is dimmed and disabled.
+- **L5 — ✅ fixed.** The date-of-birth picker stops at exactly 18 years ago (`pickDateOfBirth` in `features/profile_common/basic_info.dart`).
+- **L6 Provider dashboard — partly fixed.**
+  - ✅ The booking card's "Confirmed" badge and price are laid out in a column instead of positioned over the text, so long text wraps.
+  - **Still open:** "Available for Work" is local only, and the dashboard numbers and bookings are hard-coded until the provider APIs exist.
+- **L7 Overflow — ✅ fixed.**
+  - Button labels shrink to fit (`FittedBox`).
+  - The Welcome title and description wrap.
+  - The service-radius chips wrap.
+  - Profile always scrolls.
+  - The widget tests no longer ignore overflow errors, so they catch regressions (the test font is much wider than Inter).
 - **L8** Theming is minimal (seed colour and font only). Every screen styles its own fields, and raw font sizes and shadows are repeated.
-- **L9** Dead code:
-  - ✅ `core/utils/password_validator.dart` is now used (M6).
-  - The commented-out `CompleteProfileCard`
-  - The `flutter_easyloading` dependency
-  - Several dependencies never used: `connectivity_plus`, `internet_connection_checker_plus`, `firebase_crashlytics`, `firebase_messaging`, `cached_network_image`
-- **L10** Route arguments fall back to fake defaults (`routes/route_args.dart`), which hides callers that forget to pass data.
+- **L9 Dead code — ✅ fixed.**
+  - `core/utils/password_validator.dart` is now used (M6).
+  - `CompleteProfileCard` is removed, including its commented-out uses.
+  - Removed `flutter_easyloading`, `connectivity_plus`, `internet_connection_checker_plus` and `cached_network_image`.
+  - `firebase_messaging` stays for the planned push notifications.
+- **L10 — ✅ fixed.** A missing route argument now logs "Missing route args … using defaults" in debug. The placeholder defaults themselves go away with H11.
 - **L11** All text is hard-coded; there's no localisation.
-- **L12** The geocoding SHA-1 is the release key's, so debug builds fall back to on-device geocoding when the key is app-restricted.
+- **L12 — ✅ fixed.** The geocoding SHA-1 can be set with `ANDROID_CERT_SHA1` (e.g. the debug keystore's), so debug builds can use the Geocoding API. See README "Local config".
 - **L13** Chat search and the booking notes counter call `setState` on every keystroke. Fine for now.
-- **L14** Crashlytics is a dependency but is never initialised.
-  - **Fix:** wire `FlutterError.onError` / `PlatformDispatcher.onError` to it for release builds.
+- **L14 — ✅ fixed.** Crashlytics records Flutter and platform errors in release builds; debug keeps normal error output.
+
+**Also fixed in this batch:**
+- **Firebase on iOS:** Firebase is now initialised with `DefaultFirebaseOptions`. There's no `GoogleService-Info.plist`, so without this iOS would fail at startup.
+- **Upload Photo sheet:** the provider wizard's sheet keeps its options above the Android gesture bar.
+- **Price label:** the `₹` on provider Home had been mis-encoded as `â¹`.
 
 ---
 
@@ -215,9 +223,10 @@ All Medium items are fixed. What changed, and what's left:
 - Session saving (C1, C2, H5), and config and iOS setup (C4, C5). The Maps key still needs to be rotated.
 - Navigation (H3, H4, H7), photo size (H6), and real name and city (H9, most of H10).
 - All Medium items (M1, M3–M17).
+- Low items L1, L2, L4, L5, L7, L9, L10, L12, L14, and parts of L3 and L6.
 
-1. **Store profile status and use it in routing** (H1, H2): add a completion flag to the session and a router redirect. Waiting on the API.
-2. **Saved address fields** (H8) and the GET address fix: waiting on the backend.
-3. **Booking with real data** (H11): waiting on the API.
-4. **The rest of H10**: Payment Methods, Help & Support, Refer & Earn, About Us, Settings.
-5. **Low items** (L1–L14).
+1. **Theming and localisation** (L8, L11): next.
+2. **Store profile status and use it in routing** (H1, H2): add a completion flag to the session and a router redirect. Waiting on the API.
+3. **Saved address fields** (H8) and the GET address fix: waiting on the backend.
+4. **Booking with real data** (H11), and the provider dashboard data (rest of L6): waiting on the API.
+5. **The rest of H10** (Payment Methods, Help & Support, Refer & Earn, About Us, Settings) and the Terms & Policy links (rest of L3).

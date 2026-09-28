@@ -27,6 +27,10 @@ class SecondaryButton extends StatelessWidget {
   /// ignored.
   final bool isLoading;
 
+  /// Dimmed and ignores taps, without a spinner — e.g. while a different
+  /// button's request is running.
+  final bool isDisabled;
+
   const SecondaryButton({
     super.key,
     required this.text,
@@ -35,6 +39,7 @@ class SecondaryButton extends StatelessWidget {
     this.height,
     this.iconPath,
     this.isLoading = false,
+    this.isDisabled = false,
   });
 
   @override
@@ -42,9 +47,13 @@ class SecondaryButton extends StatelessWidget {
     final double spinnerSize = AppDimensions.containerHeight22h;
 
     return GestureDetector(
-      onTap: isLoading ? null : onPressed,
+      onTap: isLoading || isDisabled ? null : onPressed,
       child: AnimatedOpacity(
-        opacity: isLoading ? 0.75 : 1,
+        opacity: isDisabled
+            ? 0.5
+            : isLoading
+            ? 0.75
+            : 1,
         duration: const Duration(milliseconds: 200),
         child: Container(
           width: width ?? double.infinity,
@@ -74,27 +83,37 @@ class SecondaryButton extends StatelessWidget {
                       ),
                     ),
                   )
-                : Row(
+                // Shrinks rather than overflowing with large system fonts.
+                : Padding(
                     key: const ValueKey('label'),
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      if (iconPath != null) ...[
-                        Image.asset(
-                          iconPath!,
-                          height: AppDimensions.containerHeight20h,
-                          width: AppDimensions.containerWidth20w,
-                        ),
-                        SizedBox(width: AppDimensions.padding10w),
-                      ],
-                      Text(
-                        text,
-                        style: customTextStyle(
-                          AppTextSizes.doubleLargeTextSize, // Font size 18
-                          AppColors.text,
-                          FontWeight.w600, // Medium weight
-                        ),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: AppDimensions.padding12w,
+                    ),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (iconPath != null) ...[
+                            Image.asset(
+                              iconPath!,
+                              height: AppDimensions.containerHeight20h,
+                              width: AppDimensions.containerWidth20w,
+                            ),
+                            SizedBox(width: AppDimensions.padding10w),
+                          ],
+                          Text(
+                            text,
+                            maxLines: 1,
+                            style: customTextStyle(
+                              AppTextSizes.doubleLargeTextSize, // Font size 18
+                              AppColors.text,
+                              FontWeight.w600, // Medium weight
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
           ),
         ),

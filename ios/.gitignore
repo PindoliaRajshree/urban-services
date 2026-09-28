@@ -33,5 +33,5 @@ Runner/GeneratedPluginRegistrant.*
 !default.pbxuser
 !default.perspectivev3
 
-# Local secrets — see README "Local secrets"
+# Local secrets — see README "Local config"
 Flutter/Secrets.xcconfig

@@ -84,12 +84,6 @@ class _ProviderHomeScreenState extends ConsumerState<ProviderHomeScreen> {
                     ],
                   ),
 
-                  // Complete Your Profile Section with Animation
-                  // CompleteProfileCard(
-                  //   onFinish: () {
-                  //     context.push(RouteNames.completeProviderProfile);
-                  //   },
-                  // ),
                   SizedBox(height: AppDimensions.padding8h),
                   // 4. Availability Toggle Container
                   Container(
@@ -311,7 +305,7 @@ class _ProviderHomeScreenState extends ConsumerState<ProviderHomeScreen> {
                                       isBold: true,
                                     ),
                                     Text(
-                                      'â¹ 699',
+                                      '₹ 699',
                                       style: customTextStyle(
                                         AppTextSizes.smallTextSize, // 10
                                         AppColors.primaryDark,
@@ -377,87 +371,85 @@ class _ProviderHomeScreenState extends ConsumerState<ProviderHomeScreen> {
                             ],
                           ),
                         ),
-                        // Booking Card
-                        Stack(
+                        // Booking Card. The status badge and price sit in
+                        // their own trailing column (not positioned over
+                        // the card), so long names wrap instead of running
+                        // underneath them.
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            Row(
+                            _buildBorderedImage(AppImages.serviceProvider),
+                            SizedBox(width: AppDimensions.padding12w),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Bathroom Cleaning',
+                                    style: customTextStyle(
+                                      AppTextSizes.largeTextSize, // 16
+                                      AppColors.black,
+                                      FontWeight.w700,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Customer: Rahul Sharma',
+                                    style: customTextStyle(
+                                      AppTextSizes.smallTextSize,
+                                      AppColors.black,
+                                      FontWeight.w400,
+                                    ),
+                                  ),
+                                  _buildIconTextRow(
+                                    AppImages.clockOutlined,
+                                    'Today At 2:00PM',
+                                    isBold: true,
+                                  ),
+                                  _buildIconTextRow(
+                                    AppImages.locationOutlined,
+                                    'Vijay Nagar, Indore',
+                                    isBold: true,
+                                  ),
+                                  SizedBox(height: AppDimensions.padding4h),
+                                ],
+                              ),
+                            ),
+                            SizedBox(width: AppDimensions.padding8w),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                _buildBorderedImage(AppImages.serviceProvider),
-                                SizedBox(width: AppDimensions.padding12w),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Bathroom Cleaning',
-                                        style: customTextStyle(
-                                          AppTextSizes.largeTextSize, // 16
-                                          AppColors.black,
-                                          FontWeight.w700,
-                                        ),
-                                      ),
-                                      Text(
-                                        'Customer: Rahul Sharma',
-                                        style: customTextStyle(
-                                          AppTextSizes.smallTextSize,
-                                          AppColors.black,
-                                          FontWeight.w400,
-                                        ),
-                                      ),
-                                      _buildIconTextRow(
-                                        AppImages.clockOutlined,
-                                        'Today At 2:00PM',
-                                        isBold: true,
-                                      ),
-                                      _buildIconTextRow(
-                                        AppImages.locationOutlined,
-                                        'Vijay Nagar, Indore',
-                                        isBold: true,
-                                      ),
-                                      SizedBox(height: AppDimensions.padding4h),
-                                    ],
+                                // Status Badge
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: AppDimensions.padding8w,
+                                    vertical: AppDimensions.padding2h,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.lightSuccess,
+                                    borderRadius: BorderRadius.circular(
+                                      AppDimensions.radius10r,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    'Confirmed',
+                                    style: customTextStyle(
+                                      AppTextSizes.stableTextSize,
+                                      AppColors.success,
+                                      FontWeight.w400,
+                                    ),
                                   ),
                                 ),
-                              ],
-                            ),
-                            // Status Badge
-                            Positioned(
-                              bottom: AppDimensions.padding25h,
-                              right: AppDimensions.padding20w,
-                              child: Container(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: AppDimensions.padding8w,
-                                  vertical: AppDimensions.padding2h,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.lightSuccess,
-                                  borderRadius: BorderRadius.circular(
-                                    AppDimensions.radius10r,
-                                  ),
-                                ),
-                                child: Text(
-                                  'Confirmed',
+                                SizedBox(height: AppDimensions.padding8h),
+                                Text(
+                                  '₹ 699',
                                   style: customTextStyle(
-                                    AppTextSizes.stableTextSize,
-                                    AppColors.success,
-                                    FontWeight.w400,
+                                    AppTextSizes.smallTextSize,
+                                    AppColors.primaryDark,
+                                    FontWeight.w700,
                                   ),
                                 ),
-                              ),
-                            ),
-                            // Price at top right
-                            Positioned(
-                              bottom: 0,
-                              right: AppDimensions.padding50w,
-                              child: Text(
-                                'â¹ 699',
-                                style: customTextStyle(
-                                  AppTextSizes.smallTextSize,
-                                  AppColors.primaryDark,
-                                  FontWeight.w700,
-                                ),
-                              ),
+                                SizedBox(height: AppDimensions.padding4h),
+                              ],
                             ),
                           ],
                         ),

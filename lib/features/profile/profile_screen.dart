@@ -21,7 +21,6 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isSmall = MediaQuery.of(context).size.height < 720;
     final session = ref.watch(sessionProvider);
     final isProvider = session.effectiveRole.isProvider;
     final subtitle = [
@@ -207,16 +206,14 @@ class ProfileScreen extends ConsumerWidget {
             left: AppDimensions.padding20w,
             right: AppDimensions.padding20w,
           ),
-          // Small screens scroll (with room for the bottom bar); larger
-          // screens fit without scrolling.
-          child: isSmall
-              ? ListView(
-                  children: [
-                    ...children,
-                    SizedBox(height: AppDimensions.containerHeight90h),
-                  ],
-                )
-              : Column(children: children),
+          // Always scrollable, so large system fonts can't overflow it. The
+          // bottom spacer keeps the last item clear of the bottom bar.
+          child: ListView(
+            children: [
+              ...children,
+              SizedBox(height: AppDimensions.containerHeight90h),
+            ],
+          ),
         ),
       ),
     );

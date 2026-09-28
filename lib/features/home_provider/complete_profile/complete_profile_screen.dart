@@ -314,7 +314,8 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (_) => Container(
+      useSafeArea: true,
+      builder: (sheetContext) => Container(
         padding: EdgeInsets.symmetric(
           horizontal: AppDimensions.padding20w,
           vertical: AppDimensions.padding20h,
@@ -325,43 +326,52 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
             top: Radius.circular(AppDimensions.radius16r),
           ),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              "Upload Photo",
-              style: customTextStyle(
-                AppTextSizes.largeTextSize,
-                AppColors.darkBlueText,
-                FontWeight.w700,
-              ),
-            ),
-            SizedBox(height: AppDimensions.padding15h),
-            ListTile(
-              leading: Icon(Icons.camera_alt, color: AppColors.primaryDark),
-              title: Text(
-                "Take Photo",
+        // The white sheet runs to the screen edge, but its options stay
+        // above the system navigation / gesture bar.
+        child: SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "Upload Photo",
                 style: customTextStyle(
-                  AppTextSizes.smallTextSize,
-                  AppColors.black,
-                  FontWeight.w400,
+                  AppTextSizes.largeTextSize,
+                  AppColors.darkBlueText,
+                  FontWeight.w700,
                 ),
               ),
-              onTap: () => Navigator.of(context).pop(ImageSource.camera),
-            ),
-            ListTile(
-              leading: Icon(Icons.photo_library, color: AppColors.primaryDark),
-              title: Text(
-                "Choose from Gallery",
-                style: customTextStyle(
-                  AppTextSizes.smallTextSize,
-                  AppColors.black,
-                  FontWeight.w400,
+              SizedBox(height: AppDimensions.padding15h),
+              ListTile(
+                leading: Icon(Icons.camera_alt, color: AppColors.primaryDark),
+                title: Text(
+                  "Take Photo",
+                  style: customTextStyle(
+                    AppTextSizes.smallTextSize,
+                    AppColors.black,
+                    FontWeight.w400,
+                  ),
                 ),
+                onTap: () => Navigator.of(sheetContext).pop(ImageSource.camera),
               ),
-              onTap: () => Navigator.of(context).pop(ImageSource.gallery),
-            ),
-          ],
+              ListTile(
+                leading: Icon(
+                  Icons.photo_library,
+                  color: AppColors.primaryDark,
+                ),
+                title: Text(
+                  "Choose from Gallery",
+                  style: customTextStyle(
+                    AppTextSizes.smallTextSize,
+                    AppColors.black,
+                    FontWeight.w400,
+                  ),
+                ),
+                onTap: () =>
+                    Navigator.of(sheetContext).pop(ImageSource.gallery),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -982,8 +992,10 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
           ),
         ),
         SizedBox(height: AppDimensions.padding10h),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        // Wraps onto a second line instead of overflowing with large fonts.
+        Wrap(
+          spacing: AppDimensions.padding10w,
+          runSpacing: AppDimensions.padding8h,
           children: ['5km', '10km', '15km', '20km']
               .map(
                 (r) => _buildSelectionChip(

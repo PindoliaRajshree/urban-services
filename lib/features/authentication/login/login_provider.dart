@@ -21,6 +21,7 @@ class LoginState {
     this.emailError,
     this.passwordError,
     this.status = ApiStatus.initial,
+    this.googleInProgress = false,
   });
 
   final String? emailError;
@@ -30,16 +31,24 @@ class LoginState {
   /// a loading state.
   final ApiStatus status;
 
+  /// Whether the running request is the Google flow (vs email/password), so
+  /// only the tapped button shows a spinner.
+  final bool googleInProgress;
+
   bool get isLoading => status == ApiStatus.loading;
+  bool get isEmailLoading => isLoading && !googleInProgress;
+  bool get isGoogleLoading => isLoading && googleInProgress;
 
   LoginState copyWith({
     String? Function()? emailError,
     String? Function()? passwordError,
     ApiStatus? status,
+    bool? googleInProgress,
   }) => LoginState(
     emailError: emailError != null ? emailError() : this.emailError,
     passwordError: passwordError != null ? passwordError() : this.passwordError,
     status: status ?? this.status,
+    googleInProgress: googleInProgress ?? this.googleInProgress,
   );
 }
 
@@ -78,7 +87,7 @@ class LoginNotifier extends Notifier<LoginState> {
     if (state.isLoading) return;
     if (!validate(email: email, password: password)) return;
 
-    state = state.copyWith(status: ApiStatus.loading);
+    state = state.copyWith(status: ApiStatus.loading, googleInProgress: false);
 
     final request = LoginRequest(
       loginType: 'manual',
@@ -147,7 +156,7 @@ class LoginNotifier extends Notifier<LoginState> {
   /// flow.
   Future<void> loginWithGoogle() async {
     if (state.isLoading) return;
-    state = state.copyWith(status: ApiStatus.loading);
+    state = state.copyWith(status: ApiStatus.loading, googleInProgress: true);
 
     try {
       // Google caches the last-picked account and will silently re-sign

@@ -20,26 +20,20 @@ void main() {
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.reset);
 
-    // The test font (Ahem) draws every glyph as a full square, so text is
-    // far wider than with Inter and the Welcome buttons overflow. Ignore
-    // only overflow errors; anything else (routing, providers) still fails.
-    final originalOnError = FlutterError.onError;
-    FlutterError.onError = (details) {
-      if (details.exceptionAsString().contains('overflowed')) return;
-      originalOnError?.call(details);
-    };
-
+    // No overflow filter: the test font (Ahem) draws every glyph as a full
+    // square, far wider than Inter, so this also checks that the Welcome
+    // buttons don't overflow with wide text.
     await tester.pumpWidget(const ProviderScope(child: MyApp()));
     expect(find.byType(WelcomeScreen), findsNothing);
 
-    // Splash waits 3s before routing.
+    // Splash plays its ~2s intro, then routes after a short hold (a timer
+    // that only starts once the intro has finished, hence two pumps).
     await tester.pump(const Duration(seconds: 3));
+    await tester.pump(const Duration(seconds: 1));
     await tester.pumpAndSettle();
 
     expect(find.byType(WelcomeScreen), findsOneWidget);
     expect(find.text('Continue as User'), findsOneWidget);
     expect(find.text('Continue as Provider'), findsOneWidget);
-
-    FlutterError.onError = originalOnError;
   });
 }

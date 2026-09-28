@@ -66,26 +66,29 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              RichText(
-                text: TextSpan(
-                  children: [
-                    TextSpan(
-                      text: 'All Home Services\nAt',
-                      style: customTextStyle(
-                        AppTextSizes.headingTextSize,
-                        AppColors.black,
-                        FontWeight.w600,
+              // Flexible: wraps instead of overflowing with large fonts.
+              Flexible(
+                child: RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: 'All Home Services\nAt',
+                        style: customTextStyle(
+                          AppTextSizes.headingTextSize,
+                          AppColors.black,
+                          FontWeight.w600,
+                        ),
                       ),
-                    ),
-                    TextSpan(
-                      text: ' One Place',
-                      style: customTextStyle(
-                        AppTextSizes.headingTextSize,
-                        AppColors.primary,
-                        FontWeight.w600,
+                      TextSpan(
+                        text: ' One Place',
+                        style: customTextStyle(
+                          AppTextSizes.headingTextSize,
+                          AppColors.primary,
+                          FontWeight.w600,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -115,12 +118,14 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Text(
-                'Trusted professionals for your \nhome and office needs.',
-                style: customTextStyle(
-                  AppTextSizes.largeTextSize,
-                  AppColors.black,
-                  FontWeight.w400,
+              Flexible(
+                child: Text(
+                  'Trusted professionals for your \nhome and office needs.',
+                  style: customTextStyle(
+                    AppTextSizes.largeTextSize,
+                    AppColors.black,
+                    FontWeight.w400,
+                  ),
                 ),
               ),
             ],

@@ -2,12 +2,12 @@
 // Purpose: Screen for user registration, including name, email, and password fields with validation.
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:urban_services/core/colors/colors.dart';
 import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
+import 'package:urban_services/core/utils/input_formatters.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
 import 'package:urban_services/features/authentication/register/register_provider.dart';
 import 'package:urban_services/routes/route_names.dart';
@@ -164,9 +164,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             keyboardType: TextInputType.phone,
                             textInputAction: TextInputAction.next,
                             errorText: state.mobileError,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                            ],
+                            inputFormatters: mobileNumberFormatters,
                           ),
                           SizedBox(height: AppDimensions.padding20h),
 
@@ -290,7 +288,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           // Register Action
                           PrimaryButton(
                             text: 'Register',
-                            isLoading: state.isLoading,
+                            isLoading: state.isFormLoading,
+                            isDisabled: state.isGoogleLoading,
                             onPressed: _register,
                           ),
 
@@ -345,7 +344,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           SecondaryButton(
                             text: 'Continue with Google',
                             iconPath: AppImages.google,
-                            isLoading: state.isLoading,
+                            isLoading: state.isGoogleLoading,
+                            isDisabled: state.isFormLoading,
                             onPressed: ref
                                 .read(registerProvider.notifier)
                                 .loginWithGoogle,

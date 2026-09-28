@@ -44,5 +44,5 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# Local secrets — see README "Local secrets"
+# Local secrets — see README "Local config"
 /dart_defines.json

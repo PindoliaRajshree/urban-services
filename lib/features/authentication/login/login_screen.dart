@@ -157,7 +157,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         // Login Action
                         PrimaryButton(
                           text: 'Login',
-                          isLoading: state.isLoading,
+                          isLoading: state.isEmailLoading,
+                          isDisabled: state.isGoogleLoading,
                           onPressed: _login,
                         ),
 
@@ -212,7 +213,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         SecondaryButton(
                           text: 'Continue with Google',
                           iconPath: AppImages.google,
-                          isLoading: state.isLoading,
+                          isLoading: state.isGoogleLoading,
+                          isDisabled: state.isEmailLoading,
                           onPressed: ref
                               .read(loginProvider.notifier)
                               .loginWithGoogle,

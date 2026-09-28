@@ -100,12 +100,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ],
                   ),
 
-                  // Complete Your Profile Section with Animation
-                  // CompleteProfileCard(
-                  //   onFinish: () {
-                  //     context.push(RouteNames.completeProviderProfile);
-                  //   },
-                  // ),
                   SizedBox(height: AppDimensions.padding8h),
 
                   // 4. Search Bar

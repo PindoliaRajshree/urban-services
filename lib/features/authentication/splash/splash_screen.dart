@@ -63,13 +63,16 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
           ),
         );
 
-    // Start the animation sequence
-    _controller.forward();
-
-    // After the intro animation, route straight into the app if a session
-    // is already stored (persistent login), otherwise start at Welcome.
-    Future.delayed(const Duration(seconds: 3), _routeAfterSplash);
+    // Play the intro, hold the finished logo briefly, then route straight
+    // into the app if a session is stored (persistent login), otherwise to
+    // Welcome.
+    _controller.forward().then(
+      (_) => Future.delayed(_holdAfterAnimation, _routeAfterSplash),
+    );
   }
+
+  /// How long the finished logo stays up before routing.
+  static const Duration _holdAfterAnimation = Duration(milliseconds: 300);
 
   /// If a session is stored (sessionProvider restores token + role from
   /// storage), go straight to Home — keeping the user logged in until they
