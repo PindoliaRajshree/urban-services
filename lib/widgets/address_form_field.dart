@@ -37,6 +37,10 @@ class AddressFormField extends StatelessWidget {
   /// Restricts what can be typed (e.g. digits only, a max length).
   final List<TextInputFormatter>? inputFormatters;
 
+  /// Shows the value without allowing edits (e.g. a field the API can't
+  /// update).
+  final bool readOnly;
+
   const AddressFormField({
     super.key,
     required this.label,
@@ -51,6 +55,7 @@ class AddressFormField extends StatelessWidget {
     this.validator,
     this.errorText,
     this.inputFormatters,
+    this.readOnly = false,
   });
 
   @override
@@ -83,6 +88,7 @@ class AddressFormField extends StatelessWidget {
           maxLines: maxLines,
           validator: validator,
           inputFormatters: inputFormatters,
+          readOnly: readOnly,
           style: customTextStyle(
             AppTextSizes.smallTextSize,
             AppColors.black,
@@ -119,7 +125,7 @@ class AddressFormField extends StatelessWidget {
               minHeight: 0,
             ),
             filled: true,
-            fillColor: AppColors.white,
+            fillColor: readOnly ? AppColors.background : AppColors.white,
             errorText: errorText,
             errorStyle: customTextStyle(
               AppTextSizes.stableTextSize,

@@ -22,6 +22,7 @@ import 'package:urban_services/widgets/address_form_field.dart';
 import 'package:urban_services/widgets/common_app_bar.dart';
 import 'package:urban_services/widgets/confirm_dialog.dart';
 import 'package:urban_services/widgets/custom_dropdown.dart';
+import 'package:urban_services/widgets/custom_snackbar.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
 import 'package:urban_services/widgets/dashed_border_painter.dart';
 import 'package:urban_services/widgets/document_upload_card.dart';
@@ -29,6 +30,7 @@ import 'package:urban_services/widgets/icon_header.dart';
 import 'package:urban_services/widgets/primary_button.dart';
 import 'package:urban_services/widgets/secondary_button.dart';
 import 'package:urban_services/widgets/step_indicator.dart';
+import 'package:urban_services/widgets/add_mobile_number_dialog.dart';
 import 'package:urban_services/widgets/verify_number_dialog.dart';
 
 class CompleteProfileScreen extends ConsumerStatefulWidget {
@@ -51,18 +53,21 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
   final _fullNameController = TextEditingController();
   final _mobileController = TextEditingController();
   final _emailController = TextEditingController();
+  final _aadhaarNumberController = TextEditingController();
+  final _panNumberController = TextEditingController();
 
   // --- Service Details (Step 1) ---
-  final _descriptionController = TextEditingController();
+  final _bioController = TextEditingController();
   final _startingPriceController = TextEditingController();
-  final _perHourRateController = TextEditingController();
-  final _perVisitRateController = TextEditingController();
-  final _customPricingController = TextEditingController();
+  final _teamSizeController = TextEditingController();
+  final _addressController = TextEditingController();
   final _cityController = TextEditingController();
-  final _areaController = TextEditingController();
+  final _stateController = TextEditingController();
+  final _pincodeController = TextEditingController();
 
   // --- Bank Details (Step 2) ---
   final _accountHolderController = TextEditingController();
+  final _bankNameController = TextEditingController();
   final _accountNumberController = TextEditingController();
   final _confirmAccountNumberController = TextEditingController();
 
@@ -99,20 +104,62 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
     _ifscController.addListener(() {
       if (_ifscController.text.isNotEmpty) _notifier.clearIfscError();
     });
+    // Fetch the saved profile (or registration details) to prefill.
+    Future.microtask(_loadProfile);
+  }
+
+  /// Loads the saved profile and writes its text values into the fields.
+  Future<void> _loadProfile() async {
+    final values = await _notifier.loadInitial();
+    if (values == null || !mounted) return;
+    _fullNameController.text = values.fullName;
+    _mobileController.text = values.mobile;
+    _emailController.text = values.email;
+    _bioController.text = values.bio;
+    _startingPriceController.text = values.startingPrice;
+    _teamSizeController.text = values.teamSize;
+    _addressController.text = values.address;
+    _cityController.text = values.city;
+    _stateController.text = values.state;
+    _pincodeController.text = values.pincode;
+    _accountHolderController.text = values.accountHolder;
+    _bankNameController.text = values.bankName;
+    _accountNumberController.text = values.accountNumber;
+    _confirmAccountNumberController.text = values.accountNumber;
+    _ifscController.text = values.ifsc;
+    _upiIdController.text = values.upiId;
+  }
+
+  /// Fills the address fields from the device location (empty results
+  /// leave the field as it is).
+  Future<void> _useCurrentLocation() async {
+    final fill = await _notifier.useCurrentLocation();
+    if (fill == null || !mounted) return;
+    void set(TextEditingController c, String? v) {
+      if (v != null) c.text = v;
+    }
+
+    set(_addressController, fill.address);
+    set(_cityController, fill.city);
+    set(_stateController, fill.state);
+    set(_pincodeController, fill.pincode);
   }
 
   List<TextEditingController> get _textControllers => [
     _fullNameController,
     _mobileController,
     _emailController,
-    _descriptionController,
+    _aadhaarNumberController,
+    _panNumberController,
+    _bioController,
     _startingPriceController,
-    _perHourRateController,
-    _perVisitRateController,
-    _customPricingController,
+    _teamSizeController,
+    _addressController,
     _cityController,
-    _areaController,
+    _stateController,
+    _pincodeController,
     _accountHolderController,
+    _bankNameController,
     _accountNumberController,
     _confirmAccountNumberController,
     _ifscController,
@@ -160,8 +207,12 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
     if (_hasChanges) {
       final discard = await ConfirmDialog.show(
         context,
-        title: 'Discard profile details?',
-        message: "What you've entered will be lost.",
+        title: profile.isEditing
+            ? 'Discard changes?'
+            : 'Discard profile details?',
+        message: profile.isEditing
+            ? "Unsaved changes will be lost."
+            : "What you've entered will be lost.",
         confirmLabel: 'Discard',
         isDestructive: true,
       );
@@ -170,16 +221,31 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
     context.pop();
   }
 
-  /// Whether leaving now would lose anything the user entered.
-  bool get _hasChanges =>
-      ref.read(providerProfileProvider).hasSelections ||
-      _textControllers.any((c) => c.text.trim().isNotEmpty);
+  /// Whether leaving now might lose anything the user entered. Fields
+  /// prefilled from registration (name/email/mobile) alone don't count.
+  bool get _hasChanges {
+    final profile = ref.read(providerProfileProvider);
+    if (profile.isLoading || profile.loadError != null) return false;
+    if (profile.isEditing) return true;
+    return profile.profileImage != null ||
+        profile.adhaarFront != null ||
+        profile.adhaarBack != null ||
+        profile.panCard != null ||
+        profile.gender != null ||
+        profile.dob != null ||
+        profile.serviceCategory != null ||
+        _textControllers
+            .skip(3) // name, mobile, email
+            .any((c) => c.text.trim().isNotEmpty);
+  }
 
   bool _validateStep(int step) {
     switch (step) {
       case 0:
         final formValid = _basicInfoFormKey.currentState?.validate() ?? false;
-        final customValid = _notifier.validateBasicInfoFields();
+        final customValid = _notifier.validateBasicInfoFields(
+          _mobileController.text,
+        );
         return formValid && customValid;
       case 1:
         final formValid =
@@ -201,14 +267,15 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
         fullName: _fullNameController.text,
         mobile: _mobileController.text,
         email: _emailController.text,
-        description: _descriptionController.text,
+        bio: _bioController.text,
         startingPrice: _startingPriceController.text,
-        perHourRate: _perHourRateController.text,
-        perVisitRate: _perVisitRateController.text,
-        customPricing: _customPricingController.text,
+        teamSize: _teamSizeController.text,
+        address: _addressController.text,
         city: _cityController.text,
-        area: _areaController.text,
+        state: _stateController.text,
+        pincode: _pincodeController.text,
         accountHolder: _accountHolderController.text,
+        bankName: _bankNameController.text,
         accountNumber: _accountNumberController.text,
         ifsc: _ifscController.text,
         upiId: _upiIdController.text,
@@ -217,14 +284,64 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
     if (jumpTo != null && mounted) _pageController.jumpToPage(jumpTo);
   }
 
-  /// Handles OTP verification dialog logic
-  void _sendOtp() {
-    if (!_notifier.sendOtp(_mobileController.text)) return;
-    showDialog<void>(
+  /// Sends an OTP to the entered number and opens the verification dialog.
+  /// The number only counts as verified once the dialog's code matches.
+  Future<void> _sendOtp() async {
+    FocusScope.of(context).unfocus();
+    final mobile = _mobileController.text.trim();
+    if (!await _notifier.sendOtp(mobile) || !mounted) return;
+    final verified = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (_) => VerifyNumberDialog(phoneNumber: _mobileController.text),
+      builder: (_) => VerifyNumberDialog(
+        phoneNumber: mobile,
+        onVerify: (code) => _notifier.verifyOtp(mobile, code),
+        onResend: () => _notifier.sendOtp(mobile),
+      ),
     );
+    if (verified == true) {
+      CustomSnackBar.showSuccess(message: "Mobile number verified");
+    }
+  }
+
+  /// For an account with no mobile number: asks for one and adds it
+  /// (add-mobile-number, which also sends it an OTP). It's filled in here
+  /// and offers "Verify" (see [_verifyAddedMobile]).
+  Future<void> _addMobile() async {
+    FocusScope.of(context).unfocus();
+    final mobile = await showDialog<String>(
+      context: context,
+      builder: (_) =>
+          AddMobileNumberDialog(onSubmit: _notifier.requestAddMobileOtp),
+    );
+    if (mobile == null || !mounted) return;
+    _mobileController.text = mobile;
+    CustomSnackBar.showSuccess(
+      message: "Mobile number added. Tap Verify to confirm it.",
+    );
+  }
+
+  /// Verifies the number added by [_addMobile] with the OTP it was sent.
+  Future<void> _verifyAddedMobile() async {
+    final mobile = _state.pendingMobile;
+    if (mobile == null) return;
+    FocusScope.of(context).unfocus();
+    final verified = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => VerifyNumberDialog(
+        phoneNumber: mobile,
+        onVerify: (code) => _notifier.confirmAddMobile(mobile, code),
+        onResend: () async {
+          final sent = await _notifier.requestAddMobileOtp(mobile);
+          if (sent) CustomSnackBar.showSuccess(message: "OTP sent to $mobile");
+          return sent;
+        },
+      ),
+    );
+    if (verified == true && mounted) {
+      CustomSnackBar.showSuccess(message: "Mobile number verified");
+    }
   }
 
   Future<void> _selectDate() async {
@@ -240,6 +357,18 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // The Aadhaar/PAN fields are read-only mirrors of the numbers read from
+    // the card images (or loaded with the saved profile).
+    ref.listen(providerProfileProvider.select((s) => s.aadhaarNumber), (
+      _,
+      number,
+    ) {
+      _aadhaarNumberController.text = number ?? '';
+    });
+    ref.listen(providerProfileProvider.select((s) => s.panNumber), (_, number) {
+      _panNumberController.text = number ?? '';
+    });
+
     // Android back behaves like the app-bar back: one step at a time, with
     // a discard confirmation when leaving from step 0.
     return PopScope(
@@ -257,51 +386,95 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
                   horizontal: AppDimensions.padding20w,
                 ),
                 child: CommonAppBar(
-                  title: 'Complete Your Profile',
+                  title: _state.isEditing
+                      ? 'Edit Profile'
+                      : 'Complete Your Profile',
                   showMoreIcon: false,
                   // Step 0 leaves the screen; later steps go back one page.
                   onBackPress: _previousStep,
                 ),
               ),
 
-              // Step Indicator (3 steps)
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: AppDimensions.padding20w,
+              if (_state.isLoading)
+                const Expanded(
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else if (_state.loadError != null)
+                Expanded(child: _buildLoadFailed(_state.loadError!))
+              else ...[
+                // Step Indicator (3 steps)
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: AppDimensions.padding20w,
+                  ),
+                  child: StepIndicator(
+                    currentStep: _state.currentStep,
+                    stepLabels: _stepLabels,
+                  ),
                 ),
-                child: StepIndicator(
-                  currentStep: _state.currentStep,
-                  stepLabels: _stepLabels,
-                ),
-              ),
 
-              // Each step is a separate, independently scrollable page.
-              Expanded(
-                child: PageView(
-                  controller: _pageController,
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: [
-                    _buildBasicInfoPage(),
-                    _buildServiceDetailsPage(),
-                    _buildBankDetailsPage(),
-                  ],
+                // Each step is a separate, independently scrollable page.
+                Expanded(
+                  child: PageView(
+                    controller: _pageController,
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: [
+                      _buildBasicInfoPage(),
+                      _buildServiceDetailsPage(),
+                      _buildBankDetailsPage(),
+                    ],
+                  ),
                 ),
-              ),
 
-              // Footer navigation: Next only on step 1, Previous/Next in the
-              // middle, Previous/Submit on the last step.
-              Padding(
-                padding: EdgeInsets.fromLTRB(
-                  AppDimensions.padding20w,
-                  AppDimensions.padding15h,
-                  AppDimensions.padding20w,
-                  AppDimensions.padding15h,
+                // Footer navigation: Next only on step 1, Previous/Next in the
+                // middle, Previous/Submit on the last step.
+                Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    AppDimensions.padding20w,
+                    AppDimensions.padding15h,
+                    AppDimensions.padding20w,
+                    AppDimensions.padding15h,
+                  ),
+                  child: _buildFooterButtons(),
                 ),
-                child: _buildFooterButtons(),
-              ),
+              ],
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  /// Shown instead of the form when the saved profile couldn't be fetched
+  /// — an empty form here could overwrite the provider's saved details.
+  Widget _buildLoadFailed(String message) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: AppDimensions.padding20w),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            "Couldn't load your profile",
+            textAlign: TextAlign.center,
+            style: customTextStyle(
+              AppTextSizes.largeTextSize,
+              AppColors.darkBlueText,
+              FontWeight.w700,
+            ),
+          ),
+          SizedBox(height: AppDimensions.padding10h),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: customTextStyle(
+              AppTextSizes.smallTextSize,
+              AppColors.darkGrey,
+              FontWeight.w400,
+            ),
+          ),
+          SizedBox(height: AppDimensions.padding20h),
+          PrimaryButton(text: "Retry", onPressed: _loadProfile),
+        ],
       ),
     );
   }
@@ -475,7 +648,9 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
                               AppDimensions.radius4r,
                             ),
                           ),
-                          child: _state.profileImage == null
+                          child:
+                              _state.profileImage == null &&
+                                  _state.profileImageUrl == null
                               ? Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
@@ -499,13 +674,31 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
                                       borderRadius: BorderRadius.circular(
                                         AppDimensions.radius4r,
                                       ),
-                                      child: Image.file(
-                                        _state.profileImage!,
-                                        fit: BoxFit.cover,
-                                        width: AppDimensions.containerWidth80w,
-                                        height:
-                                            AppDimensions.containerHeight145h,
-                                      ),
+                                      child: _state.profileImage != null
+                                          ? Image.file(
+                                              _state.profileImage!,
+                                              fit: BoxFit.cover,
+                                              width: AppDimensions
+                                                  .containerWidth80w,
+                                              height: AppDimensions
+                                                  .containerHeight145h,
+                                            )
+                                          : Image.network(
+                                              _state.profileImageUrl!,
+                                              fit: BoxFit.cover,
+                                              width: AppDimensions
+                                                  .containerWidth80w,
+                                              height: AppDimensions
+                                                  .containerHeight145h,
+                                              errorBuilder: (_, _, _) =>
+                                                  const Center(
+                                                    child: Icon(
+                                                      Icons.person,
+                                                      color:
+                                                          AppColors.primaryDark,
+                                                    ),
+                                                  ),
+                                            ),
                                     ),
                                     Positioned(
                                       bottom: 0,
@@ -544,12 +737,13 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
             Expanded(
               child: Column(
                 children: [
+                  // The update API has no name field — it's the name
+                  // given at registration.
                   AddressFormField(
                     label: "Full Name",
                     hintText: "Enter your full name",
                     controller: _fullNameController,
-                    validator: (v) =>
-                        (v == null || v.isEmpty) ? "Required" : null,
+                    readOnly: true,
                   ),
                   SizedBox(height: AppDimensions.padding15h),
                   Column(
@@ -557,8 +751,15 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
                     children: [
                       AddressFormField(
                         label: "Mobile Number",
-                        hintText: "Enter your Number",
+                        hintText: _state.canAddMobile
+                            ? "Add your mobile number"
+                            : "Enter your Number",
                         controller: _mobileController,
+                        // No number on the account yet: it's added through
+                        // the "Add Mobile Number" dialog, not typed here,
+                        // and stays fixed until verified.
+                        readOnly:
+                            _state.canAddMobile || _state.pendingMobile != null,
                         keyboardType: TextInputType.phone,
                         inputFormatters: mobileNumberFormatters,
                         errorText: _state.mobileError,
@@ -583,33 +784,22 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
                           ),
                         ),
                       ),
+                      // "Verified" while the field matches the verified
+                      // number; editing it brings "Send OTP" back.
                       Align(
                         alignment: Alignment.centerRight,
-                        child: GestureDetector(
-                          onTap: _sendOtp,
-                          child: Container(
-                            margin: EdgeInsets.only(
-                              top: AppDimensions.padding5h,
-                            ),
-                            padding: EdgeInsets.symmetric(
-                              horizontal: AppDimensions.padding12w,
-                              vertical: AppDimensions.padding5h,
-                            ),
-                            decoration: BoxDecoration(
-                              gradient: AppColors.gradient,
-                              borderRadius: BorderRadius.circular(
-                                AppDimensions.radius10r,
-                              ),
-                            ),
-                            child: Text(
-                              "Send OTP",
-                              style: customTextStyle(
-                                AppTextSizes.stableTextSize,
-                                AppColors.white,
-                                FontWeight.w400,
-                              ),
-                            ),
-                          ),
+                        child: ValueListenableBuilder<TextEditingValue>(
+                          valueListenable: _mobileController,
+                          builder: (_, value, _) => _state.canAddMobile
+                              ? _buildAddMobileButton()
+                              : _state.pendingMobile != null
+                              ? _buildMobileActionButton(
+                                  "Verify",
+                                  _verifyAddedMobile,
+                                )
+                              : _state.isMobileVerified(value.text)
+                              ? _buildVerifiedBadge()
+                              : _buildSendOtpButton(),
                         ),
                       ),
                     ],
@@ -621,9 +811,10 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
         ),
         SizedBox(height: AppDimensions.padding15h),
         AddressFormField(
-          label: "Email (Optional)",
-          hintText: "Enter your Email (Optional)",
+          label: "Email",
+          hintText: "Enter your Email",
           controller: _emailController,
+          keyboardType: TextInputType.emailAddress,
           validator: _notifier.validateEmail,
         ),
         SizedBox(height: AppDimensions.padding15h),
@@ -638,7 +829,7 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
                     label: "Gender",
                     hint: "Select Gender",
                     value: _state.gender,
-                    items: ["Male", "Female", "Other"]
+                    items: ProviderProfileNotifier.genderOptions.keys
                         .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                         .toList(),
                     onChanged: _notifier.setGender,
@@ -718,6 +909,64 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
     );
   }
 
+  Widget _buildSendOtpButton() => _buildMobileActionButton(
+    _state.isSendingOtp ? "Sending..." : "Send OTP",
+    _sendOtp,
+  );
+
+  Widget _buildAddMobileButton() =>
+      _buildMobileActionButton("Add Mobile Number", _addMobile);
+
+  Widget _buildMobileActionButton(String label, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: _state.isSendingOtp ? null : onTap,
+      child: Container(
+        margin: EdgeInsets.only(top: AppDimensions.padding5h),
+        padding: EdgeInsets.symmetric(
+          horizontal: AppDimensions.padding12w,
+          vertical: AppDimensions.padding5h,
+        ),
+        decoration: BoxDecoration(
+          gradient: AppColors.gradient,
+          borderRadius: BorderRadius.circular(AppDimensions.radius10r),
+        ),
+        child: Text(
+          label,
+          style: customTextStyle(
+            AppTextSizes.stableTextSize,
+            AppColors.white,
+            FontWeight.w400,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVerifiedBadge() {
+    return Padding(
+      padding: EdgeInsets.only(top: AppDimensions.padding5h),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.verified,
+            color: AppColors.success,
+            size: AppDimensions.containerHeight16h,
+          ),
+          SizedBox(width: AppDimensions.padding4w),
+          Text(
+            "Verified",
+            style: customTextStyle(
+              AppTextSizes.stableTextSize,
+              AppColors.success,
+              FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildDocumentsSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -738,16 +987,27 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
               title: "Aadhaar",
               subTitle: "Upload Front",
               selectedFile: _state.adhaarFront,
+              existingUrl: _state.adhaarFrontUrl,
+              isProcessing: _state.isReadingAadhaar,
               onUpload: () => _pickPhoto('aadhaarFront'),
               onRemove: () => _notifier.removeDocument('aadhaarFront'),
             ),
             if (_state.adhaarFrontError != null)
               _buildInlineError(_state.adhaarFrontError!),
+            SizedBox(height: AppDimensions.padding15h),
+            // Read from the front image — never typed.
+            AddressFormField(
+              label: "Aadhaar Number",
+              hintText: "Read from the uploaded front",
+              controller: _aadhaarNumberController,
+              readOnly: true,
+            ),
             SizedBox(height: AppDimensions.padding20h),
             DocumentUploadCard(
               title: "Aadhaar",
               subTitle: "Upload Back",
               selectedFile: _state.adhaarBack,
+              existingUrl: _state.adhaarBackUrl,
               onUpload: () => _pickPhoto('aadhaarBack'),
               onRemove: () => _notifier.removeDocument('aadhaarBack'),
             ),
@@ -763,11 +1023,21 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
               title: "PAN Card (Optional)",
               subTitle: "Upload Card",
               selectedFile: _state.panCard,
+              existingUrl: _state.panCardUrl,
+              isProcessing: _state.isReadingPan,
               onUpload: () => _pickPhoto('pan'),
               onRemove: () => _notifier.removeDocument('pan'),
             ),
             if (_state.panCardError != null)
               _buildInlineError(_state.panCardError!),
+            SizedBox(height: AppDimensions.padding15h),
+            // Read from the card image — never typed.
+            AddressFormField(
+              label: "PAN Number",
+              hintText: "Read from the uploaded PAN card",
+              controller: _panNumberController,
+              readOnly: true,
+            ),
           ],
         ),
       ],
@@ -872,13 +1142,9 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
               label: "Experience (Years)",
               hint: "Service Experience (Years)",
               value: _state.experience,
-              items: [
-                "1",
-                "2",
-                "3",
-                "4",
-                "5+",
-              ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+              items: ProviderProfileNotifier.experienceOptions
+                  .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                  .toList(),
               onChanged: _notifier.setExperience,
             ),
             if (_state.experienceError != null)
@@ -889,9 +1155,9 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
         AddressFormField(
           label: "Description/About Service",
           hintText: "Write about your service...",
-          controller: _descriptionController,
+          controller: _bioController,
           maxLines: 3,
-          validator: (v) => (v == null || v.isEmpty) ? "Required" : null,
+          validator: _notifier.validateRequired,
         ),
       ],
     );
@@ -899,58 +1165,38 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
 
   Widget _buildPricingSection() {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: AddressFormField(
-                label: "Starting Price (₹)",
-                hintText: "Enter amount",
-                controller: _startingPriceController,
-                keyboardType: TextInputType.number,
-                inputFormatters: amountFormatters,
-                validator: (v) => _notifier.validatePrice(v, required: true),
-              ),
-            ),
-            SizedBox(width: AppDimensions.padding15w),
-            Expanded(
-              child: AddressFormField(
-                label: "Per Hour Rate (₹)",
-                hintText: "Enter amount",
-                controller: _perHourRateController,
-                keyboardType: TextInputType.number,
-                inputFormatters: amountFormatters,
-                validator: (v) => _notifier.validatePrice(v, required: true),
-              ),
-            ),
-          ],
+        Text(
+          "Pricing type",
+          style: customTextStyle(
+            AppTextSizes.smallTextSize,
+            AppColors.black,
+            FontWeight.w400,
+          ),
+        ),
+        SizedBox(height: AppDimensions.padding10h),
+        Wrap(
+          spacing: AppDimensions.padding10w,
+          runSpacing: AppDimensions.padding8h,
+          children: ProviderProfileNotifier.pricingOptions.keys
+              .map(
+                (t) => _buildSelectionChip(
+                  t,
+                  _state.pricingType,
+                  _notifier.setPricingType,
+                ),
+              )
+              .toList(),
         ),
         SizedBox(height: AppDimensions.padding15h),
-        Row(
-          children: [
-            Expanded(
-              child: AddressFormField(
-                label: "Per Visit Rate (₹)",
-                hintText: "Enter amount",
-                controller: _perVisitRateController,
-                keyboardType: TextInputType.number,
-                inputFormatters: amountFormatters,
-                validator: _notifier.validatePrice,
-              ),
-            ),
-            SizedBox(width: AppDimensions.padding15w),
-            Expanded(
-              child: AddressFormField(
-                label: "Custom Pricing (₹)",
-                hintText: "Enter amount",
-                controller: _customPricingController,
-                keyboardType: TextInputType.number,
-                inputFormatters: amountFormatters,
-                validator: _notifier.validatePrice,
-              ),
-            ),
-          ],
+        AddressFormField(
+          label: "Starting Price (₹ ${_state.pricingType.toLowerCase()})",
+          hintText: "Enter amount",
+          controller: _startingPriceController,
+          keyboardType: TextInputType.number,
+          inputFormatters: amountFormatters,
+          validator: (v) => _notifier.validatePrice(v, required: true),
         ),
       ],
     );
@@ -960,6 +1206,66 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Latitude/longitude come from the device, not typed in. Also
+        // fills the address fields when Google can resolve them.
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                _state.hasLocation
+                    ? "Location captured "
+                          "(${_state.latitude!.toStringAsFixed(4)}, "
+                          "${_state.longitude!.toStringAsFixed(4)})"
+                    : "Set the location you serve from",
+                style: customTextStyle(
+                  AppTextSizes.smallTextSize,
+                  _state.hasLocation ? AppColors.success : AppColors.darkGrey,
+                  FontWeight.w400,
+                ),
+              ),
+            ),
+            GestureDetector(
+              onTap: _state.isLocating ? null : _useCurrentLocation,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (_state.isLocating)
+                    SizedBox(
+                      height: AppDimensions.containerHeight16h,
+                      width: AppDimensions.containerWidth16w,
+                      child: const CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  else
+                    Icon(
+                      Icons.my_location,
+                      color: AppColors.primaryDark,
+                      size: AppDimensions.containerHeight16h,
+                    ),
+                  SizedBox(width: AppDimensions.padding4w),
+                  Text(
+                    _state.hasLocation ? "Update" : "Use current location",
+                    style: customTextStyle(
+                      AppTextSizes.smallTextSize,
+                      AppColors.primaryDark,
+                      FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        if (_state.locationError != null)
+          _buildInlineError(_state.locationError!),
+        SizedBox(height: AppDimensions.padding15h),
+        AddressFormField(
+          label: "Address",
+          hintText: "House no., street, area",
+          controller: _addressController,
+          maxLines: 2,
+          validator: _notifier.validateRequired,
+        ),
+        SizedBox(height: AppDimensions.padding15h),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -968,19 +1274,31 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
                 label: "City",
                 hintText: "Enter city",
                 controller: _cityController,
-                validator: (v) => (v == null || v.isEmpty) ? "Required" : null,
+                validator: _notifier.validateRequired,
               ),
             ),
             SizedBox(width: AppDimensions.padding15w),
             Expanded(
               child: AddressFormField(
-                label: "Area/Locality",
-                hintText: "Enter area",
-                controller: _areaController,
-                validator: (v) => (v == null || v.isEmpty) ? "Required" : null,
+                label: "State",
+                hintText: "Enter state",
+                controller: _stateController,
+                validator: _notifier.validateRequired,
               ),
             ),
           ],
+        ),
+        SizedBox(height: AppDimensions.padding15h),
+        AddressFormField(
+          label: "Pincode",
+          hintText: "6-digit pincode",
+          controller: _pincodeController,
+          keyboardType: TextInputType.number,
+          inputFormatters: [
+            FilteringTextInputFormatter.digitsOnly,
+            LengthLimitingTextInputFormatter(6),
+          ],
+          validator: _notifier.validatePincode,
         ),
         SizedBox(height: AppDimensions.padding15h),
         Text(
@@ -996,7 +1314,7 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
         Wrap(
           spacing: AppDimensions.padding10w,
           runSpacing: AppDimensions.padding8h,
-          children: ['5km', '10km', '15km', '20km']
+          children: ProviderProfileNotifier.radiusOptions.keys
               .map(
                 (r) => _buildSelectionChip(
                   r,
@@ -1024,7 +1342,7 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
         ),
         SizedBox(height: AppDimensions.padding10h),
         Row(
-          children: ['Full Time', 'Part Time']
+          children: ProviderProfileNotifier.workTypeOptions.keys
               .map(
                 (t) => Padding(
                   padding: EdgeInsets.only(right: AppDimensions.padding15w),
@@ -1036,6 +1354,18 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
                 ),
               )
               .toList(),
+        ),
+        SizedBox(height: AppDimensions.padding15h),
+        AddressFormField(
+          label: "Team Size",
+          hintText: "Number of people incl. you",
+          controller: _teamSizeController,
+          keyboardType: TextInputType.number,
+          inputFormatters: [
+            FilteringTextInputFormatter.digitsOnly,
+            LengthLimitingTextInputFormatter(4),
+          ],
+          validator: _notifier.validateTeamSize,
         ),
       ],
     );
@@ -1076,21 +1406,28 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
                 label: "Account holder name",
                 hintText: "Enter name",
                 controller: _accountHolderController,
-                validator: (v) => (v == null || v.isEmpty) ? "Required" : null,
+                validator: _notifier.validateRequired,
               ),
             ),
             SizedBox(width: AppDimensions.padding15w),
             Expanded(
               child: AddressFormField(
-                label: "Account number",
-                hintText: "Enter number",
-                controller: _accountNumberController,
-                keyboardType: TextInputType.number,
-                inputFormatters: _accountNumberFormatters,
-                validator: _notifier.validateAccountNumber,
+                label: "Bank name",
+                hintText: "e.g. SBI",
+                controller: _bankNameController,
+                validator: _notifier.validateRequired,
               ),
             ),
           ],
+        ),
+        SizedBox(height: AppDimensions.padding15h),
+        AddressFormField(
+          label: "Account number",
+          hintText: "Enter number",
+          controller: _accountNumberController,
+          keyboardType: TextInputType.number,
+          inputFormatters: _accountNumberFormatters,
+          validator: _notifier.validateAccountNumber,
         ),
         SizedBox(height: AppDimensions.padding15h),
         // Typed twice so a typo can't send payouts to the wrong account.
@@ -1137,7 +1474,7 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
             SizedBox(width: AppDimensions.padding15w),
             Expanded(
               child: AddressFormField(
-                label: "UPI ID (Optional)",
+                label: "UPI ID",
                 hintText: "name@upi",
                 controller: _upiIdController,
                 validator: _notifier.validateUpi,

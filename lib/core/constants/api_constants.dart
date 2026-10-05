@@ -56,11 +56,33 @@ class ApiConstants {
   /// Submits the 3-step provider profile-completion form (basic info,
   /// service details, bank details) as multipart/form-data — the request
   /// includes file uploads (profile photo, Aadhaar front/back, PAN card).
-  ///
-  /// Double `provider` prefix matches [serviceTypes]/[subServiceTypes] above
-  /// — the single-prefix path (`provider/provide-profile/update`) returned a
-  /// Laravel "route not found" 404 in testing.
-  static const String providerProfileUpdate = 'provider/provide-profile/update';
+  /// Used both for first-time completion and later edits.
+  static const String providerProfileUpdate =
+      'provider/provider-profile/update';
+
+  /// Fetches the logged-in provider's saved profile. Answers 404
+  /// ("Provider profile not found") until the profile has been submitted
+  /// once — see CompleteProfileRepository.fetchProfile.
+  static const String providerProfile = 'provider/provider-profile';
+
+  /// Sends an OTP to a mobile number (POST). Query parameters: `mobile_number`,
+  /// `role`. The response currently echoes the OTP back (`data.otp`) and
+  /// there is no verify endpoint yet, so the app compares against it.
+  static const String providerSendOtp = 'provider/provider/send-otp';
+
+  /// Adds a mobile number to an account that has none (POST, form-data).
+  /// Called twice: with `mobile` only to send an OTP, then with `mobile` +
+  /// `otp` to verify it and save the number.
+  static const String addMobileNumber = 'add-mobile-number';
+
+  /// Public URL root for files the backend stores (Laravel `public` disk),
+  /// e.g. `provider/documents/x.jpg` -> `<storageBaseUrl>provider/documents/x.jpg`.
+  /// Override with `STORAGE_BASE_URL` in dart_defines.json.
+  static const String storageBaseUrl = String.fromEnvironment(
+    'STORAGE_BASE_URL',
+    defaultValue:
+        'https://bhavishyodayinstitute.com/bhavishyodayinstitute2/UrbanService%20Project/public/storage/',
+  );
 
   // ---- Google Maps / Geocoding ----
   /// Google Maps Platform API key, injected at build time with

@@ -9,11 +9,14 @@ import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
 import 'package:urban_services/core/session/session_provider.dart';
+import 'package:urban_services/features/home_provider/complete_profile/complete_profile_repository.dart';
+import 'package:urban_services/features/home_provider/complete_profile/models/provider_profile.dart';
 import 'package:urban_services/routes/route_args.dart';
 import 'package:urban_services/routes/route_names.dart';
 import 'package:urban_services/widgets/common_app_bar.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
 import 'package:urban_services/widgets/logout_dialog.dart';
+import 'package:urban_services/widgets/profile_avatar.dart';
 import 'package:urban_services/widgets/profile_option_tile.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -23,6 +26,12 @@ class ProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final session = ref.watch(sessionProvider);
     final isProvider = session.effectiveRole.isProvider;
+    // Only providers have a saved profile photo for now.
+    final avatarUrl = isProvider
+        ? ProviderProfile.fileUrl(
+            ref.watch(providerProfileStatusProvider).value?.profileImage,
+          )
+        : null;
     final subtitle = [
       session.email,
       session.mobile,
@@ -45,17 +54,10 @@ class ProfileScreen extends ConsumerWidget {
       Row(
         children: [
           // User Avatar Container
-          Container(
+          ProfileAvatar(
             height: AppDimensions.containerHeight60h,
             width: AppDimensions.containerWidth60w,
-            decoration: const BoxDecoration(
-              color: AppColors.white,
-              shape: BoxShape.circle,
-              image: DecorationImage(
-                image: AssetImage(AppImages.image),
-                fit: BoxFit.fill,
-              ),
-            ),
+            imageUrl: avatarUrl,
           ),
           SizedBox(width: AppDimensions.padding15w),
 

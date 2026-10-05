@@ -1,5 +1,5 @@
 # google_maps_flutter needs iOS 14+.
-platform :ios, '14.0'
+platform :ios, '15.5'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'

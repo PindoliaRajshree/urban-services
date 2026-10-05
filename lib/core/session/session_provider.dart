@@ -139,6 +139,13 @@ class SessionNotifier extends Notifier<SessionState> {
     state = build();
   }
 
+  /// Stores a mobile number added to the account after login (see
+  /// ApiConstants.addMobileNumber).
+  Future<void> updateMobile(String mobile) async {
+    await _prefs.setValue(StorageKeys.userMobile, mobile);
+    state = build();
+  }
+
   /// Removes the account's data (token and [StorageKeys.sessionKeys]) and
   /// ends the session. Device-level flags are kept. The router reacts by
   /// sending the user to Welcome; providers that watch [sessionProvider]

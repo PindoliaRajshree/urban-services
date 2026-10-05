@@ -8,6 +8,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:urban_services/core/colors/colors.dart';
+import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/utils/validators.dart';
 import 'package:urban_services/widgets/custom_snackbar.dart';
 
@@ -25,6 +27,12 @@ String? optionalEmailError(String? value) {
       : "Enter a valid email address";
 }
 
+/// Validator for a required email field.
+String? requiredEmailError(String? value) {
+  if (value == null || value.trim().isEmpty) return "Required";
+  return optionalEmailError(value.trim());
+}
+
 /// The DOB format the profile forms display and submit.
 String formatDob(DateTime date) => DateFormat('dd/MM/yyyy').format(date);
 
@@ -39,6 +47,33 @@ Future<DateTime?> pickDateOfBirth(BuildContext context) {
     initialDate: eighteenYearsAgo,
     firstDate: DateTime(1950),
     lastDate: eighteenYearsAgo,
+    // The app's own colours instead of the seed-generated Material ones.
+    builder: (context, child) {
+      final base = Theme.of(context);
+      return Theme(
+        data: base.copyWith(
+          colorScheme: base.colorScheme.copyWith(
+            primary: AppColors.primaryDark,
+            onPrimary: AppColors.white,
+            surface: AppColors.white,
+            onSurface: AppColors.darkBlueText,
+          ),
+          datePickerTheme: DatePickerThemeData(
+            backgroundColor: AppColors.white,
+            surfaceTintColor: Colors.transparent,
+            headerBackgroundColor: AppColors.primaryDark,
+            headerForegroundColor: AppColors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppDimensions.radius16r),
+            ),
+          ),
+          textButtonTheme: TextButtonThemeData(
+            style: TextButton.styleFrom(foregroundColor: AppColors.primaryDark),
+          ),
+        ),
+        child: child!,
+      );
+    },
   );
 }
 

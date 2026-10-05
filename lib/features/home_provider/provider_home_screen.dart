@@ -10,6 +10,8 @@ import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
 import 'package:urban_services/core/session/session_provider.dart';
+import 'package:urban_services/features/home_provider/complete_profile/complete_profile_repository.dart';
+import 'package:urban_services/features/home_provider/complete_profile/models/provider_profile.dart';
 import 'package:urban_services/features/home_provider/complete_profile/service_type_provider.dart';
 import 'package:urban_services/features/home_provider/provider_home_provider.dart';
 import 'package:urban_services/routes/route_names.dart';
@@ -37,6 +39,14 @@ class _ProviderHomeScreenState extends ConsumerState<ProviderHomeScreen> {
   Widget build(BuildContext context) {
     final isSmall = MediaQuery.of(context).size.height < 720;
     final firstName = ref.watch(sessionProvider.select((s) => s.firstName));
+    final profileStatus = ref.watch(providerProfileStatusProvider);
+    final savedProfile = profileStatus.value;
+    // No profile yet (404) or not completed. False while loading or if the
+    // check failed.
+    final needsProfile = switch (profileStatus) {
+      AsyncData(:final value) => value == null || !value.isProfileCompleted,
+      _ => false,
+    };
 
     return Scaffold(
       backgroundColor: AppColors.screenBackground,
@@ -66,6 +76,10 @@ class _ProviderHomeScreenState extends ConsumerState<ProviderHomeScreen> {
                   // their city).
                   HomeHeader(
                     firstName: firstName,
+                    avatarUrl: ProviderProfile.fileUrl(
+                      savedProfile?.profileImage,
+                    ),
+                    showProfileShowcase: needsProfile,
                     showcaseDescription:
                         'Tap your photo to finish setting up your provider details — pricing, service area, availability, and documents.',
                     onAvatarTap: () =>
@@ -83,6 +97,14 @@ class _ProviderHomeScreenState extends ConsumerState<ProviderHomeScreen> {
                       ),
                     ],
                   ),
+
+                  // Prompt until the provider has a completed profile
+                  // (none saved yet = 404, or is_profile_completed false).
+                  // Hidden while loading or if the check failed.
+                  if (needsProfile) ...[
+                    SizedBox(height: AppDimensions.padding10h),
+                    _buildCompleteProfileBanner(),
+                  ],
 
                   SizedBox(height: AppDimensions.padding8h),
                   // 4. Availability Toggle Container
@@ -566,6 +588,49 @@ class _ProviderHomeScreenState extends ConsumerState<ProviderHomeScreen> {
   }
 
   /// Helper to build summary statistic cards
+  Widget _buildCompleteProfileBanner() {
+    return GestureDetector(
+      onTap: () => context.push(RouteNames.completeProviderProfile),
+      child: Container(
+        padding: EdgeInsets.all(AppDimensions.padding12w),
+        decoration: BoxDecoration(
+          gradient: AppColors.gradient,
+          borderRadius: BorderRadius.circular(AppDimensions.radius10r),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.assignment_ind_outlined, color: AppColors.white),
+            SizedBox(width: AppDimensions.padding10w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Complete your profile",
+                    style: customTextStyle(
+                      AppTextSizes.mediumTextSize,
+                      AppColors.white,
+                      FontWeight.w700,
+                    ),
+                  ),
+                  Text(
+                    "Add your services, documents and bank details to start getting bookings.",
+                    style: customTextStyle(
+                      AppTextSizes.stableTextSize,
+                      AppColors.white,
+                      FontWeight.w400,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right, color: AppColors.white),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildSummaryCard(String value, String label) {
     return Container(
       padding: EdgeInsets.symmetric(

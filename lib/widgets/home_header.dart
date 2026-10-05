@@ -10,6 +10,7 @@ import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
+import 'package:urban_services/widgets/profile_avatar.dart';
 
 class HomeHeader extends StatefulWidget {
   const HomeHeader({
@@ -17,6 +18,8 @@ class HomeHeader extends StatefulWidget {
     required this.firstName,
     required this.showcaseDescription,
     required this.onAvatarTap,
+    this.avatarUrl,
+    this.showProfileShowcase = true,
     this.location,
     this.onLocationTap,
     this.actions = const [],
@@ -30,6 +33,13 @@ class HomeHeader extends StatefulWidget {
 
   /// Opens the role's profile-completion screen.
   final VoidCallback onAvatarTap;
+
+  /// Saved profile photo; the placeholder is shown when null.
+  final String? avatarUrl;
+
+  /// Spotlight the avatar with the "Complete Your Profile" callout. Can
+  /// turn true later (e.g. once the profile status loads).
+  final bool showProfileShowcase;
 
   /// The location line under the greeting. Hidden when null.
   final String? location;
@@ -46,13 +56,34 @@ class _HomeHeaderState extends State<HomeHeader> {
   // Spotlights the avatar with a "complete your profile" callout.
   final GlobalKey _profileShowcaseKey = GlobalKey();
 
+  bool _showcaseStarted = false;
+
   @override
   void initState() {
     super.initState();
-    // Runs once per Home screen (HomeMain keeps its tabs alive). There's
-    // no "seen it already" flag yet, so it shows on every app start.
+    _maybeStartShowcase();
+  }
+
+  @override
+  void didUpdateWidget(HomeHeader oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.showProfileShowcase && !widget.showProfileShowcase) {
+      // E.g. the profile turned out to be complete after a refresh.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) ShowCaseWidget.of(context).dismiss();
+      });
+    }
+    _maybeStartShowcase();
+  }
+
+  /// Runs once per Home screen (HomeMain keeps its tabs alive). There's
+  /// no "seen it already" flag yet, so it shows on every app start while
+  /// [HomeHeader.showProfileShowcase] is true.
+  void _maybeStartShowcase() {
+    if (_showcaseStarted || !widget.showProfileShowcase) return;
+    _showcaseStarted = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
+      if (!mounted || !widget.showProfileShowcase) return;
       ShowCaseWidget.of(context).startShowCase([_profileShowcaseKey]);
     });
   }
@@ -93,25 +124,19 @@ class _HomeHeaderState extends State<HomeHeader> {
           disposeOnTap: true,
           child: GestureDetector(
             onTap: _onAvatarTap,
-            child: Container(
+            child: ProfileAvatar(
               width: AppDimensions.containerWidth45w,
               height: AppDimensions.containerHeight45h,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: AppColors.primaryDark, width: 1),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.25),
-                    offset: const Offset(0, 1),
-                    blurRadius: 2.9,
-                    spreadRadius: 0,
-                  ),
-                ],
-                image: const DecorationImage(
-                  image: AssetImage(AppImages.image),
-                  fit: BoxFit.cover,
+              imageUrl: widget.avatarUrl,
+              border: Border.all(color: AppColors.primaryDark, width: 1),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.25),
+                  offset: const Offset(0, 1),
+                  blurRadius: 2.9,
+                  spreadRadius: 0,
                 ),
-              ),
+              ],
             ),
           ),
         ),

@@ -13,6 +13,14 @@ class DocumentUploadCard extends StatelessWidget {
   final String title;
   final String subTitle;
   final File? selectedFile;
+
+  /// URL of a document already saved on the server. Shown as "uploaded"
+  /// when no new [selectedFile] has been picked.
+  final String? existingUrl;
+
+  /// True while the picked image is being read (e.g. OCR of a card
+  /// number). Shows a spinner and ignores taps.
+  final bool isProcessing;
   final VoidCallback onUpload;
   final VoidCallback onRemove;
 
@@ -21,12 +29,24 @@ class DocumentUploadCard extends StatelessWidget {
     required this.title,
     required this.subTitle,
     this.selectedFile,
+    this.existingUrl,
+    this.isProcessing = false,
     required this.onUpload,
     required this.onRemove,
   });
 
   @override
   Widget build(BuildContext context) {
+    final hasFile =
+        !isProcessing && (selectedFile != null || existingUrl != null);
+    final fileLabel = isProcessing
+        ? "Reading number..."
+        : selectedFile != null
+        ? selectedFile!.path.split(RegExp(r'[/\\]')).last
+        : existingUrl != null
+        ? "Uploaded — tap to replace"
+        : "Click to upload";
+
     return Container(
       decoration: BoxDecoration(
         color: AppColors.white,
@@ -51,33 +71,47 @@ class DocumentUploadCard extends StatelessWidget {
                   width: AppDimensions.containerWidth24w,
                 ),
                 SizedBox(width: AppDimensions.padding10w),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: customTextStyle(
-                        AppTextSizes.mediumTextSize, // 13
-                        AppColors.headingGrey,
-                        FontWeight.w600,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: customTextStyle(
+                          AppTextSizes.mediumTextSize, // 13
+                          AppColors.headingGrey,
+                          FontWeight.w600,
+                        ),
                       ),
-                    ),
-                    Text(
-                      subTitle,
-                      style: customTextStyle(
-                        AppTextSizes.smallTextSize, // 12
-                        AppColors.darkGrey,
-                        FontWeight.w400,
+                      Text(
+                        subTitle,
+                        style: customTextStyle(
+                          AppTextSizes.smallTextSize, // 12
+                          AppColors.darkGrey,
+                          FontWeight.w400,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
+                // Thumbnail of the saved document.
+                if (selectedFile == null && existingUrl != null)
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(AppDimensions.radius4r),
+                    child: Image.network(
+                      existingUrl!,
+                      height: AppDimensions.containerHeight40h,
+                      width: AppDimensions.containerHeight40h,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                    ),
+                  ),
               ],
             ),
           ),
           const Divider(color: Color.fromRGBO(190, 190, 190, 1), height: 1),
           GestureDetector(
-            onTap: onUpload,
+            onTap: isProcessing ? null : onUpload,
             child: Container(
               margin: EdgeInsets.all(AppDimensions.padding12w),
               padding: EdgeInsets.symmetric(vertical: AppDimensions.padding15h),
@@ -93,31 +127,36 @@ class DocumentUploadCard extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Image.asset(
-                      selectedFile != null
-                          ? AppImages.forward
-                          : AppImages.upload,
-                      height: selectedFile != null
-                          ? AppDimensions.containerHeight10h
-                          : AppDimensions.containerHeight20h,
-                      width: selectedFile != null
-                          ? AppDimensions.containerWidth10w
-                          : AppDimensions.containerWidth20w,
-                      color: AppColors.primaryDark,
-                    ),
+                    if (isProcessing)
+                      SizedBox(
+                        height: AppDimensions.containerHeight16h,
+                        width: AppDimensions.containerWidth16w,
+                        child: const CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    else
+                      Image.asset(
+                        hasFile ? AppImages.forward : AppImages.upload,
+                        height: hasFile
+                            ? AppDimensions.containerHeight10h
+                            : AppDimensions.containerHeight20h,
+                        width: hasFile
+                            ? AppDimensions.containerWidth10w
+                            : AppDimensions.containerWidth20w,
+                        color: AppColors.primaryDark,
+                      ),
                     SizedBox(width: AppDimensions.padding8w),
-                    Text(
-                      selectedFile != null
-                          ? selectedFile!.path.split('/').last
-                          : "Click to upload",
-                      overflow: TextOverflow.ellipsis,
-                      style: customTextStyle(
-                        AppTextSizes.smallTextSize, // 12
-                        AppColors.primaryDark,
-                        FontWeight.w600,
+                    Flexible(
+                      child: Text(
+                        fileLabel,
+                        overflow: TextOverflow.ellipsis,
+                        style: customTextStyle(
+                          AppTextSizes.smallTextSize, // 12
+                          AppColors.primaryDark,
+                          FontWeight.w600,
+                        ),
                       ),
                     ),
-                    if (selectedFile != null)
+                    if (hasFile)
                       GestureDetector(
                         onTap: () {
                           // Prevent triggering the parent GestureDetector

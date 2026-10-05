@@ -1,10 +1,9 @@
 // File: lib/features/home_provider/complete_profile/models/profile_update_response.dart
-// Purpose: Parses POST provider/provide-profile/update.
+// Purpose: Parses POST provider/provider-profile/update.
 //
-// Shape not yet confirmed against a live response — kept loose (message +
-// the raw `data` map) until we've tested against the real API. Update this
-// once the actual response is known, following the pattern in
-// service_address_response.dart (parse the confirmed fields explicitly).
+// Response is `{status, message, data: {user, provider}}` — the same
+// provider fields as GET provider/provider-profile (see provider_profile.dart).
+// Only the message is used; Home re-fetches the profile after a save.
 
 class ProfileUpdateResponse {
   ProfileUpdateResponse({this.message, this.data});
