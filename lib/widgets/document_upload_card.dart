@@ -8,6 +8,7 @@ import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
+import 'package:urban_services/widgets/document_image_viewer.dart';
 
 class DocumentUploadCard extends StatelessWidget {
   final String title;
@@ -34,6 +35,14 @@ class DocumentUploadCard extends StatelessWidget {
     required this.onUpload,
     required this.onRemove,
   });
+
+  /// Opens the picked file, or else the saved one, full screen.
+  void _view(BuildContext context) => DocumentImageViewer.show(
+    context,
+    title: "$title – $subTitle",
+    file: selectedFile,
+    url: existingUrl,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -94,16 +103,47 @@ class DocumentUploadCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                // Thumbnail of the saved document.
-                if (selectedFile == null && existingUrl != null)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(AppDimensions.radius4r),
-                    child: Image.network(
-                      existingUrl!,
-                      height: AppDimensions.containerHeight40h,
-                      width: AppDimensions.containerHeight40h,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                // Thumbnail of the saved document (tap to view).
+                if (!isProcessing &&
+                    selectedFile == null &&
+                    existingUrl != null)
+                  GestureDetector(
+                    onTap: () => _view(context),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.radius4r,
+                      ),
+                      child: Image.network(
+                        existingUrl!,
+                        height: AppDimensions.containerHeight40h,
+                        width: AppDimensions.containerHeight40h,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                      ),
+                    ),
+                  ),
+                if (hasFile)
+                  TextButton.icon(
+                    onPressed: () => _view(context),
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.primaryDark,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: AppDimensions.padding8w,
+                      ),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    icon: Icon(
+                      Icons.visibility_outlined,
+                      size: AppDimensions.containerHeight18h,
+                    ),
+                    label: Text(
+                      "View",
+                      style: customTextStyle(
+                        AppTextSizes.smallTextSize,
+                        AppColors.primaryDark,
+                        FontWeight.w600,
+                      ),
                     ),
                   ),
               ],
