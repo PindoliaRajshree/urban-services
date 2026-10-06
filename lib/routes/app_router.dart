@@ -34,6 +34,7 @@ import 'package:urban_services/features/chat/chat_search_screen.dart';
 import 'package:urban_services/features/home/complete_profile/user_complete_profile_screen.dart';
 import 'package:urban_services/features/home_main/home_main.dart';
 import 'package:urban_services/features/home_provider/complete_profile/complete_profile_screen.dart';
+import 'package:urban_services/features/home_provider/complete_profile/provider_profile_view_screen.dart';
 import 'package:urban_services/features/home_provider/provider_home_screen.dart';
 import 'package:urban_services/features/live_tracking/live_tracking_screen.dart';
 import 'package:urban_services/features/my_bookings/my_bookings_screen.dart';
@@ -59,6 +60,7 @@ const _publicRoutes = {
 /// Screens only providers may open.
 const _providerOnlyRoutes = {
   RouteNames.completeProviderProfile,
+  RouteNames.providerProfileView,
   RouteNames.providerHomeScreen,
 };
 
@@ -172,7 +174,15 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: RouteNames.completeProviderProfile,
-        builder: (_, _) => const CompleteProfileScreen(),
+        // No args (first-time completion) opens on the first page.
+        builder: (_, state) => CompleteProfileScreen(
+          initialStep:
+              (state.extra as ProviderProfileEditArgs?)?.initialStep ?? 0,
+        ),
+      ),
+      GoRoute(
+        path: RouteNames.providerProfileView,
+        builder: (_, _) => const ProviderProfileViewScreen(),
       ),
       GoRoute(
         path: RouteNames.addressScreen,

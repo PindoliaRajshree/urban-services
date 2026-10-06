@@ -21,6 +21,7 @@ class RouteNames {
   static const String completeProfile = '/completeProfile';
   static const String providerHomeScreen = '/providerHome';
   static const String completeProviderProfile = '/completeProviderProfile';
+  static const String providerProfileView = '/providerProfile';
 
   //address
   static const String addressScreen = '/address';

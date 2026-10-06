@@ -12,6 +12,7 @@ import 'package:urban_services/core/constants/app_text_sizes.dart';
 import 'package:urban_services/core/session/session_provider.dart';
 import 'package:urban_services/features/home_provider/complete_profile/complete_profile_repository.dart';
 import 'package:urban_services/features/home_provider/complete_profile/models/provider_profile.dart';
+import 'package:urban_services/features/home_provider/complete_profile/provider_profile_view_screen.dart';
 import 'package:urban_services/features/home_provider/complete_profile/service_type_provider.dart';
 import 'package:urban_services/features/home_provider/provider_home_provider.dart';
 import 'package:urban_services/routes/route_names.dart';
@@ -83,7 +84,7 @@ class _ProviderHomeScreenState extends ConsumerState<ProviderHomeScreen> {
                     showcaseDescription:
                         'Tap your photo to finish setting up your provider details — pricing, service area, availability, and documents.',
                     onAvatarTap: () =>
-                        context.push(RouteNames.completeProviderProfile),
+                        context.push(providerProfileRoute(savedProfile)),
                     actions: [
                       Image.asset(
                         AppImages.homeLocation,

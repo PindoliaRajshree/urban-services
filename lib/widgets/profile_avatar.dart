@@ -1,11 +1,10 @@
 // File: lib/widgets/profile_avatar.dart
 // Purpose: Circular profile photo used on the Home header and Profile tab.
 // Shows the saved photo when there is one, otherwise (or if it fails to
-// load) the placeholder image.
+// load) a default person icon.
 
 import 'package:flutter/material.dart';
 import 'package:urban_services/core/colors/colors.dart';
-import 'package:urban_services/core/constants/app_images.dart';
 
 class ProfileAvatar extends StatelessWidget {
   const ProfileAvatar({
@@ -20,7 +19,7 @@ class ProfileAvatar extends StatelessWidget {
   final double width;
   final double height;
 
-  /// The saved photo's URL; the placeholder is shown when null.
+  /// The saved photo's URL; the person icon is shown when null.
   final String? imageUrl;
   final BoxBorder? border;
   final List<BoxShadow>? boxShadow;
@@ -28,7 +27,16 @@ class ProfileAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final url = imageUrl;
-    final placeholder = Image.asset(AppImages.image, fit: BoxFit.cover);
+    final placeholder = ColoredBox(
+      color: AppColors.uploadBg,
+      child: Center(
+        child: Icon(
+          Icons.person_rounded,
+          color: AppColors.primaryDark,
+          size: (width < height ? width : height) * 0.6,
+        ),
+      ),
+    );
 
     return Container(
       width: width,
@@ -45,6 +53,8 @@ class ProfileAvatar extends StatelessWidget {
             : Image.network(
                 url,
                 fit: BoxFit.cover,
+                width: width,
+                height: height,
                 errorBuilder: (_, _, _) => placeholder,
               ),
       ),

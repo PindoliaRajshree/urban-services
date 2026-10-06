@@ -11,6 +11,7 @@ import 'package:urban_services/core/constants/app_text_sizes.dart';
 import 'package:urban_services/core/session/session_provider.dart';
 import 'package:urban_services/features/home_provider/complete_profile/complete_profile_repository.dart';
 import 'package:urban_services/features/home_provider/complete_profile/models/provider_profile.dart';
+import 'package:urban_services/features/home_provider/complete_profile/provider_profile_view_screen.dart';
 import 'package:urban_services/routes/route_args.dart';
 import 'package:urban_services/routes/route_names.dart';
 import 'package:urban_services/widgets/common_app_bar.dart';
@@ -26,12 +27,11 @@ class ProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final session = ref.watch(sessionProvider);
     final isProvider = session.effectiveRole.isProvider;
-    // Only providers have a saved profile photo for now.
-    final avatarUrl = isProvider
-        ? ProviderProfile.fileUrl(
-            ref.watch(providerProfileStatusProvider).value?.profileImage,
-          )
+    final providerProfile = isProvider
+        ? ref.watch(providerProfileStatusProvider).value
         : null;
+    // Only providers have a saved profile photo for now.
+    final avatarUrl = ProviderProfile.fileUrl(providerProfile?.profileImage);
     final subtitle = [
       session.email,
       session.mobile,
@@ -116,9 +116,11 @@ class ProfileScreen extends ConsumerWidget {
             ProfileOptionTile(
               icon: AppImages.person,
               title: 'Profile',
+              // A provider's completed profile opens read-only, with
+              // per-section Edit; otherwise straight to the form.
               onTap: () => context.push(
                 isProvider
-                    ? RouteNames.completeProviderProfile
+                    ? providerProfileRoute(providerProfile)
                     : RouteNames.completeProfile,
               ),
             ),

@@ -19,6 +19,14 @@ class AddressArgs {
   final bool manage;
 }
 
+class ProviderProfileEditArgs {
+  const ProviderProfileEditArgs({this.initialStep = 0});
+
+  /// The wizard page to open on (0 Basic Info, 1 Service Details, 2 Bank
+  /// Details) — set when editing one section from the profile view.
+  final int initialStep;
+}
+
 class ChatArgs {
   const ChatArgs({
     this.name = 'Devon Lane',

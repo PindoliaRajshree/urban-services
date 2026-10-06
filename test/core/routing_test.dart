@@ -36,25 +36,29 @@ void main() {
           reason: route,
         );
       }
-      expect(
-        appRedirect(
-          RouteNames.completeProviderProfile,
-          isAuthenticated: true,
-          isProvider: true,
-        ),
-        isNull,
-      );
+      for (final route in [
+        RouteNames.completeProviderProfile,
+        RouteNames.providerProfileView,
+      ]) {
+        expect(
+          appRedirect(route, isAuthenticated: true, isProvider: true),
+          isNull,
+          reason: route,
+        );
+      }
     });
 
     test('a user cannot open provider-only screens', () {
-      expect(
-        appRedirect(
-          RouteNames.completeProviderProfile,
-          isAuthenticated: true,
-          isProvider: false,
-        ),
-        RouteNames.homeMain,
-      );
+      for (final route in [
+        RouteNames.completeProviderProfile,
+        RouteNames.providerProfileView,
+      ]) {
+        expect(
+          appRedirect(route, isAuthenticated: true, isProvider: false),
+          RouteNames.homeMain,
+          reason: route,
+        );
+      }
       expect(
         appRedirect(
           RouteNames.addressScreen,

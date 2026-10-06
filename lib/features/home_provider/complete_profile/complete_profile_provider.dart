@@ -418,16 +418,18 @@ class ProviderProfileNotifier extends Notifier<ProviderProfileState> {
     }
   }
 
+  /// The UI label for an API value in one of the option maps above (e.g.
+  /// 'per_hour' -> 'Per Hour'), or null when there's no match.
+  static String? labelFor<T>(Map<String, T> options, T? apiValue) {
+    if (apiValue == null) return null;
+    for (final MapEntry(:key, :value) in options.entries) {
+      if (value == apiValue) return key;
+    }
+    return null;
+  }
+
   /// Copies a saved profile's non-text values into state.
   void _applySaved(ProviderProfile p) {
-    String? labelFor<T>(Map<String, T> options, T? apiValue) {
-      if (apiValue == null) return null;
-      for (final MapEntry(:key, :value) in options.entries) {
-        if (value == apiValue) return key;
-      }
-      return null;
-    }
-
     final years = p.experienceYears;
     state = state.copyWith(
       isLoading: false,

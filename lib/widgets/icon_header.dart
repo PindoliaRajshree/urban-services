@@ -26,15 +26,20 @@ class IconHeader extends StatelessWidget {
             color: AppColors.primaryDark,
           ),
           SizedBox(width: AppDimensions.padding10w),
-          ShaderMask(
-            shaderCallback: (bounds) =>
-                AppColors.gradient.createShader(Offset.zero & bounds.size),
-            child: Text(
-              title,
-              style: customTextStyle(
-                AppTextSizes.largeMediumTextSize, // 14
-                AppColors.white,
-                FontWeight.w600,
+          // Flexible so a trailing action beside the header (or large
+          // system fonts) can't overflow it.
+          Flexible(
+            child: ShaderMask(
+              shaderCallback: (bounds) =>
+                  AppColors.gradient.createShader(Offset.zero & bounds.size),
+              child: Text(
+                title,
+                overflow: TextOverflow.ellipsis,
+                style: customTextStyle(
+                  AppTextSizes.largeMediumTextSize, // 14
+                  AppColors.white,
+                  FontWeight.w600,
+                ),
               ),
             ),
           ),

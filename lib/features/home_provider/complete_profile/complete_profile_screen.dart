@@ -34,7 +34,11 @@ import 'package:urban_services/widgets/add_mobile_number_dialog.dart';
 import 'package:urban_services/widgets/verify_number_dialog.dart';
 
 class CompleteProfileScreen extends ConsumerStatefulWidget {
-  const CompleteProfileScreen({super.key});
+  const CompleteProfileScreen({super.key, this.initialStep = 0});
+
+  /// The page to open on — set when editing one section from the profile
+  /// view. Back from this page leaves the screen.
+  final int initialStep;
 
   @override
   ConsumerState<CompleteProfileScreen> createState() =>
@@ -42,7 +46,11 @@ class CompleteProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
-  final _pageController = PageController();
+  late final _pageController = PageController(initialPage: widget.initialStep);
+
+  /// What was loaded, to tell whether an edit changed anything.
+  ProviderProfileTextValues? _loadedValues;
+  ProviderProfileState? _loadedState;
 
   // --- Per-step form keys (each page validates only its own fields) ---
   final _basicInfoFormKey = GlobalKey<FormState>();
@@ -128,6 +136,9 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
     _confirmAccountNumberController.text = values.accountNumber;
     _ifscController.text = values.ifsc;
     _upiIdController.text = values.upiId;
+    if (widget.initialStep > 0) _notifier.goToStep(widget.initialStep);
+    _loadedValues = values;
+    _loadedState = ref.read(providerProfileProvider);
   }
 
   /// Fills the address fields from the device location (empty results
@@ -193,13 +204,20 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
     if (step < ProviderProfileNotifier.totalSteps - 1) _animateToStep(step + 1);
   }
 
-  /// Goes back to the previous page. On step 0 it leaves the screen, after
-  /// confirming if anything has been entered. Shared by the app-bar back,
-  /// the "Previous" button and the Android back button (see PopScope).
-  Future<void> _previousStep() async {
+  /// The "Previous" button: goes back one page.
+  void _previousStep() {
+    final profile = ref.read(providerProfileProvider);
+    if (profile.isSubmitting || profile.currentStep == 0) return;
+    _animateToStep(profile.currentStep - 1);
+  }
+
+  /// App-bar back and Android back (see PopScope): goes back one page, but
+  /// on the page the screen opened on it leaves, after confirming if
+  /// anything has been entered or changed.
+  Future<void> _onBack() async {
     final profile = ref.read(providerProfileProvider);
     if (profile.isSubmitting) return;
-    if (profile.currentStep > 0) {
+    if (profile.currentStep > widget.initialStep) {
       _animateToStep(profile.currentStep - 1);
       return;
     }
@@ -222,11 +240,12 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
   }
 
   /// Whether leaving now might lose anything the user entered. Fields
-  /// prefilled from registration (name/email/mobile) alone don't count.
+  /// prefilled from registration (name/email/mobile) alone don't count;
+  /// when editing, only differences from the saved profile do.
   bool get _hasChanges {
     final profile = ref.read(providerProfileProvider);
     if (profile.isLoading || profile.loadError != null) return false;
-    if (profile.isEditing) return true;
+    if (profile.isEditing) return _hasEdits(profile);
     return profile.profileImage != null ||
         profile.adhaarFront != null ||
         profile.adhaarBack != null ||
@@ -237,6 +256,51 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
         _textControllers
             .skip(3) // name, mobile, email
             .any((c) => c.text.trim().isNotEmpty);
+  }
+
+  /// Whether [now] differs from the saved profile loaded into the form.
+  bool _hasEdits(ProviderProfileState now) {
+    final values = _loadedValues;
+    final saved = _loadedState;
+    if (values == null || saved == null) return true;
+
+    final textChanged = {
+      _mobileController: values.mobile,
+      _emailController: values.email,
+      _bioController: values.bio,
+      _startingPriceController: values.startingPrice,
+      _teamSizeController: values.teamSize,
+      _addressController: values.address,
+      _cityController: values.city,
+      _stateController: values.state,
+      _pincodeController: values.pincode,
+      _accountHolderController: values.accountHolder,
+      _bankNameController: values.bankName,
+      _accountNumberController: values.accountNumber,
+      _ifscController: values.ifsc,
+      _upiIdController: values.upiId,
+    }.entries.any((e) => e.key.text.trim() != e.value.trim());
+
+    return textChanged ||
+        // A newly picked image, or a saved one removed.
+        now.profileImage != null ||
+        now.adhaarFront != null ||
+        now.adhaarBack != null ||
+        now.panCard != null ||
+        now.profileImageUrl != saved.profileImageUrl ||
+        now.adhaarFrontUrl != saved.adhaarFrontUrl ||
+        now.adhaarBackUrl != saved.adhaarBackUrl ||
+        now.panCardUrl != saved.panCardUrl ||
+        now.gender != saved.gender ||
+        now.dob != saved.dob ||
+        now.serviceCategory != saved.serviceCategory ||
+        now.subServices != saved.subServices ||
+        now.experience != saved.experience ||
+        now.pricingType != saved.pricingType ||
+        now.selectedRadius != saved.selectedRadius ||
+        now.workType != saved.workType ||
+        now.latitude != saved.latitude ||
+        now.longitude != saved.longitude;
   }
 
   bool _validateStep(int step) {
@@ -370,11 +434,11 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
     });
 
     // Android back behaves like the app-bar back: one step at a time, with
-    // a discard confirmation when leaving from step 0.
+    // a discard confirmation when leaving from the opening page.
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) _previousStep();
+        if (!didPop) _onBack();
       },
       child: Scaffold(
         backgroundColor: AppColors.screenBackground,
@@ -390,8 +454,9 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
                       ? 'Edit Profile'
                       : 'Complete Your Profile',
                   showMoreIcon: false,
-                  // Step 0 leaves the screen; later steps go back one page.
-                  onBackPress: _previousStep,
+                  // The opening page leaves the screen; later steps go
+                  // back one page.
+                  onBackPress: _onBack,
                 ),
               ),
 

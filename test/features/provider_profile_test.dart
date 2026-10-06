@@ -101,7 +101,8 @@ void main() {
       bankName: 'SBI',
       accountNumber: '1212121212',
       ifscCode: 'SBIN0001234',
-      profileImage: profileImage, upiId: 'upi@ok',
+      profileImage: profileImage,
+      upiId: 'upi@ok',
     );
 
     test('sends exactly the backend keys', () async {
