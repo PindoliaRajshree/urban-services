@@ -36,14 +36,12 @@ class AppColors {
   static const Color cardWhite = Color.fromRGBO(252, 253, 255, 1);
   static const Color lightSuccess = Color.fromRGBO(212, 255, 187, 1);
 
-  // Solid toast/snackbar colors — sampled directly from the reference
-  // design (the green "success" toast) and hue-rotated at the same
-  // saturation/lightness for the other toast types, so all four read as
-  // one consistent family.
-  static const Color toastSuccess = Color.fromRGBO(72, 174, 108, 1);
-  static const Color toastDanger = Color.fromRGBO(174, 77, 72, 1);
+  // Solid toast/snackbar colors — success, danger and info are sampled from
+  // the reference alert design; warning isn't in it and keeps its old tone.
+  static const Color toastSuccess = Color.fromRGBO(68, 204, 85, 1);
+  static const Color toastDanger = Color.fromRGBO(248, 92, 92, 1);
   static const Color toastWarning = Color.fromRGBO(174, 137, 72, 1);
-  static const Color toastInfo = Color.fromRGBO(72, 132, 174, 1);
+  static const Color toastInfo = Color.fromRGBO(64, 150, 255, 1);
   static const Color successGreen = Color.fromRGBO(1, 128, 20, 1);
   static const Color uploadBg = Color.fromRGBO(255, 253, 253, 1);
   static const Color darkBlueText = Color.fromRGBO(31, 41, 55, 1);

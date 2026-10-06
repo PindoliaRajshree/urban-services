@@ -1,8 +1,9 @@
 // File: lib/features/home/complete_profile/user_complete_profile_screen.dart
 // Purpose: Single-section form for a regular user to complete their basic
-// profile details (photo, name, mobile, email, gender, DOB).
+// profile details (photo, name, mobile, email, gender, DOB) and address.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:urban_services/core/utils/input_formatters.dart';
@@ -34,6 +35,11 @@ class _UserCompleteProfileScreenState
   final _fullNameController = TextEditingController();
   final _mobileController = TextEditingController();
   final _emailController = TextEditingController();
+  final _countryController = TextEditingController();
+  final _stateController = TextEditingController();
+  final _cityController = TextEditingController();
+  final _pincodeController = TextEditingController();
+  final _fullAddressController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   UserCompleteProfileNotifier get _notifier =>
@@ -53,6 +59,11 @@ class _UserCompleteProfileScreenState
     _fullNameController.dispose();
     _mobileController.dispose();
     _emailController.dispose();
+    _countryController.dispose();
+    _stateController.dispose();
+    _cityController.dispose();
+    _pincodeController.dispose();
+    _fullAddressController.dispose();
     super.dispose();
   }
 
@@ -87,7 +98,7 @@ class _UserCompleteProfileScreenState
                   horizontal: AppDimensions.padding20w,
                 ),
                 child: const CommonAppBar(
-                  title: 'Complete Your Profile',
+                  title: 'Complete User Profile',
                   showMoreIcon: false,
                 ),
               ),
@@ -103,6 +114,11 @@ class _UserCompleteProfileScreenState
                         title: 'Basic Information',
                       ),
                       _buildBasicInfoSection(state),
+                      const IconHeader(
+                        icon: AppImages.location,
+                        title: 'Address Information',
+                      ),
+                      _buildAddressSection(),
                       SizedBox(height: AppDimensions.padding40h),
                       PrimaryButton(
                         text: "Submit Profile",
@@ -403,6 +419,71 @@ class _UserCompleteProfileScreenState
               ),
             ),
           ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAddressSection() {
+    return Column(
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: AddressFormField(
+                label: "Country",
+                hintText: "Enter Country",
+                controller: _countryController,
+                validator: _notifier.validateRequired,
+              ),
+            ),
+            SizedBox(width: AppDimensions.padding15w),
+            Expanded(
+              child: AddressFormField(
+                label: "State",
+                hintText: "Enter State",
+                controller: _stateController,
+                validator: _notifier.validateRequired,
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: AppDimensions.padding15h),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: AddressFormField(
+                label: "City",
+                hintText: "Enter City",
+                controller: _cityController,
+                validator: _notifier.validateRequired,
+              ),
+            ),
+            SizedBox(width: AppDimensions.padding15w),
+            Expanded(
+              child: AddressFormField(
+                label: "Pincode",
+                hintText: "Enter Pincode",
+                controller: _pincodeController,
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(6),
+                ],
+                validator: _notifier.validatePincode,
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: AppDimensions.padding15h),
+        AddressFormField(
+          label: "Full Address",
+          hintText: "Full Address",
+          controller: _fullAddressController,
+          maxLines: 3,
+          validator: _notifier.validateRequired,
         ),
       ],
     );

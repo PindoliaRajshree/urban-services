@@ -311,6 +311,8 @@ class _ProviderHomeScreenState extends ConsumerState<ProviderHomeScreen> {
                                   children: [
                                     Text(
                                       'Deep Cleaning',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                       style: customTextStyle(
                                         AppTextSizes.largeTextSize, // 16
                                         AppColors.black,
@@ -396,85 +398,94 @@ class _ProviderHomeScreenState extends ConsumerState<ProviderHomeScreen> {
                         ),
                         // Booking Card. The status badge and price sit in
                         // their own trailing column (not positioned over
-                        // the card), so long names wrap instead of running
-                        // underneath them.
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            _buildBorderedImage(AppImages.serviceProvider),
-                            SizedBox(width: AppDimensions.padding12w),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                        // the card), so long names don't run underneath
+                        // them.
+                        IntrinsicHeight(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Center(
+                                child: _buildBorderedImage(
+                                  AppImages.serviceProvider,
+                                ),
+                              ),
+                              SizedBox(width: AppDimensions.padding12w),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Bathroom Cleaning',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: customTextStyle(
+                                        AppTextSizes.largeTextSize, // 16
+                                        AppColors.black,
+                                        FontWeight.w700,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Customer: Rahul Sharma',
+                                      style: customTextStyle(
+                                        AppTextSizes.smallTextSize,
+                                        AppColors.black,
+                                        FontWeight.w400,
+                                      ),
+                                    ),
+                                    _buildIconTextRow(
+                                      AppImages.clockOutlined,
+                                      'Today At 2:00PM',
+                                      isBold: true,
+                                    ),
+                                    _buildIconTextRow(
+                                      AppImages.locationOutlined,
+                                      'Vijay Nagar, Indore',
+                                      isBold: true,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(width: AppDimensions.padding8w),
+                              // Badge top-right beside the title, price
+                              // bottom-right.
+                              Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
+                                  // Status Badge
+                                  Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: AppDimensions.padding8w,
+                                      vertical: AppDimensions.padding2h,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.lightSuccess,
+                                      borderRadius: BorderRadius.circular(
+                                        AppDimensions.radius10r,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      'Confirmed',
+                                      style: customTextStyle(
+                                        AppTextSizes.stableTextSize,
+                                        AppColors.success,
+                                        FontWeight.w400,
+                                      ),
+                                    ),
+                                  ),
                                   Text(
-                                    'Bathroom Cleaning',
+                                    '₹ 699',
                                     style: customTextStyle(
-                                      AppTextSizes.largeTextSize, // 16
-                                      AppColors.black,
+                                      AppTextSizes.smallTextSize,
+                                      AppColors.primaryDark,
                                       FontWeight.w700,
                                     ),
                                   ),
-                                  Text(
-                                    'Customer: Rahul Sharma',
-                                    style: customTextStyle(
-                                      AppTextSizes.smallTextSize,
-                                      AppColors.black,
-                                      FontWeight.w400,
-                                    ),
-                                  ),
-                                  _buildIconTextRow(
-                                    AppImages.clockOutlined,
-                                    'Today At 2:00PM',
-                                    isBold: true,
-                                  ),
-                                  _buildIconTextRow(
-                                    AppImages.locationOutlined,
-                                    'Vijay Nagar, Indore',
-                                    isBold: true,
-                                  ),
-                                  SizedBox(height: AppDimensions.padding4h),
                                 ],
                               ),
-                            ),
-                            SizedBox(width: AppDimensions.padding8w),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                // Status Badge
-                                Container(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: AppDimensions.padding8w,
-                                    vertical: AppDimensions.padding2h,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.lightSuccess,
-                                    borderRadius: BorderRadius.circular(
-                                      AppDimensions.radius10r,
-                                    ),
-                                  ),
-                                  child: Text(
-                                    'Confirmed',
-                                    style: customTextStyle(
-                                      AppTextSizes.stableTextSize,
-                                      AppColors.success,
-                                      FontWeight.w400,
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(height: AppDimensions.padding8h),
-                                Text(
-                                  '₹ 699',
-                                  style: customTextStyle(
-                                    AppTextSizes.smallTextSize,
-                                    AppColors.primaryDark,
-                                    FontWeight.w700,
-                                  ),
-                                ),
-                                SizedBox(height: AppDimensions.padding4h),
-                              ],
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -714,22 +725,16 @@ class _ProviderHomeScreenState extends ConsumerState<ProviderHomeScreen> {
   }
 
   /// Helper for building service request images with shadows and borders
+  // The asset already has its own frame and shadow, so it's only clipped
+  // here — adding another border/shadow doubled the frame.
   Widget _buildBorderedImage(String image) {
-    return Container(
-      width: AppDimensions.containerWidth75w,
-      height: AppDimensions.containerHeight60h,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppDimensions.radius6r),
-        border: Border.all(color: AppColors.primaryLight, width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.25),
-            offset: const Offset(0, 3),
-            blurRadius: 3,
-            spreadRadius: -1,
-          ),
-        ],
-        image: DecorationImage(image: AssetImage(image), fit: BoxFit.cover),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppDimensions.radius6r),
+      child: Image.asset(
+        image,
+        width: AppDimensions.containerWidth75w,
+        height: AppDimensions.containerHeight60h,
+        fit: BoxFit.cover,
       ),
     );
   }

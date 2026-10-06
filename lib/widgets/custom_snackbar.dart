@@ -4,10 +4,9 @@
 // navigator's Overlay (see core/navigation/app_keys.dart) so it can be
 // called straight from notifiers — no BuildContext required.
 //
-// Design note: matches the reference toast exactly — a solid colored pill
+// Design note: matches the reference alert design — a solid colored pill
 // (AppColors.toastSuccess/toastDanger/toastWarning/toastInfo), a white
-// circular icon badge with the accent color as the glyph, white text, a
-// white close (X") button, no border and no progress bar, floating near the
+// outline icon, white text, a white close ("X") button, no border and no progress bar, floating near the
 // top. It spans the screen width (with side margins) and grows to show the
 // whole message, staying up longer for long messages.
 
@@ -164,18 +163,18 @@ class CustomSnackBar {
       case ContentType.failure:
         return const _SnackBarStyle(
           background: AppColors.toastDanger,
-          icon: Icons.priority_high_rounded,
+          icon: Icons.error_outline_rounded,
         );
       case ContentType.warning:
         return const _SnackBarStyle(
           background: AppColors.toastWarning,
-          icon: Icons.warning_rounded,
+          icon: Icons.warning_amber_rounded,
         );
       case ContentType.help:
       default:
         return const _SnackBarStyle(
           background: AppColors.toastInfo,
-          icon: Icons.info_rounded,
+          icon: Icons.info_outline_rounded,
         );
     }
   }
@@ -266,17 +265,7 @@ class _ToastState extends State<_Toast> with SingleTickerProviderStateMixin {
       ),
       child: Row(
         children: [
-          // White circular badge with the accent color as the glyph.
-          Container(
-            width: 30.w,
-            height: 30.h,
-            alignment: Alignment.center,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppColors.white,
-            ),
-            child: Icon(style.icon, color: style.background, size: 16.r),
-          ),
+          Icon(style.icon, color: AppColors.white, size: 24.r),
           SizedBox(width: AppDimensions.padding10w),
           Expanded(
             child: Column(
@@ -355,8 +344,7 @@ class _ToastState extends State<_Toast> with SingleTickerProviderStateMixin {
 }
 
 class _SnackBarStyle {
-  /// Solid pill background — also reused as the icon glyph color on the
-  /// white circular badge.
+  /// Solid pill background.
   final Color background;
 
   final IconData icon;

@@ -1,6 +1,7 @@
 // File: lib/features/home/complete_profile/user_complete_profile_provider.dart
 // Purpose: State management for the regular user's basic profile completion
-// form (photo, name, mobile, email, gender, DOB) with inline validation.
+// form (photo, name, mobile, email, gender, DOB, address) with inline
+// validation.
 // Text fields live in the screen; this holds everything else.
 
 import 'dart:io';
@@ -102,6 +103,14 @@ class UserCompleteProfileNotifier extends Notifier<UserCompleteProfileState> {
   }
 
   String? validateEmail(String? value) => optionalEmailError(value);
+
+  String? validateRequired(String? value) =>
+      (value == null || value.trim().isEmpty) ? "Required" : null;
+
+  String? validatePincode(String? value) {
+    if (value == null || value.isEmpty) return "Required";
+    return RegExp(r'^\d{6}$').hasMatch(value) ? null : "Enter 6 digits";
+  }
 
   /// Validates the non-TextFormField parts of Basic Details: profile photo,
   /// gender and dob.
