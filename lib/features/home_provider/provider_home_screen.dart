@@ -14,7 +14,9 @@ import 'package:urban_services/features/home_provider/complete_profile/complete_
 import 'package:urban_services/features/home_provider/complete_profile/models/provider_profile.dart';
 import 'package:urban_services/features/home_provider/complete_profile/provider_profile_view_screen.dart';
 import 'package:urban_services/features/home_provider/complete_profile/service_type_provider.dart';
+import 'package:urban_services/features/home_main/main_navigation_provider.dart';
 import 'package:urban_services/features/home_provider/provider_home_provider.dart';
+import 'package:urban_services/routes/route_args.dart';
 import 'package:urban_services/routes/route_names.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
 import 'package:urban_services/widgets/section_heading.dart';
@@ -27,6 +29,9 @@ class ProviderHomeScreen extends ConsumerStatefulWidget {
 }
 
 class _ProviderHomeScreenState extends ConsumerState<ProviderHomeScreen> {
+  // Chat list's position in HomeMain's tabs.
+  static const int _chatTabIndex = 3;
+
   @override
   void initState() {
     super.initState();
@@ -86,15 +91,20 @@ class _ProviderHomeScreenState extends ConsumerState<ProviderHomeScreen> {
                     onAvatarTap: () =>
                         context.push(providerProfileRoute(savedProfile)),
                     actions: [
-                      Image.asset(
-                        AppImages.homeLocation,
-                        height: AppDimensions.containerHeight50h,
-                        width: AppDimensions.containerWidth50w,
+                      GestureDetector(
+                        onTap: () => ref
+                            .read(mainTabIndexProvider.notifier)
+                            .changeIndex(_chatTabIndex),
+                        child: _buildChatButton(),
                       ),
-                      Image.asset(
-                        AppImages.addToCart,
-                        height: AppDimensions.containerHeight50h,
-                        width: AppDimensions.containerWidth50w,
+                      GestureDetector(
+                        onTap: () =>
+                            context.push(RouteNames.notificationScreen),
+                        child: Image.asset(
+                          AppImages.notification,
+                          height: AppDimensions.containerHeight50h,
+                          width: AppDimensions.containerWidth50w,
+                        ),
                       ),
                     ],
                   ),
@@ -499,25 +509,44 @@ class _ProviderHomeScreenState extends ConsumerState<ProviderHomeScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      // Services, pricing and availability share the
+                      // wizard's Service Details page; documents are on
+                      // Basic Info.
                       _buildActionCard(
                         AppImages.editServices,
                         'Edit Services',
                         isSmall,
+                        onTap: () => _openProfileStep(
+                          savedProfile,
+                          ProviderProfileViewScreen.serviceDetailsStep,
+                        ),
                       ),
                       _buildActionCard(
                         AppImages.updatePricing,
                         'Update Pricing',
                         isSmall,
+                        onTap: () => _openProfileStep(
+                          savedProfile,
+                          ProviderProfileViewScreen.serviceDetailsStep,
+                        ),
                       ),
                       _buildActionCard(
                         AppImages.availability,
                         'Availability',
                         isSmall,
+                        onTap: () => _openProfileStep(
+                          savedProfile,
+                          ProviderProfileViewScreen.serviceDetailsStep,
+                        ),
                       ),
                       _buildActionCard(
                         AppImages.documents,
                         'Documents',
                         isSmall,
+                        onTap: () => _openProfileStep(
+                          savedProfile,
+                          ProviderProfileViewScreen.basicInfoStep,
+                        ),
                       ),
                     ],
                   ),
@@ -679,47 +708,116 @@ class _ProviderHomeScreenState extends ConsumerState<ProviderHomeScreen> {
     );
   }
 
-  /// Helper to build quick action cards with gradient borders
-  Widget _buildActionCard(String icon, String title, bool isSmall) {
-    return Container(
-      width: AppDimensions.containerWidth80w,
-      height: isSmall
-          ? AppDimensions.containerHeight90h
-          : AppDimensions.containerHeight85h,
-      padding: EdgeInsets.all(AppDimensions.padding8w),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(AppDimensions.radius10r),
-        // Simplification of gradient border as solid primary light
-        border: Border.all(color: AppColors.primaryLight, width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.25),
-            offset: const Offset(0, 3),
-            blurRadius: 3,
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Image.asset(
-            icon,
-            height: AppDimensions.containerHeight30h,
-            width: AppDimensions.containerWidth30w,
-          ),
-          SizedBox(height: AppDimensions.padding4h),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: customTextStyle(
-              AppTextSizes.stableTextSize,
-              AppColors.text,
-              FontWeight.w600,
+  /// Chat header button. There's no chat asset in the notification icon's
+  /// style, so this draws the same pill: laid out on that asset's 78×67
+  /// canvas (pill, white rim and shadow measured from it) and scaled like
+  /// Image.asset's BoxFit.contain, so both buttons match in size and shape.
+  Widget _buildChatButton() {
+    return SizedBox(
+      height: AppDimensions.containerHeight50h,
+      width: AppDimensions.containerWidth50w,
+      child: FittedBox(
+        child: SizedBox(
+          width: 78,
+          height: 67,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(6, 4, 6, 9),
+            child: DecoratedBox(
+              decoration: ShapeDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: AppColors.gradient.colors,
+                ),
+                shape: const RoundedSuperellipseBorder(
+                  borderRadius: BorderRadius.all(Radius.elliptical(33, 27)),
+                  side: BorderSide(color: AppColors.white, width: 1.5),
+                ),
+                shadows: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.15),
+                    offset: const Offset(0, 2),
+                    blurRadius: 4,
+                  ),
+                ],
+              ),
+              child: Center(
+                child: Image.asset(
+                  AppImages.chat,
+                  height: 24,
+                  width: 24,
+                  color: AppColors.white,
+                ),
+              ),
             ),
           ),
-        ],
+        ),
+      ),
+    );
+  }
+
+  /// Opens the profile wizard on [step] to edit a completed profile. An
+  /// unfinished profile starts from the first step so none are skipped.
+  void _openProfileStep(ProviderProfile? profile, int step) {
+    if (profile?.isProfileCompleted == true) {
+      context.push(
+        RouteNames.completeProviderProfile,
+        extra: ProviderProfileEditArgs(initialStep: step),
+      );
+    } else {
+      context.push(RouteNames.completeProviderProfile);
+    }
+  }
+
+  /// Helper to build quick action cards with gradient borders
+  Widget _buildActionCard(
+    String icon,
+    String title,
+    bool isSmall, {
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: AppDimensions.containerWidth80w,
+        height: isSmall
+            ? AppDimensions.containerHeight90h
+            : AppDimensions.containerHeight85h,
+        padding: EdgeInsets.all(AppDimensions.padding8w),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(AppDimensions.radius10r),
+          // Simplification of gradient border as solid primary light
+          border: Border.all(color: AppColors.primaryLight, width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.25),
+              offset: const Offset(0, 3),
+              blurRadius: 3,
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              icon,
+              height: AppDimensions.containerHeight30h,
+              width: AppDimensions.containerWidth30w,
+            ),
+            SizedBox(height: AppDimensions.padding4h),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: customTextStyle(
+                AppTextSizes.stableTextSize,
+                AppColors.text,
+                FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

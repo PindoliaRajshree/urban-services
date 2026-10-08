@@ -46,9 +46,9 @@ class ProviderProfileViewScreen extends ConsumerWidget {
   const ProviderProfileViewScreen({super.key});
 
   // Wizard pages (see CompleteProfileScreen).
-  static const int _basicInfoStep = 0;
-  static const int _serviceDetailsStep = 1;
-  static const int _bankDetailsStep = 2;
+  static const int basicInfoStep = 0;
+  static const int serviceDetailsStep = 1;
+  static const int bankDetailsStep = 2;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -162,7 +162,7 @@ class _ProfileDetails extends ConsumerWidget {
           _Section(
             icon: AppImages.person,
             title: 'Basic Information',
-            onEdit: () => onEdit(ProviderProfileViewScreen._basicInfoStep),
+            onEdit: () => onEdit(ProviderProfileViewScreen.basicInfoStep),
             children: [
               _InfoRow(
                 label: 'Mobile',
@@ -212,7 +212,7 @@ class _ProfileDetails extends ConsumerWidget {
           _Section(
             icon: AppImages.service,
             title: 'Service Details',
-            onEdit: () => onEdit(ProviderProfileViewScreen._serviceDetailsStep),
+            onEdit: () => onEdit(ProviderProfileViewScreen.serviceDetailsStep),
             children: [
               _InfoRow(label: 'Category', value: category),
               _InfoRow(label: 'Sub Service', value: subService),
@@ -251,7 +251,7 @@ class _ProfileDetails extends ConsumerWidget {
           _Section(
             icon: AppImages.creditDebitCard,
             title: 'Bank Details',
-            onEdit: () => onEdit(ProviderProfileViewScreen._bankDetailsStep),
+            onEdit: () => onEdit(ProviderProfileViewScreen.bankDetailsStep),
             children: [
               _InfoRow(label: 'Account Holder', value: p.accountHolderName),
               _InfoRow(label: 'Bank', value: p.bankName),
