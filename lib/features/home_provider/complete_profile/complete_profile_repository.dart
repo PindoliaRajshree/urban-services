@@ -48,12 +48,16 @@ class CompleteProfileRepository {
   }
 
   /// Calls POST provider/provider/send-otp (fields as query parameters, as
-  /// the backend documents it). Returns the OTP the backend echoes back in
-  /// `data.otp` (null if it stops sending it).
-  Future<ApiResult<String?>> sendOtp(String mobile) => safeApiCall(
+  /// the backend documents it). The user profile form uses it too, with
+  /// [role] `user`. Returns the OTP the backend echoes back in `data.otp`
+  /// (null if it stops sending it).
+  Future<ApiResult<String?>> sendOtp(
+    String mobile, {
+    String role = 'provider',
+  }) => safeApiCall(
     () => _dio.post(
       ApiConstants.providerSendOtp,
-      queryParameters: {'mobile_number': mobile, 'role': 'provider'},
+      queryParameters: {'mobile_number': mobile, 'role': role},
     ),
     (json) {
       final data = json['data'];

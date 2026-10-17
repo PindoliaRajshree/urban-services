@@ -44,6 +44,16 @@ class ApiConstants {
   /// by DioClient), so no query parameters are needed.
   static const String getServiceAddress = 'user/get-service-address';
 
+  // ---- User profile ----
+  /// Fetches the logged-in user's profile (POST, no body — the user comes
+  /// from the auth token). Always answers with the account's data; there's
+  /// no "not submitted yet" 404 as on the provider side.
+  static const String userProfile = 'user/get-user-profile';
+
+  /// Saves the user's basic profile + address as multipart/form-data (the
+  /// request may include a new profile photo).
+  static const String userProfileUpdate = 'user/update-user-profile';
+
   // ---- Provider: Service Types ----
   /// Fetches the master list of service categories (Cleaning, Painting,
   /// Electrician, ...) a provider can offer.

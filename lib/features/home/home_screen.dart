@@ -12,6 +12,9 @@ import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
 import 'package:urban_services/core/session/session_provider.dart';
 import 'package:urban_services/features/address/address_provider.dart';
+import 'package:urban_services/features/home/complete_profile/user_profile_repository.dart';
+import 'package:urban_services/features/home/complete_profile/user_profile_view_screen.dart';
+import 'package:urban_services/features/home_provider/complete_profile/models/provider_profile.dart';
 import 'package:urban_services/widgets/category_item.dart';
 import 'package:urban_services/widgets/custom_search_bar.dart';
 import 'package:urban_services/widgets/section_heading.dart';
@@ -38,6 +41,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final firstName = ref.watch(sessionProvider.select((s) => s.firstName));
+    final profileStatus = ref.watch(userProfileStatusProvider);
+    final savedProfile = profileStatus.value;
+    // False while loading or if the check failed.
+    final needsProfile = switch (profileStatus) {
+      AsyncData(:final value) => !value.isProfileCompleted,
+      _ => false,
+    };
     final address = ref.watch(addressProvider.select((s) => s.address));
     final location = [
       address?.city,
@@ -70,11 +80,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   // 3. User Profile and Location Header
                   HomeHeader(
                     firstName: firstName,
+                    avatarUrl: ProviderProfile.fileUrl(
+                      savedProfile?.profileImage,
+                    ),
+                    showProfileShowcase: needsProfile,
                     showcaseDescription:
                         'Tap your photo to complete your basic profile details.',
-                    // The basic profile-completion screen (name, photo,
-                    // mobile, email, gender, DOB), not the provider wizard.
-                    onAvatarTap: () => context.push(RouteNames.completeProfile),
+                    // The read-only profile once complete, otherwise the
+                    // basic profile form (not the provider wizard).
+                    onAvatarTap: () =>
+                        context.push(userProfileRoute(savedProfile)),
                     location: location.isNotEmpty
                         ? location
                         : 'Add your address',

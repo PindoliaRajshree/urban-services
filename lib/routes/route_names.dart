@@ -19,6 +19,7 @@ class RouteNames {
   //home
   static const String homeMain = '/homeMain';
   static const String completeProfile = '/completeProfile';
+  static const String userProfileView = '/userProfile';
   static const String providerHomeScreen = '/providerHome';
   static const String completeProviderProfile = '/completeProviderProfile';
   static const String providerProfileView = '/providerProfile';

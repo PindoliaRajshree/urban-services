@@ -23,9 +23,8 @@ import 'package:urban_services/routes/route_names.dart';
 import 'package:urban_services/widgets/common_app_bar.dart';
 import 'package:urban_services/widgets/custom_text_style.dart';
 import 'package:urban_services/widgets/document_image_viewer.dart';
-import 'package:urban_services/widgets/icon_header.dart';
-import 'package:urban_services/widgets/primary_button.dart';
 import 'package:urban_services/widgets/profile_avatar.dart';
+import 'package:urban_services/widgets/profile_view_widgets.dart';
 
 /// Shows all but the last [visible] characters as "•", e.g. "•••• 4321".
 String maskTail(String? value, {int visible = 4}) {
@@ -80,22 +79,23 @@ class ProviderProfileViewScreen extends ConsumerWidget {
                       ref.refresh(providerProfileStatusProvider.future),
                 ),
                 // Not submitted yet — nothing to view.
-                AsyncData() => _Message(
+                AsyncData() => ProfileMessage(
                   title: "Your profile isn't complete yet",
                   buttonText: 'Complete Profile',
                   onPressed: () => context.pushReplacement(
                     RouteNames.completeProviderProfile,
                   ),
                 ),
-                AsyncError(:final error) when !profile.isLoading => _Message(
-                  title: "Couldn't load your profile",
-                  message: error is ApiFailure
-                      ? error.message
-                      : 'Something went wrong. Please try again.',
-                  buttonText: 'Retry',
-                  onPressed: () =>
-                      ref.invalidate(providerProfileStatusProvider),
-                ),
+                AsyncError(:final error) when !profile.isLoading =>
+                  ProfileMessage(
+                    title: "Couldn't load your profile",
+                    message: error is ApiFailure
+                        ? error.message
+                        : 'Something went wrong. Please try again.',
+                    buttonText: 'Retry',
+                    onPressed: () =>
+                        ref.invalidate(providerProfileStatusProvider),
+                  ),
                 _ => const Center(child: CircularProgressIndicator()),
               },
             ),
@@ -159,34 +159,34 @@ class _ProfileDetails extends ConsumerWidget {
         children: [
           _Header(profile: p, category: category),
 
-          _Section(
+          ProfileSection(
             icon: AppImages.person,
             title: 'Basic Information',
             onEdit: () => onEdit(ProviderProfileViewScreen.basicInfoStep),
             children: [
-              _InfoRow(
+              ProfileInfoRow(
                 label: 'Mobile',
                 value: mobile == null ? null : '+91 $mobile',
                 verified: mobile != null && mobile == p.mobileNumber,
               ),
-              _InfoRow(label: 'Email', value: p.email),
-              _InfoRow(
+              ProfileInfoRow(label: 'Email', value: p.email),
+              ProfileInfoRow(
                 label: 'Gender',
                 value: ProviderProfileNotifier.labelFor(
                   ProviderProfileNotifier.genderOptions,
                   p.gender?.toLowerCase(),
                 ),
               ),
-              _InfoRow(
+              ProfileInfoRow(
                 label: 'Date of Birth',
                 value: p.dateOfBirth == null ? null : formatDob(p.dateOfBirth!),
               ),
               const _SubHeading('Documents'),
-              _InfoRow(
+              ProfileInfoRow(
                 label: 'Aadhaar Number',
                 value: maskTail(p.aadhaarNumber),
               ),
-              _InfoRow(label: 'PAN Number', value: maskTail(p.panNumber)),
+              ProfileInfoRow(label: 'PAN Number', value: maskTail(p.panNumber)),
               SizedBox(height: AppDimensions.padding10h),
               Row(
                 children: [
@@ -209,14 +209,14 @@ class _ProfileDetails extends ConsumerWidget {
             ],
           ),
 
-          _Section(
+          ProfileSection(
             icon: AppImages.service,
             title: 'Service Details',
             onEdit: () => onEdit(ProviderProfileViewScreen.serviceDetailsStep),
             children: [
-              _InfoRow(label: 'Category', value: category),
-              _InfoRow(label: 'Sub Service', value: subService),
-              _InfoRow(
+              ProfileInfoRow(label: 'Category', value: category),
+              ProfileInfoRow(label: 'Sub Service', value: subService),
+              ProfileInfoRow(
                 label: 'Experience',
                 value: years == null
                     ? null
@@ -224,43 +224,53 @@ class _ProfileDetails extends ConsumerWidget {
                     ? '5+ years'
                     : '$years ${years == 1 ? 'year' : 'years'}',
               ),
-              _InfoRow(label: 'Starting Price', value: price),
-              _InfoRow(
+              ProfileInfoRow(label: 'Starting Price', value: price),
+              ProfileInfoRow(
                 label: 'Work Type',
                 value: ProviderProfileNotifier.labelFor(
                   ProviderProfileNotifier.workTypeOptions,
                   p.availabilityType,
                 ),
               ),
-              _InfoRow(label: 'Team Size', value: p.teamSize?.toString()),
-              _InfoRow(label: 'About', value: p.bio, multiline: true),
+              ProfileInfoRow(label: 'Team Size', value: p.teamSize?.toString()),
+              ProfileInfoRow(label: 'About', value: p.bio, multiline: true),
               const _SubHeading('Service Area'),
-              _InfoRow(label: 'Address', value: p.address, multiline: true),
-              _InfoRow(
+              ProfileInfoRow(
+                label: 'Address',
+                value: p.address,
+                multiline: true,
+              ),
+              ProfileInfoRow(
                 label: 'City / State',
                 value: [p.city, p.state].whereType<String>().join(', '),
               ),
-              _InfoRow(label: 'Pincode', value: p.pincode),
-              _InfoRow(
+              ProfileInfoRow(label: 'Pincode', value: p.pincode),
+              ProfileInfoRow(
                 label: 'Service Radius',
                 value: p.serviceAreaKm == null ? null : '${p.serviceAreaKm} km',
               ),
             ],
           ),
 
-          _Section(
+          ProfileSection(
             icon: AppImages.creditDebitCard,
             title: 'Bank Details',
             onEdit: () => onEdit(ProviderProfileViewScreen.bankDetailsStep),
             children: [
-              _InfoRow(label: 'Account Holder', value: p.accountHolderName),
-              _InfoRow(label: 'Bank', value: p.bankName),
-              _InfoRow(
+              ProfileInfoRow(
+                label: 'Account Holder',
+                value: p.accountHolderName,
+              ),
+              ProfileInfoRow(label: 'Bank', value: p.bankName),
+              ProfileInfoRow(
                 label: 'Account Number',
                 value: maskTail(p.accountNumber),
               ),
-              _InfoRow(label: 'IFSC Code', value: p.ifscCode?.toUpperCase()),
-              _InfoRow(label: 'UPI ID', value: p.upiId),
+              ProfileInfoRow(
+                label: 'IFSC Code',
+                value: p.ifscCode?.toUpperCase(),
+              ),
+              ProfileInfoRow(label: 'UPI ID', value: p.upiId),
             ],
           ),
         ],
@@ -310,7 +320,7 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _Card(
+    return ProfileCard(
       child: Row(
         children: [
           ProfileAvatar(
@@ -345,204 +355,13 @@ class _Header extends StatelessWidget {
                 ],
                 if (profile.isProfileCompleted) ...[
                   SizedBox(height: AppDimensions.padding6h),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.verified,
-                        color: AppColors.success,
-                        size: AppDimensions.containerHeight16h,
-                      ),
-                      SizedBox(width: AppDimensions.padding4w),
-                      Text(
-                        'Profile completed',
-                        style: customTextStyle(
-                          AppTextSizes.stableTextSize,
-                          AppColors.success,
-                          FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
+                  const ProfileCompletedBadge(),
                 ],
               ],
             ),
           ),
         ],
       ),
-    );
-  }
-}
-
-/// A titled card of label/value rows with an "Edit" action.
-class _Section extends StatelessWidget {
-  const _Section({
-    required this.icon,
-    required this.title,
-    required this.onEdit,
-    required this.children,
-  });
-
-  final String icon;
-  final String title;
-  final VoidCallback onEdit;
-  final List<Widget> children;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: IconHeader(icon: icon, title: title),
-            ),
-            InkWell(
-              onTap: onEdit,
-              borderRadius: BorderRadius.circular(AppDimensions.radius8r),
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: AppDimensions.padding8w,
-                  vertical: AppDimensions.padding4h,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.edit_outlined,
-                      color: AppColors.primaryDark,
-                      size: AppDimensions.containerHeight16h,
-                    ),
-                    SizedBox(width: AppDimensions.padding4w),
-                    Text(
-                      'Edit',
-                      style: customTextStyle(
-                        AppTextSizes.smallTextSize,
-                        AppColors.primaryDark,
-                        FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-        _Card(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: children,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _Card extends StatelessWidget {
-  const _Card({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(
-        horizontal: AppDimensions.padding15w,
-        vertical: AppDimensions.padding12h,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(AppDimensions.radius12r),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.black.withValues(alpha: 0.08),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: child,
-    );
-  }
-}
-
-/// One label/value line; an empty value shows "—".
-class _InfoRow extends StatelessWidget {
-  const _InfoRow({
-    required this.label,
-    this.value,
-    this.verified = false,
-    this.multiline = false,
-  });
-
-  final String label;
-  final String? value;
-  final bool verified;
-
-  /// Long text (bio, address) goes under the label instead of beside it.
-  final bool multiline;
-
-  @override
-  Widget build(BuildContext context) {
-    final text = value?.trim().isNotEmpty == true ? value!.trim() : '—';
-    final labelText = Text(
-      label,
-      style: customTextStyle(
-        AppTextSizes.smallTextSize,
-        AppColors.darkGrey,
-        FontWeight.w400,
-      ),
-    );
-    final valueStyle = customTextStyle(
-      AppTextSizes.smallTextSize,
-      AppColors.text,
-      FontWeight.w500,
-    );
-
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: AppDimensions.padding6h),
-      child: multiline
-          ? Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                labelText,
-                SizedBox(height: AppDimensions.padding4h),
-                Text(text, style: valueStyle),
-              ],
-            )
-          : Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(flex: 2, child: labelText),
-                SizedBox(width: AppDimensions.padding10w),
-                Expanded(
-                  flex: 3,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Flexible(
-                        child: Text(
-                          text,
-                          textAlign: TextAlign.end,
-                          style: valueStyle,
-                        ),
-                      ),
-                      if (verified) ...[
-                        SizedBox(width: AppDimensions.padding4w),
-                        Icon(
-                          Icons.verified,
-                          color: AppColors.success,
-                          size: AppDimensions.containerHeight16h,
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ],
-            ),
     );
   }
 }
@@ -600,56 +419,6 @@ class _DocumentThumb extends StatelessWidget {
               FontWeight.w400,
             ),
           ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Centered message with one action (load error / profile not submitted).
-class _Message extends StatelessWidget {
-  const _Message({
-    required this.title,
-    required this.buttonText,
-    required this.onPressed,
-    this.message,
-  });
-
-  final String title;
-  final String? message;
-  final String buttonText;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppDimensions.padding20w),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: customTextStyle(
-              AppTextSizes.largeTextSize,
-              AppColors.darkBlueText,
-              FontWeight.w700,
-            ),
-          ),
-          if (message != null) ...[
-            SizedBox(height: AppDimensions.padding10h),
-            Text(
-              message!,
-              textAlign: TextAlign.center,
-              style: customTextStyle(
-                AppTextSizes.smallTextSize,
-                AppColors.darkGrey,
-                FontWeight.w400,
-              ),
-            ),
-          ],
-          SizedBox(height: AppDimensions.padding20h),
-          PrimaryButton(text: buttonText, onPressed: onPressed),
         ],
       ),
     );

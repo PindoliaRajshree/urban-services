@@ -37,15 +37,27 @@ String? requiredEmailError(String? value) {
 String formatDob(DateTime date) => DateFormat('dd/MM/yyyy').format(date);
 
 /// Opens the system date picker for DOB, limited to people aged 18 or over.
-/// Returns null if cancelled.
-Future<DateTime?> pickDateOfBirth(BuildContext context) {
+/// Opens on [current] (the displayed dd/MM/yyyy value) when there is one,
+/// otherwise on the latest allowed date. Returns null if cancelled.
+Future<DateTime?> pickDateOfBirth(BuildContext context, {String? current}) {
   final now = DateTime.now();
   // The latest allowed birthday: exactly 18 years ago today.
   final eighteenYearsAgo = DateTime(now.year - 18, now.month, now.day);
+  final firstDate = DateTime(1950);
+  final saved = current == null
+      ? null
+      : DateFormat('dd/MM/yyyy').tryParseStrict(current);
+  // Clamped: showDatePicker asserts the initial date is within range, and a
+  // saved DOB may fall outside it.
+  final initialDate = saved == null || saved.isAfter(eighteenYearsAgo)
+      ? eighteenYearsAgo
+      : saved.isBefore(firstDate)
+      ? firstDate
+      : saved;
   return showDatePicker(
     context: context,
-    initialDate: eighteenYearsAgo,
-    firstDate: DateTime(1950),
+    initialDate: initialDate,
+    firstDate: firstDate,
     lastDate: eighteenYearsAgo,
     // The app's own colours instead of the seed-generated Material ones.
     builder: (context, child) {

@@ -409,7 +409,10 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
   }
 
   Future<void> _selectDate() async {
-    final picked = await pickDateOfBirth(context);
+    final picked = await pickDateOfBirth(
+      context,
+      current: ref.read(providerProfileProvider).dob,
+    );
     if (picked != null) _notifier.setDob(picked);
   }
 

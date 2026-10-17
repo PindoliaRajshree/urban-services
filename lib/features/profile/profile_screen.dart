@@ -9,6 +9,8 @@ import 'package:urban_services/core/constants/app_dimensions.dart';
 import 'package:urban_services/core/constants/app_images.dart';
 import 'package:urban_services/core/constants/app_text_sizes.dart';
 import 'package:urban_services/core/session/session_provider.dart';
+import 'package:urban_services/features/home/complete_profile/user_profile_repository.dart';
+import 'package:urban_services/features/home/complete_profile/user_profile_view_screen.dart';
 import 'package:urban_services/features/home_provider/complete_profile/complete_profile_repository.dart';
 import 'package:urban_services/features/home_provider/complete_profile/models/provider_profile.dart';
 import 'package:urban_services/features/home_provider/complete_profile/provider_profile_view_screen.dart';
@@ -30,11 +32,17 @@ class ProfileScreen extends ConsumerWidget {
     final providerProfile = isProvider
         ? ref.watch(providerProfileStatusProvider).value
         : null;
-    // Only providers have a saved profile photo for now.
-    final avatarUrl = ProviderProfile.fileUrl(providerProfile?.profileImage);
+    final userProfile = isProvider
+        ? null
+        : ref.watch(userProfileStatusProvider).value;
+    final avatarUrl = ProviderProfile.fileUrl(
+      providerProfile?.profileImage ?? userProfile?.profileImage,
+    );
+    // The user profile can rename the account; prefer the saved name.
+    final name = userProfile?.name ?? session.name;
     final subtitle = [
-      session.email,
-      session.mobile,
+      userProfile?.email ?? session.email,
+      userProfile?.mobile ?? session.mobile,
     ].firstWhere((v) => v != null && v.trim().isNotEmpty, orElse: () => null);
 
     final children = <Widget>[
@@ -67,8 +75,8 @@ class ProfileScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  session.name?.trim().isNotEmpty == true
-                      ? session.name!.trim()
+                  name?.trim().isNotEmpty == true
+                      ? name!.trim()
                       : 'Your profile',
                   overflow: TextOverflow.ellipsis,
                   style: customTextStyle(
@@ -116,12 +124,12 @@ class ProfileScreen extends ConsumerWidget {
             ProfileOptionTile(
               icon: AppImages.person,
               title: 'Profile',
-              // A provider's completed profile opens read-only, with
-              // per-section Edit; otherwise straight to the form.
+              // A completed profile opens read-only, with per-section
+              // Edit; otherwise straight to the form.
               onTap: () => context.push(
                 isProvider
                     ? providerProfileRoute(providerProfile)
-                    : RouteNames.completeProfile,
+                    : userProfileRoute(userProfile),
               ),
             ),
             // Only users (customers) have a service address.

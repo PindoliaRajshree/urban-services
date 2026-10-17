@@ -32,6 +32,7 @@ import 'package:urban_services/features/booking_service/booking_service_screen.d
 import 'package:urban_services/features/chat/chat_screen.dart';
 import 'package:urban_services/features/chat/chat_search_screen.dart';
 import 'package:urban_services/features/home/complete_profile/user_complete_profile_screen.dart';
+import 'package:urban_services/features/home/complete_profile/user_profile_view_screen.dart';
 import 'package:urban_services/features/home_main/home_main.dart';
 import 'package:urban_services/features/home_provider/complete_profile/complete_profile_screen.dart';
 import 'package:urban_services/features/home_provider/complete_profile/provider_profile_view_screen.dart';
@@ -68,6 +69,7 @@ const _providerOnlyRoutes = {
 /// flow.
 const _userOnlyRoutes = {
   RouteNames.completeProfile,
+  RouteNames.userProfileView,
   RouteNames.addressScreen,
   RouteNames.addAddressScreen,
   RouteNames.mapPicker,
@@ -167,6 +169,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RouteNames.completeProfile,
         builder: (_, _) => const UserCompleteProfileScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.userProfileView,
+        builder: (_, _) => const UserProfileViewScreen(),
       ),
       GoRoute(
         path: RouteNames.providerHomeScreen,
