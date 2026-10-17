@@ -1044,6 +1044,18 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
             FontWeight.w400,
           ),
         ),
+        if (_state.isAadhaarLocked || _state.isPanLocked) ...[
+          SizedBox(height: AppDimensions.padding5h),
+          Text(
+            "Saved Aadhaar/PAN details can't be changed. Contact support to "
+            "update them.",
+            style: customTextStyle(
+              AppTextSizes.stableTextSize,
+              AppColors.darkGrey,
+              FontWeight.w400,
+            ),
+          ),
+        ],
         SizedBox(height: AppDimensions.padding15h),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1054,6 +1066,7 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
               selectedFile: _state.adhaarFront,
               existingUrl: _state.adhaarFrontUrl,
               isProcessing: _state.isReadingAadhaar,
+              locked: _state.isAadhaarLocked,
               onUpload: () => _pickPhoto('aadhaarFront'),
               onRemove: () => _notifier.removeDocument('aadhaarFront'),
             ),
@@ -1073,6 +1086,7 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
               subTitle: "Upload Back",
               selectedFile: _state.adhaarBack,
               existingUrl: _state.adhaarBackUrl,
+              locked: _state.isAadhaarLocked,
               onUpload: () => _pickPhoto('aadhaarBack'),
               onRemove: () => _notifier.removeDocument('aadhaarBack'),
             ),
@@ -1090,6 +1104,7 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
               selectedFile: _state.panCard,
               existingUrl: _state.panCardUrl,
               isProcessing: _state.isReadingPan,
+              locked: _state.isPanLocked,
               onUpload: () => _pickPhoto('pan'),
               onRemove: () => _notifier.removeDocument('pan'),
             ),

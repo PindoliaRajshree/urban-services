@@ -95,8 +95,8 @@ class ProviderProfile {
   final double? longitude;
   final String? aadhaarNumber;
 
-  /// Relative storage paths (e.g. `provider/documents/x.jpg`); turn into
-  /// a loadable URL with [fileUrl].
+  /// Relative storage paths (e.g. `provider/documents/x.jpg`) or full URLs;
+  /// turn into a loadable URL with [fileUrl].
   final String? aadhaarFrontImage;
   final String? aadhaarBackImage;
   final String? profileImage;
@@ -116,12 +116,23 @@ class ProviderProfile {
   String? get preferredMobile =>
       _nonEmpty(mobileNumber) ?? _nonEmpty(userMobile);
 
-  /// Full URL for a stored file path, or null when there is none. Paths
-  /// that are already absolute URLs are returned as-is.
+  /// Full URL for a stored file path, or null when there is none.
+  ///
+  /// Absolute URLs on our own storage host are rebuilt from the part after
+  /// `/storage/`: GET provider-profile returns `profile_image` with a wrong
+  /// prefix (`…/public/public/storage/…`) that 404s. Other absolute URLs
+  /// (e.g. Google photos) are returned as-is.
   static String? fileUrl(String? path) {
     final p = _nonEmpty(path);
     if (p == null) return null;
-    if (p.startsWith('http://') || p.startsWith('https://')) return p;
+    if (p.startsWith('http://') || p.startsWith('https://')) {
+      const marker = '/storage/';
+      final i = p.lastIndexOf(marker);
+      final ownHost =
+          Uri.tryParse(p)?.host == Uri.parse(ApiConstants.storageBaseUrl).host;
+      if (!ownHost || i < 0) return p;
+      return '${ApiConstants.storageBaseUrl}${p.substring(i + marker.length)}';
+    }
     return '${ApiConstants.storageBaseUrl}${p.startsWith('/') ? p.substring(1) : p}';
   }
 
@@ -160,6 +171,8 @@ class ProviderProfile {
       aadhaarNumber: _str(p['aadhaar_number']),
       aadhaarFrontImage: _str(p['aadhaar_front_image']),
       aadhaarBackImage: _str(p['aadhaar_back_image']),
+      // The provider's uploaded photo — not `user.profile_image`, which is
+      // the Google account photo.
       profileImage: _str(p['profile_image']),
       panNumber: _str(p['pan_number']),
       panImage: _str(p['pan_image']),

@@ -94,6 +94,8 @@ class ProviderProfileState {
     this.panNumber,
     this.isReadingAadhaar = false,
     this.isReadingPan = false,
+    this.isAadhaarLocked = false,
+    this.isPanLocked = false,
     this.serviceCategory,
     this.subServices,
     this.experience,
@@ -163,6 +165,11 @@ class ProviderProfileState {
   /// True while OCR runs on a just-picked Aadhaar front / PAN image.
   final bool isReadingAadhaar;
   final bool isReadingPan;
+
+  /// Aadhaar / PAN already saved on the profile — they can't be replaced
+  /// or removed (the backend keeps the stored ones). Set once on load.
+  final bool isAadhaarLocked;
+  final bool isPanLocked;
 
   // --- Service Details (Step 1) ---
   // Hold the selected service-type / sub-service-type id (not a display
@@ -237,6 +244,8 @@ class ProviderProfileState {
     String? Function()? panNumber,
     bool? isReadingAadhaar,
     bool? isReadingPan,
+    bool? isAadhaarLocked,
+    bool? isPanLocked,
     int? serviceCategory,
     int? Function()? subServices,
     String? experience,
@@ -286,6 +295,8 @@ class ProviderProfileState {
     panNumber: panNumber != null ? panNumber() : this.panNumber,
     isReadingAadhaar: isReadingAadhaar ?? this.isReadingAadhaar,
     isReadingPan: isReadingPan ?? this.isReadingPan,
+    isAadhaarLocked: isAadhaarLocked ?? this.isAadhaarLocked,
+    isPanLocked: isPanLocked ?? this.isPanLocked,
     serviceCategory: serviceCategory ?? this.serviceCategory,
     subServices: subServices != null ? subServices() : this.subServices,
     experience: experience ?? this.experience,
@@ -431,6 +442,7 @@ class ProviderProfileNotifier extends Notifier<ProviderProfileState> {
   /// Copies a saved profile's non-text values into state.
   void _applySaved(ProviderProfile p) {
     final years = p.experienceYears;
+    bool saved(String? v) => v != null && v.trim().isNotEmpty;
     state = state.copyWith(
       isLoading: false,
       isEditing: true,
@@ -440,6 +452,11 @@ class ProviderProfileNotifier extends Notifier<ProviderProfileState> {
       panCardUrl: () => ProviderProfile.fileUrl(p.panImage),
       aadhaarNumber: () => p.aadhaarNumber,
       panNumber: () => p.panNumber?.toUpperCase(),
+      isAadhaarLocked:
+          saved(p.aadhaarNumber) ||
+          saved(p.aadhaarFrontImage) ||
+          saved(p.aadhaarBackImage),
+      isPanLocked: saved(p.panNumber) || saved(p.panImage),
       gender: labelFor(genderOptions, p.gender?.toLowerCase()),
       dob: p.dateOfBirth == null ? null : formatDob(p.dateOfBirth!),
       serviceCategory: p.serviceTypeId,
@@ -527,9 +544,17 @@ class ProviderProfileNotifier extends Notifier<ProviderProfileState> {
     );
   }
 
+  /// Saved Aadhaar/PAN documents can't be replaced or removed.
+  bool _isLocked(String field) => switch (field) {
+    'aadhaarFront' || 'aadhaarBack' => state.isAadhaarLocked,
+    'pan' => state.isPanLocked,
+    _ => false,
+  };
+
   /// The Aadhaar/PAN number is read from its image, so removing the image
   /// clears the number too.
   void removeDocument(String type) {
+    if (_isLocked(type)) return;
     if (type == 'aadhaarFront') {
       state = state.copyWith(
         adhaarFront: () => null,
@@ -598,7 +623,9 @@ class ProviderProfileNotifier extends Notifier<ProviderProfileState> {
   /// (documents keep a higher resolution so they stay legible), then
   /// capped at 4MB and limited to jpg/jpeg/png.
   Future<void> pickPhotoFor(String field, ImageSource source) async {
-    if (state.isReadingAadhaar || state.isReadingPan) return;
+    if (state.isReadingAadhaar || state.isReadingPan || _isLocked(field)) {
+      return;
+    }
     final file = await pickCompressedImage(
       _picker,
       source,
@@ -878,19 +905,11 @@ class ProviderProfileNotifier extends Notifier<ProviderProfileState> {
           required(state.profileImage, state.profileImageUrl),
       genderError: () => state.gender == null ? "Required" : null,
       dobError: () => state.dob == null ? "Required" : null,
-      // A saved image without a saved number (older profiles) must be
-      // re-uploaded so the number can be read from it.
-      adhaarFrontError: () =>
-          required(state.adhaarFront, state.adhaarFrontUrl) ??
-          (state.aadhaarNumber == null
-              ? "Upload the front again so we can read your Aadhaar number"
-              : null),
+      // A saved document counts as provided — never force a re-upload. A
+      // newly picked front/PAN is only kept once its number was read.
+      adhaarFrontError: () => required(state.adhaarFront, state.adhaarFrontUrl),
       adhaarBackError: () => required(state.adhaarBack, state.adhaarBackUrl),
-      panCardError: () =>
-          (state.panCard != null || state.panCardUrl != null) &&
-              state.panNumber == null
-          ? "Upload the PAN card again so we can read the number"
-          : null,
+      panCardError: () => null,
     );
     return state.mobileError == null &&
         state.profileImageError == null &&
@@ -961,17 +980,18 @@ class ProviderProfileNotifier extends Notifier<ProviderProfileState> {
       serviceAreaKm: radiusOptions[state.selectedRadius]!,
       availabilityType: workTypeOptions[state.workType]!,
       teamSize: int.parse(values.teamSize.trim()),
-      aadhaarNumber: state.aadhaarNumber!,
-      panNumber: state.panNumber,
+      // Locked documents aren't re-sent; the backend keeps the stored ones.
+      aadhaarNumber: state.isAadhaarLocked ? null : state.aadhaarNumber,
+      panNumber: state.isPanLocked ? null : state.panNumber,
       accountHolderName: values.accountHolder.trim(),
       bankName: values.bankName.trim(),
       accountNumber: values.accountNumber.trim(),
       ifscCode: values.ifsc.trim(),
       upiId: values.upiId.trim(),
       profileImage: state.profileImage,
-      aadhaarFrontImage: state.adhaarFront,
-      aadhaarBackImage: state.adhaarBack,
-      panImage: state.panCard,
+      aadhaarFrontImage: state.isAadhaarLocked ? null : state.adhaarFront,
+      aadhaarBackImage: state.isAadhaarLocked ? null : state.adhaarBack,
+      panImage: state.isPanLocked ? null : state.panCard,
     );
 
     state = state.copyWith(isSubmitting: true);

@@ -9,6 +9,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:urban_services/core/location/region_data.dart';
 import 'package:urban_services/features/profile_common/basic_info.dart';
 import 'package:urban_services/routes/app_router.dart';
 import 'package:urban_services/routes/route_names.dart';
@@ -22,11 +23,32 @@ class UserCompleteProfileState {
     this.genderError,
     this.dobError,
     this.mobileError,
+    this.countries = const [],
+    this.states = const [],
+    this.cities = const [],
+    this.selectedCountry,
+    this.selectedState,
+    this.selectedCity,
+    this.isLoadingCountries = true,
+    this.isLoadingStates = false,
+    this.isLoadingCities = false,
   });
 
   final File? profileImage;
   final String? gender;
   final String? dob;
+
+  // --- Address pickers (Country -> State -> City) ---
+  // Options of each list depend on the selection above it.
+  final List<Region> countries;
+  final List<Region> states;
+  final List<String> cities;
+  final Region? selectedCountry;
+  final Region? selectedState;
+  final String? selectedCity;
+  final bool isLoadingCountries;
+  final bool isLoadingStates;
+  final bool isLoadingCities;
 
   // --- Inline Error States ---
   final String? profileImageError;
@@ -42,6 +64,15 @@ class UserCompleteProfileState {
     String? Function()? genderError,
     String? Function()? dobError,
     String? Function()? mobileError,
+    List<Region>? countries,
+    List<Region>? states,
+    List<String>? cities,
+    Region? Function()? selectedCountry,
+    Region? Function()? selectedState,
+    String? Function()? selectedCity,
+    bool? isLoadingCountries,
+    bool? isLoadingStates,
+    bool? isLoadingCities,
   }) => UserCompleteProfileState(
     profileImage: profileImage != null ? profileImage() : this.profileImage,
     gender: gender ?? this.gender,
@@ -52,14 +83,91 @@ class UserCompleteProfileState {
     genderError: genderError != null ? genderError() : this.genderError,
     dobError: dobError != null ? dobError() : this.dobError,
     mobileError: mobileError != null ? mobileError() : this.mobileError,
+    countries: countries ?? this.countries,
+    states: states ?? this.states,
+    cities: cities ?? this.cities,
+    selectedCountry: selectedCountry != null
+        ? selectedCountry()
+        : this.selectedCountry,
+    selectedState: selectedState != null ? selectedState() : this.selectedState,
+    selectedCity: selectedCity != null ? selectedCity() : this.selectedCity,
+    isLoadingCountries: isLoadingCountries ?? this.isLoadingCountries,
+    isLoadingStates: isLoadingStates ?? this.isLoadingStates,
+    isLoadingCities: isLoadingCities ?? this.isLoadingCities,
   );
 }
 
 class UserCompleteProfileNotifier extends Notifier<UserCompleteProfileState> {
   final ImagePicker _picker = ImagePicker();
 
+  /// Preselected until the user picks another country.
+  static const String defaultCountryCode = 'IN';
+
   @override
-  UserCompleteProfileState build() => const UserCompleteProfileState();
+  UserCompleteProfileState build() {
+    _loadCountries();
+    return const UserCompleteProfileState();
+  }
+
+  // --- Address pickers ---
+
+  Future<void> _loadCountries() async {
+    final countries = await loadCountries();
+    if (!ref.mounted) return;
+    state = state.copyWith(countries: countries, isLoadingCountries: false);
+    final india = countries.where((c) => c.isoCode == defaultCountryCode);
+    if (state.selectedCountry == null && india.isNotEmpty) {
+      await setCountry(india.first.name);
+    }
+  }
+
+  /// Picking a country resets the state and city, then loads its states.
+  Future<void> setCountry(String name) async {
+    final country = _byName(state.countries, name);
+    if (country == null || country.isoCode == state.selectedCountry?.isoCode) {
+      return;
+    }
+    state = state.copyWith(
+      selectedCountry: () => country,
+      selectedState: () => null,
+      selectedCity: () => null,
+      states: const [],
+      cities: const [],
+      isLoadingStates: true,
+    );
+    final states = await loadStates(country.isoCode);
+    // Ignore a stale result if the country changed meanwhile.
+    if (!ref.mounted || state.selectedCountry?.isoCode != country.isoCode) {
+      return;
+    }
+    state = state.copyWith(states: states, isLoadingStates: false);
+  }
+
+  /// Picking a state resets the city, then loads the state's cities.
+  Future<void> setSelectedState(String name) async {
+    final country = state.selectedCountry;
+    final region = _byName(state.states, name);
+    if (country == null || region == null) return;
+    if (region.isoCode == state.selectedState?.isoCode) return;
+    state = state.copyWith(
+      selectedState: () => region,
+      selectedCity: () => null,
+      cities: const [],
+      isLoadingCities: true,
+    );
+    final cities = await loadCities(country.isoCode, region.isoCode);
+    if (!ref.mounted || state.selectedState?.isoCode != region.isoCode) return;
+    state = state.copyWith(cities: cities, isLoadingCities: false);
+  }
+
+  void setCity(String name) => state = state.copyWith(selectedCity: () => name);
+
+  static Region? _byName(List<Region> regions, String name) {
+    for (final r in regions) {
+      if (r.name == name) return r;
+    }
+    return null;
+  }
 
   /// Picks an image from camera or gallery for profile
   Future<void> pickImage(ImageSource source) async {

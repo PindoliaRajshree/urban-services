@@ -96,29 +96,27 @@ class _HomeHeaderState extends State<HomeHeader> {
     widget.onAvatarTap();
   }
 
+  static double _tooltipWidth(BuildContext context) =>
+      MediaQuery.sizeOf(context).width * 0.75;
+
   @override
   Widget build(BuildContext context) {
     final location = widget.location;
 
     return Row(
       children: [
-        Showcase(
+        // A custom tooltip so the close icon can sit in its top-right
+        // corner (the default one only puts actions below the text).
+        Showcase.withWidget(
           key: _profileShowcaseKey,
-          title: 'Complete Your Profile',
-          description: widget.showcaseDescription,
+          width: _tooltipWidth(context),
+          height: AppDimensions.containerHeight145h,
+          container: _ProfileShowcaseTooltip(
+            width: _tooltipWidth(context),
+            description: widget.showcaseDescription,
+            onClose: () => ShowCaseWidget.of(context).dismiss(),
+          ),
           targetShapeBorder: const CircleBorder(),
-          tooltipBackgroundColor: AppColors.primaryDark,
-          textColor: AppColors.white,
-          titleTextStyle: customTextStyle(
-            AppTextSizes.largeTextSize,
-            AppColors.white,
-            FontWeight.w700,
-          ),
-          descTextStyle: customTextStyle(
-            AppTextSizes.smallTextSize,
-            AppColors.white,
-            FontWeight.w400,
-          ),
           disableDefaultTargetGestures: true,
           onTargetClick: _onAvatarTap,
           disposeOnTap: true,
@@ -184,6 +182,76 @@ class _HomeHeaderState extends State<HomeHeader> {
         ),
         ...widget.actions,
       ],
+    );
+  }
+}
+
+/// The "Complete Your Profile" callout, with a close icon top-right.
+class _ProfileShowcaseTooltip extends StatelessWidget {
+  const _ProfileShowcaseTooltip({
+    required this.width,
+    required this.description,
+    required this.onClose,
+  });
+
+  final double width;
+  final String description;
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: width,
+      margin: EdgeInsets.only(top: AppDimensions.padding10h),
+      padding: EdgeInsets.all(AppDimensions.padding12w),
+      decoration: BoxDecoration(
+        color: AppColors.primaryDark,
+        borderRadius: BorderRadius.circular(AppDimensions.radius10r),
+      ),
+      child: Stack(
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                // Keeps the title clear of the close icon.
+                padding: EdgeInsets.only(right: AppDimensions.padding20w),
+                child: Text(
+                  'Complete Your Profile',
+                  style: customTextStyle(
+                    AppTextSizes.largeTextSize,
+                    AppColors.white,
+                    FontWeight.w700,
+                  ),
+                ),
+              ),
+              SizedBox(height: AppDimensions.padding5h),
+              Text(
+                description,
+                style: customTextStyle(
+                  AppTextSizes.smallTextSize,
+                  AppColors.white,
+                  FontWeight.w400,
+                ),
+              ),
+            ],
+          ),
+          Positioned(
+            top: 0,
+            right: 0,
+            child: GestureDetector(
+              onTap: onClose,
+              behavior: HitTestBehavior.opaque,
+              child: Icon(
+                Icons.close,
+                color: AppColors.white,
+                size: AppDimensions.containerHeight18h,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

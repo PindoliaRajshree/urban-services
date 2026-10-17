@@ -41,6 +41,13 @@ class AddressFormField extends StatelessWidget {
   /// update).
   final bool readOnly;
 
+  /// Makes the field tappable (e.g. to open a picker). Combine with
+  /// [readOnly] so the keyboard doesn't open.
+  final VoidCallback? onTap;
+
+  /// Widget at the end of the field (e.g. a dropdown arrow).
+  final Widget? suffixIcon;
+
   const AddressFormField({
     super.key,
     required this.label,
@@ -56,6 +63,8 @@ class AddressFormField extends StatelessWidget {
     this.errorText,
     this.inputFormatters,
     this.readOnly = false,
+    this.onTap,
+    this.suffixIcon,
   });
 
   @override
@@ -89,6 +98,7 @@ class AddressFormField extends StatelessWidget {
           validator: validator,
           inputFormatters: inputFormatters,
           readOnly: readOnly,
+          onTap: onTap,
           style: customTextStyle(
             AppTextSizes.smallTextSize,
             AppColors.black,
@@ -125,7 +135,11 @@ class AddressFormField extends StatelessWidget {
               minHeight: 0,
             ),
             filled: true,
-            fillColor: readOnly ? AppColors.background : AppColors.white,
+            suffixIcon: suffixIcon,
+            // A tappable read-only field (a picker) still looks editable.
+            fillColor: readOnly && onTap == null
+                ? AppColors.background
+                : AppColors.white,
             errorText: errorText,
             errorStyle: customTextStyle(
               AppTextSizes.stableTextSize,

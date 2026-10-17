@@ -20,6 +20,7 @@ import 'package:urban_services/widgets/custom_text_style.dart';
 import 'package:urban_services/widgets/dashed_border_painter.dart';
 import 'package:urban_services/widgets/icon_header.dart';
 import 'package:urban_services/widgets/primary_button.dart';
+import 'package:urban_services/widgets/searchable_picker_field.dart';
 import 'package:urban_services/widgets/verify_number_dialog.dart';
 
 class UserCompleteProfileScreen extends ConsumerStatefulWidget {
@@ -35,9 +36,6 @@ class _UserCompleteProfileScreenState
   final _fullNameController = TextEditingController();
   final _mobileController = TextEditingController();
   final _emailController = TextEditingController();
-  final _countryController = TextEditingController();
-  final _stateController = TextEditingController();
-  final _cityController = TextEditingController();
   final _pincodeController = TextEditingController();
   final _fullAddressController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -59,9 +57,6 @@ class _UserCompleteProfileScreenState
     _fullNameController.dispose();
     _mobileController.dispose();
     _emailController.dispose();
-    _countryController.dispose();
-    _stateController.dispose();
-    _cityController.dispose();
     _pincodeController.dispose();
     _fullAddressController.dispose();
     super.dispose();
@@ -118,7 +113,7 @@ class _UserCompleteProfileScreenState
                         icon: AppImages.location,
                         title: 'Address Information',
                       ),
-                      _buildAddressSection(),
+                      _buildAddressSection(state),
                       SizedBox(height: AppDimensions.padding40h),
                       PrimaryButton(
                         text: "Submit Profile",
@@ -424,26 +419,32 @@ class _UserCompleteProfileScreenState
     );
   }
 
-  Widget _buildAddressSection() {
+  Widget _buildAddressSection(UserCompleteProfileState state) {
     return Column(
       children: [
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: AddressFormField(
+              child: SearchablePickerField(
                 label: "Country",
-                hintText: "Enter Country",
-                controller: _countryController,
+                hintText: "Select Country",
+                value: state.selectedCountry?.name,
+                options: [for (final c in state.countries) c.name],
+                isLoading: state.isLoadingCountries,
+                onSelected: _notifier.setCountry,
                 validator: _notifier.validateRequired,
               ),
             ),
             SizedBox(width: AppDimensions.padding15w),
             Expanded(
-              child: AddressFormField(
+              child: SearchablePickerField(
                 label: "State",
-                hintText: "Enter State",
-                controller: _stateController,
+                hintText: "Select State",
+                value: state.selectedState?.name,
+                options: [for (final s in state.states) s.name],
+                isLoading: state.isLoadingStates,
+                onSelected: _notifier.setSelectedState,
                 validator: _notifier.validateRequired,
               ),
             ),
@@ -454,10 +455,13 @@ class _UserCompleteProfileScreenState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: AddressFormField(
+              child: SearchablePickerField(
                 label: "City",
-                hintText: "Enter City",
-                controller: _cityController,
+                hintText: "Select City",
+                value: state.selectedCity,
+                options: state.cities,
+                isLoading: state.isLoadingCities,
+                onSelected: _notifier.setCity,
                 validator: _notifier.validateRequired,
               ),
             ),

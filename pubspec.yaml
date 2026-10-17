@@ -37,6 +37,8 @@ dependencies:
   awesome_snackbar_content: ^0.1.8
 
   #C
+  # Bundled country/state/city lists for the address pickers.
+  country_state_city: ^0.1.6
   cupertino_icons: ^1.0.8
 
   #D

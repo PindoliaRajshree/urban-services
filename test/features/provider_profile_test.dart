@@ -73,10 +73,63 @@ void main() {
       expect(profile.preferredMobile, '9000000000');
       expect(profile.isProfileCompleted, isFalse);
     });
+
+    test('uses the provider photo, never the Google photo on user', () {
+      const photo = 'https://example.com/storage/provider/documents/p.jpg';
+      final profile = ProviderProfile.fromJson({
+        'data': {
+          'user': {'profile_image': 'https://lh3.googleusercontent.com/a/x'},
+          'provider': {'profile_image': photo},
+        },
+      });
+      expect(ProviderProfile.fileUrl(profile.profileImage), photo);
+
+      final noPhoto = ProviderProfile.fromJson({
+        'data': {
+          'user': {'profile_image': 'https://lh3.googleusercontent.com/a/x'},
+          'provider': {'profile_image': null},
+        },
+      });
+      expect(noPhoto.profileImage, isNull);
+    });
+  });
+
+  group('ProviderProfile.fileUrl', () {
+    const base = ApiConstants.storageBaseUrl;
+    final host = Uri.parse(base).host;
+
+    test('repairs the doubled public/public storage prefix', () {
+      expect(
+        ProviderProfile.fileUrl(
+          'https://$host/x/UrbanService%20Project/public/public/storage/'
+          'provider/documents/p.jpg',
+        ),
+        '${base}provider/documents/p.jpg',
+      );
+    });
+
+    test('keeps a correct storage URL and relative paths', () {
+      expect(
+        ProviderProfile.fileUrl('${base}provider/documents/p.jpg'),
+        '${base}provider/documents/p.jpg',
+      );
+      expect(
+        ProviderProfile.fileUrl('provider/documents/p.jpg'),
+        '${base}provider/documents/p.jpg',
+      );
+    });
+
+    test('leaves other hosts untouched', () {
+      const google = 'https://lh3.googleusercontent.com/a/x';
+      expect(ProviderProfile.fileUrl(google), google);
+    });
   });
 
   group('ProfileUpdateRequest.toFormData', () {
-    ProfileUpdateRequest request({File? profileImage}) => ProfileUpdateRequest(
+    ProfileUpdateRequest request({
+      File? profileImage,
+      String? aadhaarNumber = '123412341234',
+    }) => ProfileUpdateRequest(
       mobileNumber: '9617527178',
       email: 'abhay@gmail.com',
       gender: 'male',
@@ -96,7 +149,7 @@ void main() {
       serviceAreaKm: 10,
       availabilityType: 'full_time',
       teamSize: 11,
-      aadhaarNumber: '123412341234',
+      aadhaarNumber: aadhaarNumber,
       accountHolderName: 'dsd',
       bankName: 'SBI',
       accountNumber: '1212121212',
@@ -133,6 +186,7 @@ void main() {
         'bank_name',
         'account_number',
         'ifsc_code',
+        'upi_id',
       });
       // Unchanged documents aren't re-sent.
       expect(form.files, isEmpty);
@@ -142,6 +196,11 @@ void main() {
           form.fields.firstWhere((e) => e.key == key).value;
       expect(field('latitude'), '12.00000000');
       expect(field('longitude'), '11.00000000');
+    });
+
+    test('omits a missing Aadhaar number', () async {
+      final form = await request(aadhaarNumber: null).toFormData();
+      expect(form.fields.map((e) => e.key), isNot(contains('aadhaar_number')));
     });
 
     test('attaches a picked image with name and content type', () async {

@@ -33,12 +33,12 @@ class ProfileUpdateRequest {
     required this.serviceAreaKm,
     required this.availabilityType,
     required this.teamSize,
-    required this.aadhaarNumber,
     required this.accountHolderName,
     required this.bankName,
     required this.accountNumber,
     required this.ifscCode,
     required this.upiId,
+    this.aadhaarNumber,
     this.panNumber,
     this.profileImage,
     this.aadhaarFrontImage,
@@ -76,7 +76,9 @@ class ProfileUpdateRequest {
   final String availabilityType;
   final int teamSize;
 
-  final String aadhaarNumber;
+  /// Null when editing a saved profile whose number wasn't returned — the
+  /// backend keeps the stored one.
+  final String? aadhaarNumber;
   final String? panNumber;
 
   final String accountHolderName;
@@ -114,7 +116,6 @@ class ProfileUpdateRequest {
       'service_area_km': serviceAreaKm,
       'availability_type': availabilityType,
       'team_size': teamSize,
-      'aadhaar_number': aadhaarNumber,
       'account_holder_name': accountHolderName,
       'bank_name': bankName,
       'account_number': accountNumber,
@@ -122,6 +123,9 @@ class ProfileUpdateRequest {
       'upi_id': upiId.trim(),
     };
 
+    if (aadhaarNumber != null && aadhaarNumber!.trim().isNotEmpty) {
+      map['aadhaar_number'] = aadhaarNumber!.trim();
+    }
     if (panNumber != null && panNumber!.trim().isNotEmpty) {
       map['pan_number'] = panNumber!.trim();
     }

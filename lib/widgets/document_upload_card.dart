@@ -22,6 +22,9 @@ class DocumentUploadCard extends StatelessWidget {
   /// True while the picked image is being read (e.g. OCR of a card
   /// number). Shows a spinner and ignores taps.
   final bool isProcessing;
+
+  /// A saved document that can't be replaced or removed — only viewed.
+  final bool locked;
   final VoidCallback onUpload;
   final VoidCallback onRemove;
 
@@ -32,6 +35,7 @@ class DocumentUploadCard extends StatelessWidget {
     this.selectedFile,
     this.existingUrl,
     this.isProcessing = false,
+    this.locked = false,
     required this.onUpload,
     required this.onRemove,
   });
@@ -53,7 +57,7 @@ class DocumentUploadCard extends StatelessWidget {
         : selectedFile != null
         ? selectedFile!.path.split(RegExp(r'[/\\]')).last
         : existingUrl != null
-        ? "Uploaded — tap to replace"
+        ? (locked ? "Verified — can't be changed" : "Uploaded — tap to replace")
         : "Click to upload";
 
     return Container(
@@ -151,7 +155,7 @@ class DocumentUploadCard extends StatelessWidget {
           ),
           const Divider(color: Color.fromRGBO(190, 190, 190, 1), height: 1),
           GestureDetector(
-            onTap: isProcessing ? null : onUpload,
+            onTap: isProcessing || locked ? null : onUpload,
             child: Container(
               margin: EdgeInsets.all(AppDimensions.padding12w),
               padding: EdgeInsets.symmetric(vertical: AppDimensions.padding15h),
@@ -172,6 +176,12 @@ class DocumentUploadCard extends StatelessWidget {
                         height: AppDimensions.containerHeight16h,
                         width: AppDimensions.containerWidth16w,
                         child: const CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    else if (hasFile && locked)
+                      Icon(
+                        Icons.verified_outlined,
+                        color: AppColors.primaryDark,
+                        size: AppDimensions.containerHeight16h,
                       )
                     else
                       Image.asset(
@@ -196,7 +206,18 @@ class DocumentUploadCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    if (hasFile)
+                    if (hasFile && locked)
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: AppDimensions.padding8w,
+                        ),
+                        child: Icon(
+                          Icons.lock_outline,
+                          color: AppColors.primaryDark,
+                          size: AppDimensions.containerHeight18h,
+                        ),
+                      )
+                    else if (hasFile)
                       GestureDetector(
                         onTap: () {
                           // Prevent triggering the parent GestureDetector
